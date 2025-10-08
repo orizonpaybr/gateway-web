@@ -69,3 +69,45 @@ input[type='password'] {
   -moz-appearance: textfield;
   appearance: textfield;
 }
+
+/* Estilos para página de Termos de Uso */
+.prose {
+  line-height: 1.7;
+}
+
+.prose h2 {
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  color: #1f2937;
+  font-weight: 600;
+}
+
+.prose p {
+  margin-bottom: 1rem;
+  color: #374151;
+}
+
+.prose ul {
+  margin-bottom: 1rem;
+}
+
+.prose li {
+  margin-bottom: 0.5rem;
+}
+
+.prose strong {
+  color: #1f2937;
+  font-weight: 600;
+}
+
+/* Responsividade para termos */
+@media (max-width: 768px) {
+  .prose h2 {
+    font-size: 1.25rem;
+  }
+
+  .prose p,
+  .prose li {
+    font-size: 0.95rem;
+  }
+}
