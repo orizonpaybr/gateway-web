@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import Link from 'next/link'
+import Image from 'next/image'
 import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
 import { ArrowRight, ArrowLeft, HelpCircle } from 'lucide-react'
@@ -65,9 +66,13 @@ export default function CadastroPage() {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <div className="flex justify-center mb-4">
-            <div className="text-4xl font-bold">
-              🐴 <span className="text-gray-900">HORSE PAY</span>
-            </div>
+            <Image
+              src="/LOGO-ORIZON-AZUL-PRETA.png"
+              alt="Orizon Pay"
+              width={200}
+              height={60}
+              priority
+            />
           </div>
           <Link
             href="/"

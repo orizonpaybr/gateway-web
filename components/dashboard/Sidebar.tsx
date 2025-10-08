@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import {
   LayoutDashboard,
@@ -21,7 +22,7 @@ import { cn } from '@/lib/utils'
 
 const menuItems = [
   { icon: LayoutDashboard, label: 'Dashboard', href: '/dashboard' },
-  { icon: TrendingUp, label: 'Jornada HorsePay', href: '/dashboard/jornada' },
+  { icon: TrendingUp, label: 'Jornada Orizon', href: '/dashboard/jornada' },
   { icon: Search, label: 'Buscar Transações', href: '/dashboard/buscar' },
   { icon: FileText, label: 'Extrato', href: '/dashboard/extrato' },
   { icon: Send, label: 'Pix', href: '/dashboard/pix' },
@@ -40,12 +41,14 @@ export function Sidebar() {
   return (
     <aside className="fixed left-0 top-0 h-screen w-64 bg-white border-r border-gray-200 flex flex-col">
       <div className="p-6 border-b border-gray-200">
-        <Link href="/dashboard" className="flex items-center gap-2">
-          <span className="text-2xl">🐴</span>
-          <div>
-            <h1 className="font-bold text-lg text-gray-900">HORSE PAY</h1>
-            <p className="text-xs text-primary">Finance</p>
-          </div>
+        <Link href="/dashboard" className="flex items-center justify-center">
+          <Image
+            src="/LOGO-ORIZON-AZUL-PRETA.png"
+            alt="Orizon Pay"
+            width={150}
+            height={45}
+            priority
+          />
         </Link>
       </div>
 

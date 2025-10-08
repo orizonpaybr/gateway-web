@@ -37,13 +37,17 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gray-light p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="flex justify-center mb-4">
-            <div className="text-4xl font-bold">
-              🐴 <span className="text-gray-900">HORSE PAY</span>
-            </div>
+          <div className="flex justify-center mb-2">
+            <Image
+              src="/LOGO-ORIZON-AZUL-PRETA.png"
+              alt="Orizon Pay"
+              width={120}
+              height={36}
+              priority
+            />
           </div>
           <Link
             href="/"
@@ -67,7 +71,7 @@ export default function LoginPage() {
               {...register('password')}
               type="password"
               label="SENHA"
-              placeholder="Sua senha"
+              placeholder="Digite sua senha"
               error={errors.password?.message}
             />
 
@@ -80,31 +84,31 @@ export default function LoginPage() {
               {isLoading ? 'Entrando...' : 'Entrar'}
             </Button>
           </form>
-
-          <div className="mt-6 text-center text-sm text-gray-600">
-            Ainda não tem uma conta?{' '}
-            <Link
-              href="/cadastro"
-              className="text-primary font-medium hover:underline"
-            >
-              Criar conta
-            </Link>
-          </div>
-
-          <div className="mt-6">
-            <Button variant="outline" fullWidth icon={<HelpCircle size={18} />}>
-              Precisa de ajuda?
-            </Button>
-          </div>
-
-          <p className="mt-6 text-center text-xs text-gray-500">
-            Ao acessar a conta, você concorda com os nossos{' '}
-            <Link href="/termos" className="text-primary hover:underline">
-              termos de uso
-            </Link>
-            .
-          </p>
         </div>
+
+        <div className="mt-6 text-center text-sm text-gray-600">
+          Ainda não tem uma conta?{' '}
+          <Link
+            href="/cadastro"
+            className="text-primary font-medium hover:underline"
+          >
+            Criar conta
+          </Link>
+        </div>
+
+        <div className="mt-6">
+          <Button variant="outline" fullWidth icon={<HelpCircle size={18} />}>
+            Precisa de ajuda?
+          </Button>
+        </div>
+
+        <p className="mt-6 text-center text-xs text-gray-500">
+          Ao acessar a conta, você concorda com os nossos{' '}
+          <Link href="/termos" className="text-primary hover:underline">
+            termos de uso
+          </Link>
+          .
+        </p>
       </div>
     </div>
   )

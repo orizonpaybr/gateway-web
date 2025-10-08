@@ -10,15 +10,28 @@ const config: Config = {
     extend: {
       colors: {
         primary: {
-          DEFAULT: '#4845d2',
-          hover: '#3835b5',
-          light: '#8b88dd',
+          DEFAULT: '#007BC7',
+          hover: '#006BA8',
+          light: '#009EE0',
         },
         secondary: {
-          DEFAULT: '#8b88dd',
+          DEFAULT: '#009EE0',
+          light: '#00BFFF',
         },
-        background: '#f5f5f5',
-        card: '#ffffff',
+        accent: {
+          DEFAULT: '#FF8A00',
+          hover: '#E67A00',
+        },
+        dark: {
+          DEFAULT: '#0C243B',
+          alt: '#000000',
+        },
+        background: '#FFFFFF',
+        card: '#FFFFFF',
+        gray: {
+          light: '#F3F3F3',
+          lighter: '#EBEBEB',
+        },
       },
     },
   },
