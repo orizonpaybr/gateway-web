@@ -8,7 +8,8 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
-import { ArrowRight, ArrowLeft, HelpCircle } from 'lucide-react'
+import { FileUpload } from '@/components/ui/FileUpload'
+import { ArrowRight, ArrowLeft, HelpCircle, User } from 'lucide-react'
 
 const step1Schema = z.object({
   fullName: z.string().min(3, 'Nome completo é obrigatório'),
@@ -29,13 +30,27 @@ const step2Schema = z
     path: ['confirmPassword'],
   })
 
+const step3Schema = z.object({
+  frontDocument: z.instanceof(File, {
+    message: 'Documento da frente é obrigatório',
+  }),
+  backDocument: z.instanceof(File, {
+    message: 'Documento do verso é obrigatório',
+  }),
+  selfieDocument: z.instanceof(File, {
+    message: 'Selfie com documento é obrigatória',
+  }),
+})
+
 type Step1FormData = z.infer<typeof step1Schema>
 type Step2FormData = z.infer<typeof step2Schema>
+type Step3FormData = z.infer<typeof step3Schema>
 
 export default function CadastroPage() {
   const [step, setStep] = useState(1)
   const [isLoading, setIsLoading] = useState(false)
   const [step1Data, setStep1Data] = useState<Step1FormData | null>(null)
+  const [step2Data, setStep2Data] = useState<Step2FormData | null>(null)
 
   const step1Form = useForm<Step1FormData>({
     resolver: zodResolver(step1Schema),
@@ -45,32 +60,41 @@ export default function CadastroPage() {
     resolver: zodResolver(step2Schema),
   })
 
+  const step3Form = useForm<Step3FormData>({
+    resolver: zodResolver(step3Schema),
+  })
+
   const onStep1Submit = (data: Step1FormData) => {
     setStep1Data(data)
     setStep(2)
   }
 
-  const onStep2Submit = async (data: Step2FormData) => {
+  const onStep2Submit = (data: Step2FormData) => {
+    setStep2Data(data)
+    setStep(3)
+  }
+
+  const onStep3Submit = async (data: Step3FormData) => {
     setIsLoading(true)
     // Aqui você irá integrar com a API
-    const fullData = { ...step1Data, ...data }
+    const fullData = { ...step1Data, ...step2Data, ...data }
     console.log(fullData)
     await new Promise((resolve) => setTimeout(resolve, 1000))
     setIsLoading(false)
   }
 
-  const progress = step === 1 ? 33 : 67
+  const progress = step === 1 ? 33 : step === 2 ? 67 : 100
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gray-light p-4">
       <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <div className="flex justify-center mb-4">
+        <div className="text-center mb-6">
+          <div className="flex justify-center mb-2">
             <Image
               src="/LOGO-ORIZON-AZUL-PRETA.png"
               alt="Orizon Pay"
-              width={200}
-              height={60}
+              width={120}
+              height={36}
               priority
             />
           </div>
@@ -167,6 +191,7 @@ export default function CadastroPage() {
                   type="password"
                   label="SENHA"
                   placeholder="Mínimo 6 caracteres"
+                  showPasswordToggle={true}
                   error={step2Form.formState.errors.password?.message}
                 />
 
@@ -175,6 +200,7 @@ export default function CadastroPage() {
                   type="password"
                   label="CONFIRMAR SENHA"
                   placeholder="Repita sua senha"
+                  showPasswordToggle={true}
                   error={step2Form.formState.errors.confirmPassword?.message}
                 />
 
@@ -196,7 +222,7 @@ export default function CadastroPage() {
                 <div className="flex gap-3">
                   <Button
                     type="button"
-                    variant="ghost"
+                    variant="outline"
                     onClick={() => setStep(1)}
                     icon={<ArrowLeft size={18} />}
                   >
@@ -205,40 +231,110 @@ export default function CadastroPage() {
                   <Button
                     type="submit"
                     fullWidth
-                    disabled={isLoading}
                     icon={<ArrowRight size={18} />}
                   >
-                    {isLoading ? 'Criando conta...' : 'Próximo'}
+                    Próximo
                   </Button>
                 </div>
               </form>
             </>
           )}
 
-          <div className="mt-6 text-center text-sm text-gray-600">
-            Já tem uma conta?{' '}
-            <Link
-              href="/login"
-              className="text-primary font-medium hover:underline"
-            >
-              Fazer login
-            </Link>
-          </div>
+          {step === 3 && (
+            <>
+              <div className="mb-6">
+                <h2 className="text-xl font-bold text-gray-900">Documentos</h2>
+                <p className="text-sm text-gray-600 mt-1">
+                  Envie os documentos para verificação
+                </p>
+              </div>
 
-          <div className="mt-6">
-            <Button variant="outline" fullWidth icon={<HelpCircle size={18} />}>
-              Precisa de ajuda?
-            </Button>
-          </div>
+              <form
+                onSubmit={step3Form.handleSubmit(onStep3Submit)}
+                className="space-y-5"
+              >
+                <FileUpload
+                  label="FRENTE DO DOCUMENTO"
+                  accept="image/*,.pdf"
+                  maxSize={5}
+                  onChange={(file) => {
+                    if (file) {
+                      step3Form.setValue('frontDocument', file)
+                    }
+                  }}
+                  error={step3Form.formState.errors.frontDocument?.message}
+                />
 
-          <p className="mt-6 text-center text-xs text-gray-500">
-            Ao criar uma conta, você concorda com os nossos{' '}
-            <Link href="/termos" className="text-primary hover:underline">
-              termos de uso
-            </Link>
-            .
-          </p>
+                <FileUpload
+                  label="VERSO DO DOCUMENTO"
+                  accept="image/*,.pdf"
+                  maxSize={5}
+                  onChange={(file) => {
+                    if (file) {
+                      step3Form.setValue('backDocument', file)
+                    }
+                  }}
+                  error={step3Form.formState.errors.backDocument?.message}
+                />
+
+                <FileUpload
+                  label="SELFIE COM DOCUMENTO"
+                  accept="image/*"
+                  maxSize={5}
+                  onChange={(file) => {
+                    if (file) {
+                      step3Form.setValue('selfieDocument', file)
+                    }
+                  }}
+                  error={step3Form.formState.errors.selfieDocument?.message}
+                />
+
+                <div className="flex gap-3">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setStep(2)}
+                    icon={<ArrowLeft size={18} />}
+                  >
+                    Voltar
+                  </Button>
+                  <Button
+                    type="submit"
+                    fullWidth
+                    disabled={isLoading}
+                    icon={<User size={18} />}
+                  >
+                    {isLoading ? 'Criando conta...' : 'Criar Conta'}
+                  </Button>
+                </div>
+              </form>
+            </>
+          )}
         </div>
+
+        <div className="mt-6 text-center text-sm text-gray-600">
+          Já tem uma conta?{' '}
+          <Link
+            href="/login"
+            className="text-primary font-medium hover:underline"
+          >
+            Fazer login
+          </Link>
+        </div>
+
+        <div className="mt-6">
+          <Button variant="outline" fullWidth icon={<HelpCircle size={18} />}>
+            Precisa de ajuda?
+          </Button>
+        </div>
+
+        <p className="mt-6 text-center text-xs text-gray-500">
+          Ao criar uma conta, você concorda com os nossos{' '}
+          <Link href="/termos" className="text-primary hover:underline">
+            termos de uso
+          </Link>
+          .
+        </p>
       </div>
     </div>
   )

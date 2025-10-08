@@ -50,3 +50,22 @@
 [data-sonner-toast][data-type='info'] {
   border-left: 4px solid #009ee0;
 }
+
+/* Remove botões nativos de senha do navegador - Chrome/Safari */
+input[type='password']::-webkit-credentials-auto-fill-button,
+input[type='password']::-webkit-caps-lock-indicator,
+input[type='password']::-webkit-strong-password-auto-fill-button,
+input[type='password']::-webkit-reveal-password-button,
+input[type='password']::-ms-reveal,
+input[type='password']::-ms-clear {
+  display: none !important;
+  visibility: hidden !important;
+  -webkit-appearance: none !important;
+  appearance: none !important;
+}
+
+/* Para Firefox */
+input[type='password'] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
