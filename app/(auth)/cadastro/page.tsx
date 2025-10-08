@@ -323,7 +323,12 @@ export default function CadastroPage() {
         </div>
 
         <div className="mt-6">
-          <Button variant="outline" fullWidth icon={<HelpCircle size={18} />}>
+          <Button
+            variant="outline"
+            fullWidth
+            icon={<HelpCircle size={18} />}
+            onClick={() => window.open('tel:+5511981644351', '_self')}
+          >
             Precisa de ajuda?
           </Button>
         </div>
