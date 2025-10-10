@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import './globals.css'
 import { Toaster } from 'sonner'
+import { Providers } from '@/components/Providers'
 
 export const metadata: Metadata = {
   title: 'Orizon Pay - Finance',
@@ -15,17 +16,19 @@ export default function RootLayout({
   return (
     <html lang="pt-BR">
       <body>
-        {children}
-        <Toaster
-          position="top-right"
-          richColors
-          toastOptions={{
-            style: {
-              background: '#FFFFFF',
-              border: '1px solid #EBEBEB',
-            },
-          }}
-        />
+        <Providers>
+          {children}
+          <Toaster
+            position="bottom-right"
+            richColors
+            toastOptions={{
+              style: {
+                background: '#FFFFFF',
+                border: '1px solid #EBEBEB',
+              },
+            }}
+          />
+        </Providers>
       </body>
     </html>
   )

@@ -7,21 +7,37 @@ import {
   useEffect,
   ReactNode,
 } from 'react'
+import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
+import { authAPI, RegisterData } from '@/lib/api'
 
 interface User {
   id: string
-  fullName: string
+  name: string
   email: string
   username: string
+  status?: number
+  status_text?: string
 }
 
 interface AuthContextType {
   user: User | null
   isAuthenticated: boolean
   isLoading: boolean
-  login: (email: string, password: string) => Promise<void>
-  logout: () => void
-  register: (data: any) => Promise<void>
+  login: (
+    username: string,
+    password: string,
+  ) => Promise<{ requires2FA?: boolean; tempToken?: string }>
+  verify2FA: (tempToken: string, code: string) => Promise<void>
+  logout: () => Promise<void>
+  register: (
+    data: RegisterData,
+    documents?: {
+      documentoFrente?: File
+      documentoVerso?: File
+      selfieDocumento?: File
+    },
+  ) => Promise<any>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -29,6 +45,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const router = useRouter()
 
   useEffect(() => {
     // Verificar se há um token salvo no localStorage
@@ -38,60 +55,104 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const checkAuth = async () => {
     try {
       const token = localStorage.getItem('token')
-      if (token) {
-        // TODO: Validar token com a API
-        // const userData = await authAPI.validateToken(token)
-        // setUser(userData)
+      const userStr = localStorage.getItem('user')
+
+      // Early return se não há token ou dados de usuário
+      if (!token || !userStr) {
+        setIsLoading(false)
+        return
       }
+
+      // Tentar validar o token com a API
+      const result = await authAPI.verifyToken()
+
+      // Usar dados validados ou fallback do localStorage
+      const userData =
+        result.success && result.data?.user
+          ? result.data.user
+          : JSON.parse(userStr)
+
+      setUser({
+        id: userData.id,
+        name: userData.name,
+        email: userData.email,
+        username: userData.username,
+      })
     } catch (error) {
       console.error('Erro ao verificar autenticação:', error)
-      localStorage.removeItem('token')
+      // Limpar dados em caso de erro
+      authAPI.logout()
     } finally {
       setIsLoading(false)
     }
   }
 
-  const login = async (email: string, password: string) => {
-    try {
-      // TODO: Implementar login real com a API
-      // const response = await authAPI.login(email, password)
-      // localStorage.setItem('token', response.token)
-      // setUser(response.user)
+  // Helper para extrair dados do usuário
+  const extractUserData = (userData: any): User => ({
+    id: userData.id,
+    name: userData.name,
+    email: userData.email,
+    username: userData.username,
+    status: userData.status,
+    status_text: userData.status_text,
+  })
 
-      // Mock temporário
-      const mockUser: User = {
-        id: '1',
-        fullName: 'Usuário Teste',
-        email,
-        username: '@usuario',
+  const login = async (username: string, password: string) => {
+    const response = await authAPI.login(username, password)
+
+    // Early return para 2FA
+    if (response.requires_2fa && response.temp_token) {
+      return {
+        requires2FA: true,
+        tempToken: response.temp_token,
       }
-      setUser(mockUser)
-      localStorage.setItem('token', 'mock-token')
-    } catch (error) {
-      throw new Error('Falha no login')
     }
+
+    // Definir usuário se disponível
+    response.data?.user && setUser(extractUserData(response.data.user))
+
+    return {}
   }
 
-  const logout = () => {
-    setUser(null)
-    localStorage.removeItem('token')
-    localStorage.removeItem('clientSecret')
-    // Redirecionar para login
-    window.location.href = '/login'
+  const verify2FA = async (tempToken: string, code: string) => {
+    const response = await authAPI.verify2FA(tempToken, code)
+    response.data?.user && setUser(extractUserData(response.data.user))
   }
 
-  const register = async (data: any) => {
+  const logout = async () => {
     try {
-      // TODO: Implementar registro real com a API
-      // const response = await authAPI.register(data)
-      // localStorage.setItem('token', response.token)
-      // setUser(response.user)
+      await authAPI.logout()
 
-      console.log('Dados de registro:', data)
-      throw new Error('Registro ainda não implementado')
+      // Mostrar toast de sucesso
+      toast.success('Saída realizada com sucesso!', {
+        description: 'Até logo!',
+        duration: 2000,
+      })
     } catch (error) {
-      throw new Error('Falha no registro')
+      console.error('Erro ao fazer logout:', error)
+
+      // Mostrar toast de erro
+      toast.error('Erro no logout', {
+        description: 'Houve um problema ao sair da conta',
+        duration: 3000,
+      })
+    } finally {
+      setUser(null)
+      router.push('/login')
     }
+  }
+
+  const register = async (
+    data: RegisterData,
+    documents?: {
+      documentoFrente?: File
+      documentoVerso?: File
+      selfieDocumento?: File
+    },
+  ) => {
+    const response = await authAPI.register(data, documents)
+    response.data?.user && setUser(extractUserData(response.data.user))
+    return response
   }
 
   return (
@@ -101,6 +162,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isAuthenticated: !!user,
         isLoading,
         login,
+        verify2FA,
         logout,
         register,
       }}

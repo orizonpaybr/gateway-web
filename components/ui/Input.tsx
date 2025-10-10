@@ -76,7 +76,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
             </button>
           )}
         </div>
-        {error && <span className="text-xs text-red-500 -mt-1">{error}</span>}
+        {error && <span className="text-xs text-red-500">{error}</span>}
       </div>
     )
   },
