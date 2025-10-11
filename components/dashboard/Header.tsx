@@ -1,52 +1,59 @@
 'use client'
 
-import { Bell, User } from 'lucide-react'
-import { useAuth } from '@/contexts/AuthContext'
+import { useState } from 'react'
+import { EyeOff, Eye, RefreshCw } from 'lucide-react'
+import { usePathname } from 'next/navigation'
+
+// Mapeamento de rotas para títulos
+const pageTitles: Record<string, string> = {
+  '/dashboard': 'Dashboard Orizon',
+  '/dashboard/jornada': 'Jornada Orizon',
+  '/dashboard/buscar': 'Buscar Transações',
+  '/dashboard/extrato': 'Extrato',
+  '/dashboard/pix': 'Pix',
+  '/dashboard/qr-codes': 'QR Codes',
+  '/dashboard/infracoes': 'Infrações',
+  '/dashboard/pendentes': 'Transações Pendentes',
+  '/dashboard/conta': 'Dados da Conta',
+  '/dashboard/configuracoes': 'Configurações',
+  '/dashboard/suporte': 'Suporte',
+  '/dashboard/api-docs': 'API Docs',
+}
 
 export function Header() {
-  const { user } = useAuth()
+  const [balanceHidden, setBalanceHidden] = useState(false)
+  const pathname = usePathname()
+  const pageTitle = pageTitles[pathname] || 'Dashboard Orizon'
+
+  const handleRefresh = () => {
+    window.location.reload()
+  }
+
   return (
-    <header className="fixed top-0 right-0 left-64 h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6 z-10">
+    <header className="fixed top-0 right-0 left-72 h-16 bg-gray-50 flex items-center justify-between px-8 z-10">
       <div>
-        <h2 className="text-lg font-semibold text-gray-900">
-          Bem-vindo de volta!
-        </h2>
-        <p className="text-xs text-gray-500">
-          Gerencie suas finanças com facilidade
-        </p>
+        <h1 className="text-xl font-bold text-gray-900">{pageTitle}</h1>
       </div>
 
-      <div className="flex items-center gap-4">
-        <button className="relative p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
-          <Bell size={20} />
-          <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />
+      <div className="flex items-center gap-2">
+        <button
+          onClick={() => setBalanceHidden(!balanceHidden)}
+          className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+          title={balanceHidden ? 'Mostrar Saldo' : 'Ocultar Saldo'}
+        >
+          {balanceHidden ? <Eye size={18} /> : <EyeOff size={18} />}
+          <span className="hidden sm:inline">
+            {balanceHidden ? 'Mostrar' : 'Ocultar'} Saldo
+          </span>
         </button>
 
-        <div className="flex items-center gap-3 pl-4 border-l border-gray-200">
-          <div className="text-right">
-            <div className="flex items-center justify-end gap-2">
-              <p className="text-sm font-medium text-gray-900">
-                {user?.name || 'Usuário'}
-              </p>
-              {user?.status === 5 && (
-                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800 border border-yellow-200">
-                  Pendente
-                </span>
-              )}
-              {user?.status === 1 && (
-                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800 border border-green-200">
-                  Ativa
-                </span>
-              )}
-            </div>
-            <p className="text-xs text-gray-500">
-              {user?.email || 'usuario@email.com'}
-            </p>
-          </div>
-          <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white">
-            <User size={20} />
-          </div>
-        </div>
+        <button
+          onClick={handleRefresh}
+          className="p-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+          title="Atualizar"
+        >
+          <RefreshCw size={18} />
+        </button>
       </div>
     </header>
   )

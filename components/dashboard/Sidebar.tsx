@@ -3,42 +3,95 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
+import { useState } from 'react'
 import {
-  LayoutDashboard,
+  Home,
   TrendingUp,
   Search,
-  FileText,
+  List,
   Send,
   QrCode,
   AlertTriangle,
   Clock,
   User,
   Settings,
-  HelpCircle,
-  BookOpen,
   LogOut,
+  ChevronDown,
+  ChevronUp,
+  ExternalLink,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/contexts/AuthContext'
+import { PixIcon } from '@/components/icons/PixIcon'
+import { WhatsAppIcon } from '@/components/icons/WhatsAppIcon'
+import { DocumentIcon } from '@/components/icons/DocumentIcon'
 
-const menuItems = [
-  { icon: LayoutDashboard, label: 'Dashboard', href: '/dashboard' },
-  { icon: TrendingUp, label: 'Jornada Orizon', href: '/dashboard/jornada' },
+interface MenuItem {
+  icon: React.ElementType
+  label: string
+  href: string
+  hasSubmenu?: boolean
+  submenu?: { label: string; href: string }[]
+  secondaryText?: string
+  isExternal?: boolean
+}
+
+const mainMenuItems: MenuItem[] = [
+  { icon: Home, label: 'Página inicial', href: '/dashboard' },
   { icon: Search, label: 'Buscar Transações', href: '/dashboard/buscar' },
-  { icon: FileText, label: 'Extrato', href: '/dashboard/extrato' },
-  { icon: Send, label: 'Pix', href: '/dashboard/pix' },
-  { icon: QrCode, label: 'QR Codes', href: '/dashboard/qr-codes' },
-  { icon: AlertTriangle, label: 'Infrações', href: '/dashboard/infracoes' },
+  {
+    icon: List,
+    label: 'Extrato',
+    href: '/dashboard/extrato',
+    hasSubmenu: true,
+    submenu: [
+      { label: 'Depósitos', href: '/dashboard/extrato/depositos' },
+      { label: 'Saques', href: '/dashboard/extrato/saques' },
+    ],
+  },
+  {
+    icon: PixIcon,
+    label: 'Pix',
+    href: '/dashboard/pix',
+    hasSubmenu: true,
+    submenu: [
+      { label: 'Com Chave', href: '/dashboard/pix/chave' },
+      { label: 'Infrações', href: '/dashboard/pix/infracoes' },
+    ],
+  },
+  {
+    icon: QrCode,
+    label: 'QR Codes',
+    href: '/dashboard/qr-codes',
+    hasSubmenu: true,
+    submenu: [{ label: 'Listagem', href: '/dashboard/qr-codes/listagem' }],
+  },
   { icon: Clock, label: 'Transações Pendentes', href: '/dashboard/pendentes' },
   { icon: User, label: 'Dados da Conta', href: '/dashboard/conta' },
   { icon: Settings, label: 'Configurações', href: '/dashboard/configuracoes' },
-  { icon: HelpCircle, label: 'Suporte', href: '/dashboard/suporte' },
-  { icon: BookOpen, label: 'API Docs', href: '/dashboard/api-docs' },
+]
+
+const supportAndDocsItems: MenuItem[] = [
+  {
+    icon: WhatsAppIcon,
+    label: 'Suporte',
+    href: 'https://wa.me/5511981644351',
+    secondaryText: 'Fale conosco no WhatsApp',
+    isExternal: true,
+  },
+  {
+    icon: DocumentIcon,
+    label: 'API Docs',
+    href: '/dashboard/api-docs',
+    secondaryText: 'Documentação da API',
+    isExternal: true,
+  },
 ]
 
 export function Sidebar() {
   const pathname = usePathname()
-  const { logout } = useAuth()
+  const { user, logout } = useAuth()
+  const [expandedMenus, setExpandedMenus] = useState<string[]>([])
 
   const handleLogout = async () => {
     try {
@@ -48,54 +101,217 @@ export function Sidebar() {
     }
   }
 
+  const toggleSubmenu = (label: string) => {
+    setExpandedMenus((prev) =>
+      prev.includes(label)
+        ? prev.filter((item) => item !== label)
+        : [...prev, label],
+    )
+  }
+
+  // Cálculo do progresso (exemplo - pode ser dinâmico)
+  const currentBalance = 250
+  const targetBalance = 100000
+  const progress = (currentBalance / targetBalance) * 100
+
   return (
-    <aside className="fixed left-0 top-0 h-screen w-64 bg-white border-r border-gray-200 flex flex-col">
-      <div className="p-6 border-b border-gray-200">
+    <aside className="fixed left-0 top-0 h-screen w-72 bg-gray-50 shadow-sm flex flex-col">
+      <div className="p-4 border-b border-gray-200">
         <Link href="/dashboard" className="flex items-center justify-center">
           <Image
             src="/LOGO-ORIZON-AZUL-PRETA.png"
             alt="Orizon Pay"
-            width={150}
-            height={45}
+            width={120}
+            height={36}
             priority
           />
         </Link>
       </div>
 
-      <nav className="flex-1 overflow-y-auto p-4">
-        <ul className="space-y-1">
-          {menuItems.map((item) => {
+      <div className="px-4 py-5">
+        <div className="bg-white rounded-lg p-5 space-y-3 shadow-sm border border-gray-100">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 bg-amber-600 rounded-full" />
+              <span className="text-sm font-semibold text-gray-900">
+                Bronze
+              </span>
+            </div>
+            <Link
+              href="/dashboard/jornada"
+              className="text-xs text-primary hover:underline font-medium"
+            >
+              Ver progresso
+            </Link>
+          </div>
+
+          <div className="space-y-2">
+            <div className="w-full h-1.5 bg-gray-200 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-amber-600 transition-all duration-300"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
+
+            <div className="flex justify-between items-center text-xs text-gray-600">
+              <span>R$ {currentBalance.toLocaleString('pt-BR')}</span>
+              <span>R$ {targetBalance.toLocaleString('pt-BR')}</span>
+            </div>
+
+            <div className="text-center">
+              <span className="text-xs text-primary font-medium">
+                R$ {(targetBalance - currentBalance).toLocaleString('pt-BR')}{' '}
+                para Prata
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <nav className="flex-1 overflow-y-auto px-4 py-6">
+        <ul className="space-y-2">
+          {mainMenuItems.map((item) => {
             const Icon = item.icon
             const isActive = pathname === item.href
+            const isSubmenuExpanded = expandedMenus.includes(item.label)
+            const hasActiveSubmenu = item.submenu?.some(
+              (subItem) => pathname === subItem.href,
+            )
 
             return (
               <li key={item.href}>
-                <Link
+                {item.hasSubmenu ? (
+                  <div>
+                    <button
+                      onClick={() => toggleSubmenu(item.label)}
+                      className={cn(
+                        'flex items-center justify-between w-full px-4 py-3 rounded-lg text-sm font-medium transition-colors',
+                        isActive || hasActiveSubmenu
+                          ? 'bg-primary text-white'
+                          : 'text-gray-700 hover:bg-gray-100',
+                      )}
+                    >
+                      <div className="flex items-center gap-3">
+                        <Icon size={18} />
+                        {item.label}
+                      </div>
+                      {isSubmenuExpanded ? (
+                        <ChevronUp size={16} />
+                      ) : (
+                        <ChevronDown size={16} />
+                      )}
+                    </button>
+
+                    {isSubmenuExpanded && item.submenu && (
+                      <ul className="mt-1 ml-6 space-y-1">
+                        {item.submenu.map((subItem) => {
+                          const isSubActive = pathname === subItem.href
+                          return (
+                            <li key={subItem.href}>
+                              <Link
+                                href={subItem.href}
+                                className={cn(
+                                  'block px-4 py-2.5 rounded-lg text-sm transition-colors',
+                                  isSubActive
+                                    ? 'bg-primary text-white'
+                                    : 'text-gray-600 hover:bg-gray-100',
+                                )}
+                              >
+                                {subItem.label}
+                              </Link>
+                            </li>
+                          )
+                        })}
+                      </ul>
+                    )}
+                  </div>
+                ) : (
+                  <Link
+                    href={item.href}
+                    className={cn(
+                      'flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors',
+                      isActive
+                        ? 'bg-primary text-white'
+                        : 'text-gray-700 hover:bg-gray-100',
+                    )}
+                  >
+                    <Icon size={18} />
+                    {item.label}
+                  </Link>
+                )}
+              </li>
+            )
+          })}
+        </ul>
+
+        <div className="my-6 border-t border-gray-200" />
+
+        <ul className="space-y-2">
+          {supportAndDocsItems.map((item) => {
+            const Icon = item.icon
+            const LinkComponent = item.isExternal ? 'a' : Link
+
+            return (
+              <li key={item.label}>
+                <LinkComponent
                   href={item.href}
+                  target={item.isExternal ? '_blank' : undefined}
+                  rel={item.isExternal ? 'noopener noreferrer' : undefined}
                   className={cn(
-                    'flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors',
-                    isActive
-                      ? 'bg-primary text-white'
-                      : 'text-gray-700 hover:bg-gray-100',
+                    'flex items-center justify-between px-4 py-3 rounded-lg text-sm font-medium transition-colors',
+                    'text-gray-700 hover:bg-gray-100',
                   )}
                 >
-                  <Icon size={18} />
-                  {item.label}
-                </Link>
+                  <div className="flex items-center gap-3">
+                    <Icon />
+                    <div className="flex flex-col">
+                      <span className="font-semibold text-blue-900">
+                        {item.label}
+                      </span>
+                      {item.secondaryText && (
+                        <span className="text-xs text-blue-600">
+                          {item.secondaryText}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  {item.isExternal && (
+                    <ExternalLink size={16} className="text-gray-400" />
+                  )}
+                </LinkComponent>
               </li>
             )
           })}
         </ul>
       </nav>
 
-      <div className="p-4 border-t border-gray-200">
-        <button
-          onClick={handleLogout}
-          className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 w-full transition-colors"
-        >
-          <LogOut size={18} />
-          Sair
-        </button>
+      <div className="px-4 py-5 border-t border-gray-200">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white font-semibold">
+              {user?.name?.charAt(0).toUpperCase() || 'U'}
+            </div>
+            <div className="flex flex-col">
+              <p className="text-sm font-semibold text-blue-900">
+                {user?.name ? user.name.split(' ')[0] : 'Usuário'}
+              </p>
+              <p className="text-xs text-gray-500">
+                {user?.name && user.name.split(' ').length > 1
+                  ? `${user.name.split(' ').slice(1).join(' ')} ${
+                      user?.agency || ''
+                    }`
+                  : user?.agency || ''}
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-1 text-red-600 hover:text-red-700 transition-colors"
+          >
+            <LogOut size={16} />
+            <span className="text-sm font-medium">Sair</span>
+          </button>
+        </div>
       </div>
     </aside>
   )
