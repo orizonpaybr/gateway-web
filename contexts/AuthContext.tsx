@@ -9,7 +9,7 @@ import {
 } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import { authAPI, RegisterData } from '@/lib/api'
+import { authAPI, accountAPI, RegisterData } from '@/lib/api'
 
 interface User {
   id: string
@@ -18,12 +18,20 @@ interface User {
   username: string
   status?: number
   status_text?: string
+  agency?: string
+  balance?: number
+  phone?: string
+  cnpj?: string
+  twofa_enabled?: boolean
+  twofa_configured?: boolean
 }
 
 interface AuthContextType {
   user: User | null
   isAuthenticated: boolean
   isLoading: boolean
+  show2FAModal: boolean
+  tempToken: string | null
   login: (
     username: string,
     password: string,
@@ -45,6 +53,8 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [show2FAModal, setShow2FAModal] = useState(false)
+  const [tempToken, setTempToken] = useState<string | null>(null)
   const router = useRouter()
 
   useEffect(() => {
@@ -72,12 +82,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           ? result.data.user
           : JSON.parse(userStr)
 
-      setUser({
-        id: userData.id,
-        name: userData.name,
-        email: userData.email,
-        username: userData.username,
-      })
+      try {
+        const profileResult = (await accountAPI.getProfile()) as any
+        if (profileResult.success && profileResult.data) {
+          setUser({
+            id: profileResult.data.id,
+            name: profileResult.data.name,
+            email: profileResult.data.email,
+            username: profileResult.data.username,
+            status: profileResult.data.status,
+            status_text: profileResult.data.status_text,
+            agency: profileResult.data.agency,
+            balance: profileResult.data.balance,
+            phone: profileResult.data.phone,
+            cnpj: profileResult.data.cnpj,
+          })
+        } else {
+          setUser({
+            id: userData.id,
+            name: userData.name,
+            email: userData.email,
+            username: userData.username,
+            agency: userData.agency,
+          })
+        }
+      } catch (profileError) {
+        console.error('Erro ao buscar perfil:', profileError)
+        setUser({
+          id: userData.id,
+          name: userData.name,
+          email: userData.email,
+          username: userData.username,
+          agency: userData.agency,
+        })
+      }
     } catch (error) {
       console.error('Erro ao verificar autenticação:', error)
       // Limpar dados em caso de erro
@@ -100,8 +138,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = async (username: string, password: string) => {
     const response = await authAPI.login(username, password)
 
-    // Early return para 2FA
+    // Para 2FA, definir usuário temporário e redirecionar para dashboard
     if (response.requires_2fa && response.temp_token) {
+      setTempToken(response.temp_token)
+      // Definir usuário temporário para permitir acesso ao dashboard
+      if (response.data?.user) {
+        setUser(extractUserData(response.data.user))
+      }
+      // Redirecionar para dashboard onde o modal de verificação aparecerá
+      router.push('/dashboard')
       return {
         requires2FA: true,
         tempToken: response.temp_token,
@@ -116,7 +161,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const verify2FA = async (tempToken: string, code: string) => {
     const response = await authAPI.verify2FA(tempToken, code)
-    response.data?.user && setUser(extractUserData(response.data.user))
+
+    if (response.success && response.data?.user) {
+      setUser(extractUserData(response.data.user))
+      setShow2FAModal(false)
+      setTempToken(null)
+
+      toast.success('Login realizado com sucesso!', {
+        description: 'Bem-vindo de volta!',
+      })
+
+      // Só redirecionar se não estivermos já no dashboard
+      if (
+        typeof window !== 'undefined' &&
+        !window.location.pathname.includes('/dashboard')
+      ) {
+        router.push('/dashboard')
+      }
+    } else {
+      toast.error('Código inválido', {
+        description: 'Verifique o código e tente novamente',
+      })
+      throw new Error('Código 2FA inválido')
+    }
   }
 
   const logout = async () => {
@@ -161,6 +228,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         user,
         isAuthenticated: !!user,
         isLoading,
+        show2FAModal,
+        tempToken,
         login,
         verify2FA,
         logout,

@@ -24,6 +24,8 @@ const ENDPOINTS_REQUIRING_TOKEN_SECRET = [
   '/user/profile',
   '/pix/',
   '/statement',
+  '/2fa/',
+  '/notifications',
 ] as const
 
 const METHODS_WITH_BODY = ['POST', 'PUT', 'PATCH'] as const
@@ -85,8 +87,8 @@ export async function apiRequest<T>(
 
   // Processar tokens apenas se necessário e disponível
   if (needsTokenSecret && hasCredentials) {
-    // GET: adicionar como query params
-    if (method === 'GET') {
+    // GET ou método não definido (default GET): adicionar como query params
+    if (!method || method === 'GET') {
       finalEndpoint = addTokensToEndpoint(endpoint, apiToken, apiSecret)
     }
     // POST/PUT/PATCH: adicionar ao body
@@ -145,6 +147,7 @@ const clearAuthData = (): void => {
   localStorage.removeItem('api_token')
   localStorage.removeItem('api_secret')
   localStorage.removeItem('user')
+  sessionStorage.removeItem('2fa_verified') // Limpar verificação 2FA da sessão
 }
 
 // Funções de autenticação
@@ -274,6 +277,27 @@ export const authAPI = {
     }
   },
 
+  validateRegistrationData: async (data: {
+    username: string
+    email: string
+    telefone?: string
+    cpf_cnpj?: string
+  }): Promise<{
+    success: boolean
+    message: string
+    errors?: Record<string, string>
+  }> => {
+    const response = await fetch(`${BASE_URL}/auth/validate-registration`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    })
+
+    const result = await response.json()
+
+    return result
+  },
+
   /**
    * Logout
    */
@@ -333,8 +357,7 @@ export const accountAPI = {
   },
 
   getProfile: async () => {
-    // return apiRequest('/account/profile')
-    throw new Error('API não implementada')
+    return apiRequest('/user/profile')
   },
 
   updateProfile: async (data: any) => {
@@ -343,5 +366,58 @@ export const accountAPI = {
     //   body: JSON.stringify(data),
     // })
     throw new Error('API não implementada')
+  },
+}
+
+// API de autenticação de dois fatores
+export const twoFactorAPI = {
+  // Verificar status do 2FA
+  getStatus: async (): Promise<{
+    success: boolean
+    enabled: boolean
+    configured: boolean
+  }> => {
+    return apiRequest('/2fa/status')
+  },
+
+  // Gerar QR Code para configuração
+  generateQRCode: async (): Promise<{
+    success: boolean
+    qr_code: string
+    secret: string
+    manual_entry_key: string
+    message?: string
+  }> => {
+    return apiRequest('/2fa/generate-qr', { method: 'POST' })
+  },
+
+  // Verificar código 2FA
+  verifyCode: async (
+    code: string,
+  ): Promise<{ success: boolean; message: string }> => {
+    return apiRequest('/2fa/verify', {
+      method: 'POST',
+      body: JSON.stringify({ code }),
+    })
+  },
+
+  // Ativar 2FA
+  enable: async (
+    code: string,
+  ): Promise<{ success: boolean; message: string }> => {
+    return apiRequest('/2fa/enable', {
+      method: 'POST',
+      body: JSON.stringify({ code }),
+    })
+  },
+
+  // Desativar 2FA
+  disable: async (
+    code: string,
+  ): Promise<{ success: boolean; message: string }> => {
+    return apiRequest('/2fa/disable', {
+      method: 'POST',
+      body: JSON.stringify({ code }),
+    })
   },
 }
