@@ -22,11 +22,8 @@ type LoginFormData = z.infer<typeof loginSchema>
 
 export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false)
-  const [show2FA, setShow2FA] = useState(false)
-  const [tempToken, setTempToken] = useState<string | null>(null)
-  const [code2FA, setCode2FA] = useState('')
 
-  const { login, verify2FA } = useAuth()
+  const { login } = useAuth()
   const router = useRouter()
 
   const {
@@ -41,15 +38,7 @@ export default function LoginPage() {
     setIsLoading(true)
 
     try {
-      const result = await login(data.username, data.password)
-
-      // Guard clause para 2FA
-      if (result.requires2FA && result.tempToken) {
-        setShow2FA(true)
-        setTempToken(result.tempToken)
-        setIsLoading(false)
-        return
-      }
+      await login(data.username, data.password)
 
       // Mostrar toast de sucesso
       toast.success('Login realizado com sucesso!', {
@@ -64,43 +53,6 @@ export default function LoginPage() {
 
       // Mostrar toast de erro
       toast.error('Erro no login', {
-        description: errorMessage,
-        duration: 4000,
-      })
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  const handle2FASubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-
-    // Validação early return
-    if (!tempToken || !code2FA) {
-      toast.error('Código 2FA é obrigatório', {
-        description: 'Por favor, digite o código de 6 dígitos',
-        duration: 4000,
-      })
-      return
-    }
-
-    setIsLoading(true)
-
-    try {
-      await verify2FA(tempToken, code2FA)
-
-      // Mostrar toast de sucesso
-      toast.success('Verificação 2FA concluída!', {
-        description: 'Login realizado com sucesso!',
-        duration: 3000,
-      })
-
-      router.push('/dashboard')
-    } catch (err: any) {
-      const errorMessage = err.message || 'Código 2FA inválido'
-
-      // Mostrar toast de erro
-      toast.error('Erro na verificação 2FA', {
         description: errorMessage,
         duration: 4000,
       })
@@ -131,77 +83,33 @@ export default function LoginPage() {
         </div>
 
         <div className="bg-white rounded-xl shadow-md p-8">
-          {!show2FA ? (
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-              <Input
-                {...register('username')}
-                type="text"
-                label="USUÁRIO OU EMAIL"
-                placeholder="Digite seu usuário ou email"
-                error={errors.username?.message}
-              />
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+            <Input
+              {...register('username')}
+              type="text"
+              label="USUÁRIO OU EMAIL"
+              placeholder="Digite seu usuário ou email"
+              error={errors.username?.message}
+            />
 
-              <Input
-                {...register('password')}
-                type="password"
-                label="SENHA"
-                placeholder="Digite sua senha"
-                error={errors.password?.message}
-                showPasswordToggle={true}
-              />
+            <Input
+              {...register('password')}
+              type="password"
+              label="SENHA"
+              placeholder="Digite sua senha"
+              error={errors.password?.message}
+              showPasswordToggle={true}
+            />
 
-              <Button
-                type="submit"
-                fullWidth
-                disabled={isLoading}
-                icon={<ArrowRight size={18} />}
-              >
-                {isLoading ? 'Entrando...' : 'Entrar'}
-              </Button>
-            </form>
-          ) : (
-            <form onSubmit={handle2FASubmit} className="space-y-5">
-              <div className="text-center mb-4">
-                <h3 className="text-lg font-semibold text-gray-900">
-                  Verificação em Duas Etapas
-                </h3>
-                <p className="text-sm text-gray-600 mt-1">
-                  Digite o código de 6 dígitos do seu app autenticador
-                </p>
-              </div>
-
-              <Input
-                type="text"
-                label="CÓDIGO 2FA"
-                placeholder="000000"
-                value={code2FA}
-                onChange={(e) => setCode2FA(e.target.value)}
-                maxLength={6}
-              />
-
-              <div className="flex gap-3">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => {
-                    setShow2FA(false)
-                    setTempToken(null)
-                    setCode2FA('')
-                  }}
-                >
-                  Voltar
-                </Button>
-                <Button
-                  type="submit"
-                  fullWidth
-                  disabled={isLoading || code2FA.length !== 6}
-                  icon={<ArrowRight size={18} />}
-                >
-                  {isLoading ? 'Verificando...' : 'Verificar'}
-                </Button>
-              </div>
-            </form>
-          )}
+            <Button
+              type="submit"
+              fullWidth
+              disabled={isLoading}
+              icon={<ArrowRight size={18} />}
+            >
+              {isLoading ? 'Entrando...' : 'Entrar'}
+            </Button>
+          </form>
         </div>
 
         <div className="mt-6 text-center text-sm text-gray-600">

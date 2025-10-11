@@ -14,6 +14,7 @@ import { DocumentInput, validateDocument } from '@/components/ui/DocumentInput'
 import { Button } from '@/components/ui/Button'
 import { ArrowRight, ArrowLeft, HelpCircle, User, Upload } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
+import { authAPI } from '@/lib/api'
 
 const step1Schema = z.object({
   name: z
@@ -70,6 +71,10 @@ type Step3FormData = z.infer<typeof step3Schema>
 export default function CadastroPage() {
   const [step, setStep] = useState(1)
   const [isLoading, setIsLoading] = useState(false)
+  const [isValidating, setIsValidating] = useState(false)
+  const [validationErrors, setValidationErrors] = useState<
+    Record<string, string>
+  >({})
   const [selectedFiles, setSelectedFiles] = useState<{
     documentoFrente: File | null
     documentoVerso: File | null
@@ -113,14 +118,88 @@ export default function CadastroPage() {
     resolver: zodResolver(step3Schema),
   })
 
-  const onStep1Submit = (data: Step1FormData) => {
-    setStep1Data(data)
-    setStep(2)
+  const onStep1Submit = async (data: Step1FormData) => {
+    setIsValidating(true)
+    setValidationErrors({})
+
+    try {
+      // Validar dados únicos no backend
+      const validationResult = await authAPI.validateRegistrationData({
+        username: data.username,
+        email: data.email,
+      })
+
+      if (!validationResult.success && validationResult.errors) {
+        // Mostrar erros específicos para cada campo
+        setValidationErrors(validationResult.errors)
+
+        // Definir erros nos campos do formulário
+        Object.entries(validationResult.errors).forEach(([field, message]) => {
+          step1Form.setError(field as keyof Step1FormData, {
+            type: 'manual',
+            message: message,
+          })
+        })
+
+        return
+      }
+
+      // Se passou na validação, salvar dados e avançar
+      setStep1Data(data)
+      setStep(2)
+    } catch (error: any) {
+      console.error('Erro na validação:', error)
+      toast.error('Erro na validação', {
+        description: 'Erro ao verificar dados. Tente novamente.',
+        duration: 4000,
+      })
+    } finally {
+      setIsValidating(false)
+    }
   }
 
-  const onStep2Submit = (data: Step2FormData) => {
-    setStep2Data(data)
-    setStep(3)
+  const onStep2Submit = async (data: Step2FormData) => {
+    setIsValidating(true)
+    setValidationErrors({})
+
+    try {
+      // Validar dados únicos no backend (telefone e CPF/CNPJ)
+      const validationResult = await authAPI.validateRegistrationData({
+        username: step1Data?.username || '',
+        email: step1Data?.email || '',
+        telefone: data.telefone,
+        cpf_cnpj: data.cpf_cnpj,
+      })
+
+      if (!validationResult.success && validationResult.errors) {
+        // Mostrar erros específicos para cada campo
+        setValidationErrors(validationResult.errors)
+
+        // Definir erros nos campos do formulário
+        Object.entries(validationResult.errors).forEach(([field, message]) => {
+          if (field === 'telefone' || field === 'cpf_cnpj') {
+            step2Form.setError(field as keyof Step2FormData, {
+              type: 'manual',
+              message: message,
+            })
+          }
+        })
+
+        return
+      }
+
+      // Se passou na validação, salvar dados e avançar
+      setStep2Data(data)
+      setStep(3)
+    } catch (error: any) {
+      console.error('Erro na validação:', error)
+      toast.error('Erro na validação', {
+        description: 'Erro ao verificar dados. Tente novamente.',
+        duration: 4000,
+      })
+    } finally {
+      setIsValidating(false)
+    }
   }
 
   const onStep3Submit = async (data: Step3FormData) => {
@@ -259,8 +338,13 @@ export default function CadastroPage() {
                   error={step1Form.formState.errors.email?.message}
                 />
 
-                <Button type="submit" fullWidth icon={<ArrowRight size={18} />}>
-                  Próximo
+                <Button
+                  type="submit"
+                  fullWidth
+                  icon={<ArrowRight size={18} />}
+                  disabled={isValidating}
+                >
+                  {isValidating ? 'Validando...' : 'Próximo'}
                 </Button>
               </form>
             </>
@@ -338,8 +422,9 @@ export default function CadastroPage() {
                     type="submit"
                     fullWidth
                     icon={<ArrowRight size={18} />}
+                    disabled={isValidating}
                   >
-                    Próximo
+                    {isValidating ? 'Validando...' : 'Próximo'}
                   </Button>
                 </div>
               </form>
