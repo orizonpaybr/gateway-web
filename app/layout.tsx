@@ -6,6 +6,11 @@ import { Providers } from '@/components/Providers'
 export const metadata: Metadata = {
   title: 'Orizon Pay - Finance',
   description: 'Sistema de pagamentos e gestão financeira',
+  icons: {
+    icon: '/LOGO-ORIZON.png',
+    shortcut: '/LOGO-ORIZON.png',
+    apple: '/LOGO-ORIZON.png',
+  },
 }
 
 export default function RootLayout({
