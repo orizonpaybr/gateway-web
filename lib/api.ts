@@ -7,57 +7,14 @@ export const BASE_URL = API_URL
 // Interface para dados de autenticação armazenados
 export interface AuthData {
   token: string
-  api_token: string
-  api_secret: string
+  api_token?: string // Opcional - enviado pelo backend mas não usado
+  api_secret?: string // Opcional - enviado pelo backend mas não usado
   user: {
     id: string
     username: string
     email: string
     name: string
   }
-}
-
-// Helpers para verificação de endpoints
-const ENDPOINTS_REQUIRING_TOKEN_SECRET = [
-  '/balance',
-  '/transactions',
-  '/user/profile',
-  '/pix/',
-  '/statement',
-  '/2fa/',
-  '/notifications',
-] as const
-
-const METHODS_WITH_BODY = ['POST', 'PUT', 'PATCH'] as const
-
-const requiresTokenSecret = (endpoint: string): boolean =>
-  ENDPOINTS_REQUIRING_TOKEN_SECRET.some((path) => endpoint.includes(path))
-
-const isMethodWithBody = (method?: string): boolean =>
-  METHODS_WITH_BODY.includes(method as any)
-
-// Função para adicionar tokens ao body
-const addTokensToBody = (
-  body: RequestInit['body'],
-  apiToken: string,
-  apiSecret: string,
-): string => {
-  const tokens = { token: apiToken, secret: apiSecret }
-
-  if (!body) return JSON.stringify(tokens)
-
-  const parsedBody = typeof body === 'string' ? JSON.parse(body) : body
-  return JSON.stringify({ ...parsedBody, ...tokens })
-}
-
-// Função para adicionar tokens como query params
-const addTokensToEndpoint = (
-  endpoint: string,
-  apiToken: string,
-  apiSecret: string,
-): string => {
-  const separator = endpoint.includes('?') ? '&' : '?'
-  return `${endpoint}${separator}token=${apiToken}&secret=${apiSecret}`
 }
 
 // Função auxiliar para fazer requisições autenticadas
@@ -67,10 +24,6 @@ export async function apiRequest<T>(
 ): Promise<T> {
   const token =
     typeof window !== 'undefined' ? localStorage.getItem('token') : null
-  const apiToken =
-    typeof window !== 'undefined' ? localStorage.getItem('api_token') : null
-  const apiSecret =
-    typeof window !== 'undefined' ? localStorage.getItem('api_secret') : null
 
   const headers = {
     'Content-Type': 'application/json',
@@ -78,29 +31,9 @@ export async function apiRequest<T>(
     ...options.headers,
   }
 
-  const needsTokenSecret = requiresTokenSecret(endpoint)
-  const hasCredentials = apiToken && apiSecret
-  const method = options.method as string
-
-  let body = options.body
-  let finalEndpoint = endpoint
-
-  // Processar tokens apenas se necessário e disponível
-  if (needsTokenSecret && hasCredentials) {
-    // GET ou método não definido (default GET): adicionar como query params
-    if (!method || method === 'GET') {
-      finalEndpoint = addTokensToEndpoint(endpoint, apiToken, apiSecret)
-    }
-    // POST/PUT/PATCH: adicionar ao body
-    else if (isMethodWithBody(method)) {
-      body = addTokensToBody(body, apiToken, apiSecret)
-    }
-  }
-
-  const response = await fetch(`${BASE_URL}${finalEndpoint}`, {
+  const response = await fetch(`${BASE_URL}${endpoint}`, {
     ...options,
     headers,
-    body,
   })
 
   // Guard clause para resposta não OK
@@ -136,16 +69,17 @@ export interface RegisterData {
 // Helper para armazenar dados de autenticação
 const storeAuthData = (data: AuthData): void => {
   localStorage.setItem('token', data.token)
-  localStorage.setItem('api_token', data.api_token)
-  localStorage.setItem('api_secret', data.api_secret)
   localStorage.setItem('user', JSON.stringify(data.user))
+
+  // Disparar evento customizado para notificar componentes que o token foi armazenado
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new Event('auth-token-stored'))
+  }
 }
 
 // Helper para limpar dados de autenticação
 const clearAuthData = (): void => {
   localStorage.removeItem('token')
-  localStorage.removeItem('api_token')
-  localStorage.removeItem('api_secret')
   localStorage.removeItem('user')
   sessionStorage.removeItem('2fa_verified') // Limpar verificação 2FA da sessão
 }
@@ -164,7 +98,7 @@ export const authAPI = {
 
     const data = await response.json()
 
-    // Early return para 2FA
+    // Early return para 2FA - NÃO armazenar token ainda
     if (!data.success && data.requires_2fa) {
       return data
     }
@@ -174,8 +108,10 @@ export const authAPI = {
       throw new Error(data.message || 'Erro ao fazer login')
     }
 
-    // Armazenar tokens se disponíveis
-    data.data && storeAuthData(data.data)
+    // Só armazenar token se login foi bem-sucedido E não requer 2FA
+    if (data.success && data.data && !data.requires_2fa) {
+      storeAuthData(data.data)
+    }
 
     return data
   },
@@ -198,7 +134,9 @@ export const authAPI = {
     }
 
     // Armazenar tokens se disponíveis
-    data.data && storeAuthData(data.data)
+    if (data.data) {
+      storeAuthData(data.data)
+    }
 
     return data
   },
@@ -366,6 +304,51 @@ export const accountAPI = {
     //   body: JSON.stringify(data),
     // })
     throw new Error('API não implementada')
+  },
+}
+
+// API de dashboard
+export const dashboardAPI = {
+  // Buscar estatísticas do dashboard
+  getStats: async (): Promise<{
+    success: boolean
+    data: {
+      saldo_disponivel: number
+      entradas_mes: number
+      saidas_mes: number
+      splits_mes: number
+      periodo: {
+        inicio: string
+        fim: string
+      }
+    }
+  }> => {
+    return apiRequest('/dashboard/stats')
+  },
+
+  // Buscar dados para movimentação interativa
+  getInteractiveMovement: async (
+    periodo: string = 'hoje',
+  ): Promise<{
+    success: boolean
+    data: {
+      periodo: string
+      data_inicio: string
+      data_fim: string
+      cards: {
+        total_depositos: number
+        qtd_depositos: number
+        total_saques: number
+        qtd_saques: number
+      }
+      chart: Array<{
+        periodo: string
+        depositos: number
+        saques: number
+      }>
+    }
+  }> => {
+    return apiRequest(`/dashboard/interactive-movement?periodo=${periodo}`)
   },
 }
 
