@@ -1,4 +1,5 @@
-import React, { useRef, useState } from 'react'
+import React, { useRef, useState, useEffect } from 'react'
+import Image from 'next/image'
 import { cn } from '@/lib/utils'
 import { Upload, File, X } from 'lucide-react'
 
@@ -23,11 +24,32 @@ export const FileUpload: React.FC<FileUploadProps> = ({
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [dragActive, setDragActive] = useState(false)
+  const [imagePreview, setImagePreview] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (value && value.type.startsWith('image/')) {
+      const previewUrl = URL.createObjectURL(value)
+      setImagePreview(previewUrl)
+      return () => URL.revokeObjectURL(previewUrl)
+    } else {
+      if (imagePreview) {
+        URL.revokeObjectURL(imagePreview)
+        setImagePreview(null)
+      }
+    }
+  }, [value, imagePreview])
 
   const handleFile = (file: File) => {
     if (file.size > maxSize * 1024 * 1024) {
       alert(`Arquivo muito grande. Máximo permitido: ${maxSize}MB`)
       return
+    }
+
+    if (file.type.startsWith('image/')) {
+      const previewUrl = URL.createObjectURL(file)
+      setImagePreview(previewUrl)
+    } else {
+      setImagePreview(null)
     }
 
     onChange(file)
@@ -65,6 +87,11 @@ export const FileUpload: React.FC<FileUploadProps> = ({
   }
 
   const removeFile = () => {
+    if (imagePreview) {
+      URL.revokeObjectURL(imagePreview)
+      setImagePreview(null)
+    }
+
     onChange(null)
     if (fileInputRef.current) {
       fileInputRef.current.value = ''
@@ -107,8 +134,19 @@ export const FileUpload: React.FC<FileUploadProps> = ({
 
         {value ? (
           <div className="flex items-center justify-center gap-3">
-            <File size={24} className="text-green-600" />
-            <div className="text-left">
+            {imagePreview ? (
+              <div className="relative w-16 h-16 rounded-lg overflow-hidden border border-gray-200">
+                <Image
+                  src={imagePreview}
+                  alt="Preview"
+                  fill
+                  className="object-cover"
+                />
+              </div>
+            ) : (
+              <File size={24} className="text-green-600" />
+            )}
+            <div className="text-left flex-1">
               <p className="text-sm font-medium text-gray-900">{value.name}</p>
               <p className="text-xs text-gray-500">{getFileSize(value.size)}</p>
             </div>
