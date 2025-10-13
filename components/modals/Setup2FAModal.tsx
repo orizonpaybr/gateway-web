@@ -39,9 +39,8 @@ export function Setup2FAModal({
       return
     }
 
-    // Armazenar o PIN configurado e ir para o passo de verificação
     setConfiguredPin(pin)
-    setPin('') // Limpar o campo para a verificação
+    setPin('')
     setStep('verify')
 
     toast.success('PIN configurado!', {
@@ -57,7 +56,6 @@ export function Setup2FAModal({
       return
     }
 
-    // Verificar se o PIN digitado é igual ao configurado
     if (pin !== configuredPin) {
       toast.error('PIN incorreto', {
         description: 'O PIN digitado não corresponde ao configurado',
@@ -69,7 +67,6 @@ export function Setup2FAModal({
     try {
       setIsLoading(true)
 
-      // Ativar 2FA no backend usando o PIN como código
       const response = await twoFactorAPI.enable(pin)
 
       if (response.success) {

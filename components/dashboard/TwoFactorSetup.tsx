@@ -1,72 +1,74 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { Setup2FAModal } from '@/components/modals/Setup2FAModal'
 import { twoFactorAPI } from '@/lib/api'
 import { useAuth } from '@/contexts/AuthContext'
 import { useRouter } from 'next/navigation'
+import { Setup2FAModal } from '@/components/modals/Setup2FAModal'
 
 export function TwoFactorSetup() {
   const [showModal, setShowModal] = useState(false)
-  const [isChecking, setIsChecking] = useState(true)
+  const [isChecking, setIsChecking] = useState(false)
   const [isBlocking, setIsBlocking] = useState(false)
+  const [hasInitialized, setHasInitialized] = useState(false)
   const { user } = useAuth()
   const router = useRouter()
-  const hasChecked = useRef(false)
 
   useEffect(() => {
-    if (user && !hasChecked.current) {
-      hasChecked.current = true
-      checkTwoFactorStatus()
-    }
-  }, [user])
-
-  const checkTwoFactorStatus = async () => {
-    console.log('🔍 TwoFactorSetup - Verificando status...', {
-      user: user?.username,
-    })
-
-    if (!user) {
-      console.log('❌ TwoFactorSetup - Sem usuário')
-      setIsChecking(false)
-      return
-    }
-
-    try {
-      const response = await twoFactorAPI.getStatus()
-
-      // Se o 2FA não está habilitado, mostrar modal e bloquear acesso
-      if (response.success && !response.enabled) {
-        console.log('🔐 TwoFactorSetup - 2FA não habilitado - mostrando modal')
-        setShowModal(true)
-        setIsBlocking(true)
-      } else {
-        console.log(
-          '✅ TwoFactorSetup - 2FA habilitado ou erro - não bloqueando',
-        )
+    const check2FAStatus = async () => {
+      if (!user) {
+        setIsChecking(false)
+        setHasInitialized(true)
+        return
       }
-    } catch (error) {
-      console.error('❌ TwoFactorSetup - Erro ao verificar status 2FA:', error)
-      // Se não conseguir verificar, mostrar modal por segurança
-      setShowModal(true)
-      setIsBlocking(true)
-    } finally {
-      console.log('🏁 TwoFactorSetup - Finalizando verificação')
-      setIsChecking(false)
+
+      const setupChecked = sessionStorage.getItem('2fa_setup_checked')
+      const verified = sessionStorage.getItem('2fa_verified')
+
+      if (setupChecked === 'true' || verified === 'true') {
+        setIsChecking(false)
+        setHasInitialized(true)
+        return
+      }
+
+      if (!hasInitialized) {
+        setIsChecking(true)
+
+        try {
+          const response = await twoFactorAPI.getStatus()
+
+          if (response.success && (!response.enabled || !response.configured)) {
+            setShowModal(true)
+            setIsBlocking(true)
+          } else {
+            sessionStorage.setItem('2fa_setup_checked', 'true')
+          }
+        } catch (error) {
+          console.error(
+            '❌ TwoFactorSetup - Erro ao verificar status 2FA:',
+            error,
+          )
+          setShowModal(true)
+          setIsBlocking(true)
+        } finally {
+          setIsChecking(false)
+          setHasInitialized(true)
+        }
+      }
     }
-  }
+
+    check2FAStatus()
+  }, [user, hasInitialized])
 
   const handleSuccess = () => {
     setShowModal(false)
     setIsBlocking(false)
-    // Não recarregar página - apenas fechar modal
-    // O status será verificado automaticamente nos próximos logins
+    sessionStorage.setItem('2fa_setup_checked', 'true')
+    sessionStorage.setItem('2fa_verified', 'true')
   }
 
   const handleClose = () => {
-    // Se está bloqueando (primeira vez), não permitir fechar sem configurar
     if (isBlocking) {
-      // Fazer logout e redirecionar
       router.push('/login')
       return
     }

@@ -33,7 +33,6 @@ export function PinInput({
 
     onChange(newPin)
 
-    // Auto-focus no próximo campo
     if (digit && index < 5) {
       inputRefs.current[index + 1]?.focus()
     }
@@ -41,7 +40,6 @@ export function PinInput({
 
   const handleKeyDown = (index: number, e: React.KeyboardEvent) => {
     if (e.key === 'Backspace' && !value[index] && index > 0) {
-      // Se o campo atual está vazio, volta para o anterior
       inputRefs.current[index - 1]?.focus()
     } else if (e.key === 'ArrowLeft' && index > 0) {
       inputRefs.current[index - 1]?.focus()
@@ -60,7 +58,6 @@ export function PinInput({
       .slice(0, 6)
     onChange(pastedData)
 
-    // Focar no próximo campo vazio ou no último
     const nextIndex = Math.min(pastedData.length, 5)
     inputRefs.current[nextIndex]?.focus()
   }

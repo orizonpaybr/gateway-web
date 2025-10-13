@@ -52,13 +52,14 @@ export function Verify2FAModal({
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 relative">
-        <button
+        <Button
+          variant="ghost"
+          size="sm"
+          icon={<X size={24} />}
           onClick={onClose}
-          className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
           disabled={isLoading}
-        >
-          <X size={24} />
-        </button>
+          className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+        />
 
         <div className="mb-6">
           <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4 mx-auto">
@@ -97,9 +98,13 @@ export function Verify2FAModal({
         <div className="mt-6 pt-6 border-t border-gray-200">
           <p className="text-xs text-gray-500 text-center">
             Não consegue acessar seu aplicativo autenticador?{' '}
-            <button className="text-primary hover:underline">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-primary hover:underline p-0 h-auto"
+            >
               Entre em contato com o suporte
-            </button>
+            </Button>
           </p>
         </div>
       </div>

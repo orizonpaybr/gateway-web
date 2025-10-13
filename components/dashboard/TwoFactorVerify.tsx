@@ -8,7 +8,6 @@ import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 
-// Componente PinInput com caixinhas individuais
 interface PinInputProps {
   value: string
   onChange: (value: string) => void
@@ -35,7 +34,6 @@ function PinInput({ value, onChange, onKeyPress, autoFocus }: PinInputProps) {
 
     onChange(newPin)
 
-    // Auto-focus no próximo campo
     if (digit && index < 5) {
       inputRefs.current[index + 1]?.focus()
     }
@@ -43,7 +41,6 @@ function PinInput({ value, onChange, onKeyPress, autoFocus }: PinInputProps) {
 
   const handleKeyDown = (index: number, e: React.KeyboardEvent) => {
     if (e.key === 'Backspace' && !value[index] && index > 0) {
-      // Se o campo atual está vazio, volta para o anterior
       inputRefs.current[index - 1]?.focus()
     } else if (e.key === 'ArrowLeft' && index > 0) {
       inputRefs.current[index - 1]?.focus()
@@ -62,7 +59,6 @@ function PinInput({ value, onChange, onKeyPress, autoFocus }: PinInputProps) {
       .slice(0, 6)
     onChange(pastedData)
 
-    // Focar no próximo campo vazio ou no último
     const nextIndex = Math.min(pastedData.length, 5)
     inputRefs.current[nextIndex]?.focus()
   }
@@ -96,6 +92,7 @@ export function TwoFactorVerify() {
   const [code, setCode] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [isVerified, setIsVerified] = useState(false)
+  const [shouldRender, setShouldRender] = useState(false)
   const { user, logout, tempToken, verify2FA } = useAuth()
   const router = useRouter()
   const hasChecked = useRef(false)
@@ -108,33 +105,27 @@ export function TwoFactorVerify() {
   }, [user, tempToken])
 
   const checkIfNeedsVerification = async () => {
-    // Se há tempToken, significa que precisa verificar 2FA
     if (tempToken) {
+      setShouldRender(true)
       setShowModal(true)
       return
     }
 
-    // Verificar se já verificou nesta sessão
     const verified = sessionStorage.getItem('2fa_verified')
 
     if (verified === 'true') {
       setIsVerified(true)
+      setShouldRender(false)
       return
     }
 
-    try {
-      const response = await twoFactorAPI.getStatus()
 
-      // Se o 2FA está habilitado e não verificou ainda, mostrar modal
-      if (response.success && response.enabled) {
-        setShowModal(true)
-      } else {
-        setIsVerified(true)
-      }
-    } catch (error) {
-      console.error('❌ Erro ao verificar status 2FA:', error)
-      setIsVerified(true) // Permitir acesso se houver erro
-    }
+    setShouldRender(false)
+    setIsVerified(true)
+  }
+
+  if (!shouldRender) {
+    return null
   }
 
   const handleVerifyCode = async () => {
@@ -148,11 +139,9 @@ export function TwoFactorVerify() {
     try {
       setIsLoading(true)
 
-      // Se há tempToken, usar verify2FA do AuthContext
       if (tempToken) {
         await verify2FA(tempToken, code)
 
-        // Fechar modal e marcar como verificado
         sessionStorage.setItem('2fa_verified', 'true')
         setIsVerified(true)
         setShowModal(false)
@@ -160,11 +149,9 @@ export function TwoFactorVerify() {
         return
       }
 
-      // Caso contrário, usar verifyCode normal
       const response = await twoFactorAPI.verifyCode(code)
 
       if (response.success) {
-        // Marcar como verificado nesta sessão
         sessionStorage.setItem('2fa_verified', 'true')
         setIsVerified(true)
         setShowModal(false)
@@ -200,7 +187,6 @@ export function TwoFactorVerify() {
     router.push('/login')
   }
 
-  // Se não mostrar modal, não renderizar nada
   if (!showModal || isVerified) return null
 
   return (
@@ -247,12 +233,14 @@ export function TwoFactorVerify() {
               {isLoading ? 'Verificando...' : 'Verificar'}
             </Button>
 
-            <button
+            <Button
+              variant="outline"
+              fullWidth
               onClick={handleLogout}
-              className="w-full py-2 px-4 border border-red-500 hover:border-red-600 text-red-500 hover:text-red-600 bg-transparent text-sm font-medium rounded-lg transition-colors duration-200"
+              className="border-red-500 hover:border-red-600 text-red-500 hover:text-red-600"
             >
               Sair e fazer login novamente
-            </button>
+            </Button>
           </div>
 
           <div className="mt-6 pt-6 border-t border-gray-200">
