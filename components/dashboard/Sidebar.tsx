@@ -3,15 +3,12 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   Home,
-  TrendingUp,
   Search,
   List,
-  Send,
   QrCode,
-  AlertTriangle,
   Clock,
   User,
   Settings,
@@ -25,6 +22,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { PixIcon } from '@/components/icons/PixIcon'
 import { WhatsAppIcon } from '@/components/icons/WhatsAppIcon'
 import { DocumentIcon } from '@/components/icons/DocumentIcon'
+import { Button } from '@/components/ui/Button'
 
 interface MenuItem {
   icon: React.ElementType
@@ -92,6 +90,11 @@ export function Sidebar() {
   const pathname = usePathname()
   const { user, logout } = useAuth()
   const [expandedMenus, setExpandedMenus] = useState<string[]>([])
+  const [isHydrated, setIsHydrated] = useState(false)
+
+  useEffect(() => {
+    setIsHydrated(true)
+  }, [])
 
   const handleLogout = async () => {
     try {
@@ -109,7 +112,6 @@ export function Sidebar() {
     )
   }
 
-  // Cálculo do progresso (exemplo - pode ser dinâmico)
   const currentBalance = 250
   const targetBalance = 100000
   const progress = (currentBalance / targetBalance) * 100
@@ -182,7 +184,9 @@ export function Sidebar() {
               <li key={item.href}>
                 {item.hasSubmenu ? (
                   <div>
-                    <button
+                    <Button
+                      variant="ghost"
+                      size="sm"
                       onClick={() => toggleSubmenu(item.label)}
                       className={cn(
                         'flex items-center justify-between w-full px-4 py-3 rounded-lg text-sm font-medium transition-colors',
@@ -200,7 +204,7 @@ export function Sidebar() {
                       ) : (
                         <ChevronDown size={16} />
                       )}
-                    </button>
+                    </Button>
 
                     {isSubmenuExpanded && item.submenu && (
                       <ul className="mt-1 ml-6 space-y-1">
@@ -289,14 +293,14 @@ export function Sidebar() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white font-semibold">
-              {user?.name?.charAt(0).toUpperCase() || 'U'}
+              {(isHydrated && user?.name?.charAt(0)?.toUpperCase()) || 'U'}
             </div>
             <div className="flex flex-col">
               <p className="text-sm font-semibold text-blue-900">
-                {user?.name ? user.name.split(' ')[0] : 'Usuário'}
+                {isHydrated && user?.name ? user.name.split(' ')[0] : 'Usuário'}
               </p>
               <p className="text-xs text-gray-500">
-                {user?.name && user.name.split(' ').length > 1
+                {isHydrated && user?.name && user.name.split(' ').length > 1
                   ? `${user.name.split(' ').slice(1).join(' ')} ${
                       user?.agency || ''
                     }`
@@ -304,13 +308,15 @@ export function Sidebar() {
               </p>
             </div>
           </div>
-          <button
+          <Button
+            variant="ghost"
+            size="sm"
+            icon={<LogOut size={16} />}
             onClick={handleLogout}
-            className="flex items-center gap-1 text-red-600 hover:text-red-700 transition-colors"
+            className="text-red-600 hover:text-red-700"
           >
-            <LogOut size={16} />
             <span className="text-sm font-medium">Sair</span>
-          </button>
+          </Button>
         </div>
       </div>
     </aside>
