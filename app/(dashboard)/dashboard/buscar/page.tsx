@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useDebounce } from '@/hooks/useDebounce'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -18,6 +19,8 @@ type SearchFormData = z.infer<typeof searchSchema>
 export default function BuscarPage() {
   const [searchResult, setSearchResult] = useState<any>(null)
   const [isSearching, setIsSearching] = useState(false)
+  const [searchValue, setSearchValue] = useState('')
+  const debouncedSearchValue = useDebounce(searchValue, 500)
 
   const {
     register,
@@ -29,10 +32,8 @@ export default function BuscarPage() {
 
   const onSubmit = async (data: SearchFormData) => {
     setIsSearching(true)
-    // Simular busca na API
     await new Promise((resolve) => setTimeout(resolve, 1000))
 
-    // Dados mockados
     setSearchResult({
       id: data.transactionId,
       endToEndId: 'E1234567820251007123456789',
@@ -85,6 +86,10 @@ export default function BuscarPage() {
             placeholder="Digite o ID ou EndToEndID da transação"
             error={errors.transactionId?.message}
             icon={<Search size={18} />}
+            onChange={(e) => {
+              setSearchValue(e.target.value)
+              register('transactionId').onChange(e)
+            }}
           />
           <Button
             type="submit"

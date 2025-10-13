@@ -40,18 +40,15 @@ export default function LoginPage() {
     try {
       await login(data.username, data.password)
 
-      // Mostrar toast de sucesso
       toast.success('Login realizado com sucesso!', {
         description: 'Bem-vindo!',
         duration: 3000,
       })
 
-      // Redirecionar para dashboard
       router.push('/dashboard')
     } catch (err: any) {
       const errorMessage = err.message || 'Erro ao fazer login'
 
-      // Mostrar toast de erro
       toast.error('Erro no login', {
         description: errorMessage,
         duration: 4000,

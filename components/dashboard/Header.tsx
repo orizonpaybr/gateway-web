@@ -2,9 +2,9 @@
 
 import { useState } from 'react'
 import { EyeOff, Eye, RefreshCw } from 'lucide-react'
+import { Button } from '@/components/ui/Button'
 import { usePathname } from 'next/navigation'
 
-// Mapeamento de rotas para títulos
 const pageTitles: Record<string, string> = {
   '/dashboard': 'Dashboard Orizon',
   '/dashboard/jornada': 'Jornada Orizon',
@@ -36,24 +36,25 @@ export function Header() {
       </div>
 
       <div className="flex items-center gap-2">
-        <button
+        <Button
+          variant="ghost"
+          size="sm"
+          icon={balanceHidden ? <Eye size={18} /> : <EyeOff size={18} />}
           onClick={() => setBalanceHidden(!balanceHidden)}
-          className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
           title={balanceHidden ? 'Mostrar Saldo' : 'Ocultar Saldo'}
         >
-          {balanceHidden ? <Eye size={18} /> : <EyeOff size={18} />}
           <span className="hidden sm:inline">
             {balanceHidden ? 'Mostrar' : 'Ocultar'} Saldo
           </span>
-        </button>
+        </Button>
 
-        <button
+        <Button
+          variant="ghost"
+          size="sm"
+          icon={<RefreshCw size={18} />}
           onClick={handleRefresh}
-          className="p-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
           title="Atualizar"
-        >
-          <RefreshCw size={18} />
-        </button>
+        />
       </div>
     </header>
   )

@@ -214,14 +214,15 @@ export default function ConfiguracoesPage() {
                 </p>
               </div>
             </div>
-            <button
+            <Button
+              variant="ghost"
               onClick={() =>
                 setNotificationsEnabled({
                   ...notificationsEnabled,
                   whatsapp: !notificationsEnabled.whatsapp,
                 })
               }
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors p-0 ${
                 notificationsEnabled.whatsapp ? 'bg-primary' : 'bg-gray-300'
               }`}
             >
@@ -232,7 +233,7 @@ export default function ConfiguracoesPage() {
                     : 'translate-x-1'
                 }`}
               />
-            </button>
+            </Button>
           </div>
 
           <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
@@ -245,14 +246,15 @@ export default function ConfiguracoesPage() {
                 </p>
               </div>
             </div>
-            <button
+            <Button
+              variant="ghost"
               onClick={() =>
                 setNotificationsEnabled({
                   ...notificationsEnabled,
                   push: !notificationsEnabled.push,
                 })
               }
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors p-0 ${
                 notificationsEnabled.push ? 'bg-primary' : 'bg-gray-300'
               }`}
             >
@@ -261,7 +263,7 @@ export default function ConfiguracoesPage() {
                   notificationsEnabled.push ? 'translate-x-6' : 'translate-x-1'
                 }`}
               />
-            </button>
+            </Button>
           </div>
         </div>
       </Card>

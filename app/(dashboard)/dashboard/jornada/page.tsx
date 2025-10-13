@@ -70,7 +70,6 @@ export default function JornadaPage() {
         </p>
       </div>
 
-      {/* Nível Atual */}
       <Card padding="lg">
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-br from-gray-300 to-gray-500 rounded-full mb-4">

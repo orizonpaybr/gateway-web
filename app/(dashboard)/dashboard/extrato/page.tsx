@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
+import { useDebounce } from '@/hooks/useDebounce'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
@@ -11,6 +12,7 @@ export default function ExtratoPage() {
     'all',
   )
   const [searchTerm, setSearchTerm] = useState('')
+  const debouncedSearchTerm = useDebounce(searchTerm, 300)
 
   const transactions = [
     {
@@ -87,14 +89,23 @@ export default function ExtratoPage() {
     },
   ]
 
-  const filteredTransactions = transactions
-    .filter((t) => (filterType === 'all' ? true : t.type === filterType))
-    .filter((t) =>
-      searchTerm
-        ? t.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          t.endToEndId.includes(searchTerm)
-        : true,
-    )
+
+  const filteredTransactions = useMemo(() => {
+    return transactions.filter((transaction) => {
+      const typeMatch = filterType === 'all' || transaction.type === filterType
+
+      const searchMatch =
+        debouncedSearchTerm === '' ||
+        transaction.description
+          .toLowerCase()
+          .includes(debouncedSearchTerm.toLowerCase()) ||
+        transaction.endToEndId
+          .toLowerCase()
+          .includes(debouncedSearchTerm.toLowerCase())
+
+      return typeMatch && searchMatch
+    })
+  }, [transactions, filterType, debouncedSearchTerm])
 
   const totalEntradas = transactions
     .filter((t) => t.type === 'entrada')
@@ -127,7 +138,6 @@ export default function ExtratoPage() {
         </Button>
       </div>
 
-      {/* Resumo */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
           <div className="flex items-start justify-between">

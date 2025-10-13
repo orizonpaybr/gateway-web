@@ -12,7 +12,8 @@ import { Input } from '@/components/ui/Input'
 import { PhoneInput, validatePhone } from '@/components/ui/PhoneInput'
 import { DocumentInput, validateDocument } from '@/components/ui/DocumentInput'
 import { Button } from '@/components/ui/Button'
-import { ArrowRight, ArrowLeft, HelpCircle, User, Upload } from 'lucide-react'
+import { FileUpload } from '@/components/ui/FileUpload'
+import { ArrowRight, ArrowLeft, HelpCircle, User } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { authAPI } from '@/lib/api'
 
@@ -123,17 +124,14 @@ export default function CadastroPage() {
     setValidationErrors({})
 
     try {
-      // Validar dados únicos no backend
       const validationResult = await authAPI.validateRegistrationData({
         username: data.username,
         email: data.email,
       })
 
       if (!validationResult.success && validationResult.errors) {
-        // Mostrar erros específicos para cada campo
         setValidationErrors(validationResult.errors)
 
-        // Definir erros nos campos do formulário
         Object.entries(validationResult.errors).forEach(([field, message]) => {
           step1Form.setError(field as keyof Step1FormData, {
             type: 'manual',
@@ -144,7 +142,6 @@ export default function CadastroPage() {
         return
       }
 
-      // Se passou na validação, salvar dados e avançar
       setStep1Data(data)
       setStep(2)
     } catch (error: any) {
@@ -163,7 +160,6 @@ export default function CadastroPage() {
     setValidationErrors({})
 
     try {
-      // Validar dados únicos no backend (telefone e CPF/CNPJ)
       const validationResult = await authAPI.validateRegistrationData({
         username: step1Data?.username || '',
         email: step1Data?.email || '',
@@ -172,10 +168,8 @@ export default function CadastroPage() {
       })
 
       if (!validationResult.success && validationResult.errors) {
-        // Mostrar erros específicos para cada campo
         setValidationErrors(validationResult.errors)
 
-        // Definir erros nos campos do formulário
         Object.entries(validationResult.errors).forEach(([field, message]) => {
           if (field === 'telefone' || field === 'cpf_cnpj') {
             step2Form.setError(field as keyof Step2FormData, {
@@ -188,7 +182,6 @@ export default function CadastroPage() {
         return
       }
 
-      // Se passou na validação, salvar dados e avançar
       setStep2Data(data)
       setStep(3)
     } catch (error: any) {
@@ -203,7 +196,6 @@ export default function CadastroPage() {
   }
 
   const onStep3Submit = async (data: Step3FormData) => {
-    // Guard clause para dados das etapas anteriores
     if (!step1Data || !step2Data) {
       toast.error('Erro no cadastro', {
         description: 'Dados das etapas anteriores não encontrados',
@@ -215,7 +207,6 @@ export default function CadastroPage() {
     setIsLoading(true)
 
     try {
-      // Combinar dados de todas as etapas
       const fullData = {
         ...step1Data,
         password: step2Data.password,
@@ -223,7 +214,6 @@ export default function CadastroPage() {
         cpf_cnpj: step2Data.cpf_cnpj,
       }
 
-      // Preparar documentos para upload
       const documents = {
         documentoFrente: selectedFiles.documentoFrente || undefined,
         documentoVerso: selectedFiles.documentoVerso || undefined,
@@ -232,11 +222,9 @@ export default function CadastroPage() {
 
       const response = await registerUser(fullData, documents)
 
-      // Verificar se a conta está pendente de aprovação
       const isPendingApproval =
         response.data?.pending_approval || response.data?.user?.status === 5
 
-      // Mostrar toast de sucesso
       toast.success(
         isPendingApproval ? 'Cadastro realizado!' : 'Conta criada com sucesso!',
         {
@@ -247,12 +235,10 @@ export default function CadastroPage() {
         },
       )
 
-      // Redirecionar para dashboard (mesmo com conta pendente)
       router.push('/dashboard')
     } catch (err: any) {
       const errorMessage = err.message || 'Erro ao criar conta'
 
-      // Mostrar toast de erro
       toast.error('Erro no cadastro', {
         description: errorMessage,
         duration: 4000,
@@ -445,203 +431,35 @@ export default function CadastroPage() {
                 className="space-y-5"
               >
                 <div className="space-y-4">
-                  <div>
-                    <label className="block text-xs font-semibold text-gray-700 mb-2 uppercase">
-                      Frente do Documento
-                    </label>
-                    <div
-                      className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-primary transition-colors cursor-pointer"
-                      onClick={() =>
-                        document.getElementById('documentoFrente')?.click()
-                      }
-                    >
-                      {selectedFiles.documentoFrente ? (
-                        <div className="space-y-2">
-                          {selectedFiles.documentoFrente.type.startsWith(
-                            'image/',
-                          ) ? (
-                            <img
-                              src={URL.createObjectURL(
-                                selectedFiles.documentoFrente,
-                              )}
-                              alt="Prévia do documento"
-                              className="mx-auto h-24 w-auto max-w-full rounded-lg object-cover"
-                            />
-                          ) : (
-                            <div className="mx-auto h-24 w-24 bg-red-100 rounded-lg flex items-center justify-center">
-                              <span className="text-red-600 font-bold text-lg">
-                                PDF
-                              </span>
-                            </div>
-                          )}
-                          <p className="text-sm text-gray-800 font-medium">
-                            {selectedFiles.documentoFrente.name}
-                          </p>
-                          <p className="text-xs text-gray-500">
-                            {(
-                              selectedFiles.documentoFrente.size /
-                              1024 /
-                              1024
-                            ).toFixed(2)}{' '}
-                            MB
-                          </p>
-                        </div>
-                      ) : (
-                        <>
-                          <Upload className="mx-auto h-12 w-12 text-gray-400" />
-                          <p className="mt-2 text-sm text-gray-600">
-                            Clique para enviar
-                          </p>
-                          <p className="text-xs text-gray-500 mt-1">
-                            PNG, JPG ou PDF até 5MB
-                          </p>
-                        </>
-                      )}
-                      <input
-                        {...step3Form.register('documentoFrente')}
-                        id="documentoFrente"
-                        type="file"
-                        accept="image/*,application/pdf"
-                        className="hidden"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0] || null
-                          handleFileSelect('documentoFrente', file)
-                        }}
-                      />
-                    </div>
-                  </div>
+                  <FileUpload
+                    label="Frente do Documento"
+                    accept="image/*,application/pdf"
+                    maxSize={5}
+                    value={selectedFiles.documentoFrente}
+                    onChange={(file) =>
+                      handleFileSelect('documentoFrente', file)
+                    }
+                  />
 
-                  <div>
-                    <label className="block text-xs font-semibold text-gray-700 mb-2 uppercase">
-                      Verso do Documento
-                    </label>
-                    <div
-                      className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-primary transition-colors cursor-pointer"
-                      onClick={() =>
-                        document.getElementById('documentoVerso')?.click()
-                      }
-                    >
-                      {selectedFiles.documentoVerso ? (
-                        <div className="space-y-2">
-                          {selectedFiles.documentoVerso.type.startsWith(
-                            'image/',
-                          ) ? (
-                            <img
-                              src={URL.createObjectURL(
-                                selectedFiles.documentoVerso,
-                              )}
-                              alt="Prévia do documento"
-                              className="mx-auto h-24 w-auto max-w-full rounded-lg object-cover"
-                            />
-                          ) : (
-                            <div className="mx-auto h-24 w-24 bg-red-100 rounded-lg flex items-center justify-center">
-                              <span className="text-red-600 font-bold text-lg">
-                                PDF
-                              </span>
-                            </div>
-                          )}
-                          <p className="text-sm text-gray-800 font-medium">
-                            {selectedFiles.documentoVerso.name}
-                          </p>
-                          <p className="text-xs text-gray-500">
-                            {(
-                              selectedFiles.documentoVerso.size /
-                              1024 /
-                              1024
-                            ).toFixed(2)}{' '}
-                            MB
-                          </p>
-                        </div>
-                      ) : (
-                        <>
-                          <Upload className="mx-auto h-12 w-12 text-gray-400" />
-                          <p className="mt-2 text-sm text-gray-600">
-                            Clique para enviar
-                          </p>
-                          <p className="text-xs text-gray-500 mt-1">
-                            PNG, JPG ou PDF até 5MB
-                          </p>
-                        </>
-                      )}
-                      <input
-                        {...step3Form.register('documentoVerso')}
-                        id="documentoVerso"
-                        type="file"
-                        accept="image/*,application/pdf"
-                        className="hidden"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0] || null
-                          handleFileSelect('documentoVerso', file)
-                        }}
-                      />
-                    </div>
-                  </div>
+                  <FileUpload
+                    label="Verso do Documento"
+                    accept="image/*,application/pdf"
+                    maxSize={5}
+                    value={selectedFiles.documentoVerso}
+                    onChange={(file) =>
+                      handleFileSelect('documentoVerso', file)
+                    }
+                  />
 
-                  <div>
-                    <label className="block text-xs font-semibold text-gray-700 mb-2 uppercase">
-                      Selfie com Documento
-                    </label>
-                    <div
-                      className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-primary transition-colors cursor-pointer"
-                      onClick={() =>
-                        document.getElementById('selfieDocumento')?.click()
-                      }
-                    >
-                      {selectedFiles.selfieDocumento ? (
-                        <div className="space-y-2">
-                          {selectedFiles.selfieDocumento.type.startsWith(
-                            'image/',
-                          ) ? (
-                            <img
-                              src={URL.createObjectURL(
-                                selectedFiles.selfieDocumento,
-                              )}
-                              alt="Prévia do documento"
-                              className="mx-auto h-24 w-auto max-w-full rounded-lg object-cover"
-                            />
-                          ) : (
-                            <div className="mx-auto h-24 w-24 bg-red-100 rounded-lg flex items-center justify-center">
-                              <span className="text-red-600 font-bold text-lg">
-                                PDF
-                              </span>
-                            </div>
-                          )}
-                          <p className="text-sm text-gray-800 font-medium">
-                            {selectedFiles.selfieDocumento.name}
-                          </p>
-                          <p className="text-xs text-gray-500">
-                            {(
-                              selectedFiles.selfieDocumento.size /
-                              1024 /
-                              1024
-                            ).toFixed(2)}{' '}
-                            MB
-                          </p>
-                        </div>
-                      ) : (
-                        <>
-                          <Upload className="mx-auto h-12 w-12 text-gray-400" />
-                          <p className="mt-2 text-sm text-gray-600">
-                            Clique para enviar
-                          </p>
-                          <p className="text-xs text-gray-500 mt-1">
-                            PNG, JPG ou PDF até 5MB
-                          </p>
-                        </>
-                      )}
-                      <input
-                        {...step3Form.register('selfieDocumento')}
-                        id="selfieDocumento"
-                        type="file"
-                        accept="image/*,application/pdf"
-                        className="hidden"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0] || null
-                          handleFileSelect('selfieDocumento', file)
-                        }}
-                      />
-                    </div>
-                  </div>
+                  <FileUpload
+                    label="Selfie com Documento"
+                    accept="image/*,application/pdf"
+                    maxSize={5}
+                    value={selectedFiles.selfieDocumento}
+                    onChange={(file) =>
+                      handleFileSelect('selfieDocumento', file)
+                    }
+                  />
                 </div>
 
                 <div className="flex gap-3">

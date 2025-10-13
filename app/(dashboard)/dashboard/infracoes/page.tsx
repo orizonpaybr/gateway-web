@@ -78,7 +78,6 @@ export default function InfracoesPage() {
   }
 
   const handleExport = () => {
-    console.log('Exportando infrações...')
     alert(
       'Funcionalidade de exportação será implementada com a integração da API',
     )

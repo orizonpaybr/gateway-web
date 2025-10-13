@@ -38,7 +38,6 @@ export default function PixPage() {
 
   const handleConfirm = async () => {
     setIsProcessing(true)
-    // Simular processamento da transação
     await new Promise((resolve) => setTimeout(resolve, 2000))
     setIsProcessing(false)
     setStep('success')
