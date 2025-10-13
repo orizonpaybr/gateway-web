@@ -10,6 +10,7 @@ import {
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { authAPI, accountAPI, RegisterData } from '@/lib/api'
+import { useLocalStorage } from '@/hooks/useLocalStorage'
 
 interface User {
   id: string
@@ -51,7 +52,8 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null)
+  const [user, setUser] = useLocalStorage<User | null>('user', null)
+  const [token, setToken] = useLocalStorage<string | null>('token', null)
   const [isLoading, setIsLoading] = useState(true)
   const [show2FAModal, setShow2FAModal] = useState(false)
   const [tempToken, setTempToken] = useState<string | null>(null)
@@ -64,11 +66,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const checkAuth = async () => {
     try {
-      const token = localStorage.getItem('token')
-      const userStr = localStorage.getItem('user')
-
       // Early return se não há token ou dados de usuário
-      if (!token || !userStr) {
+      if (!token || !user) {
         setIsLoading(false)
         return
       }
@@ -78,9 +77,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       // Usar dados validados ou fallback do localStorage
       const userData =
-        result.success && result.data?.user
-          ? result.data.user
-          : JSON.parse(userStr)
+        result.success && result.data?.user ? result.data.user : user
 
       try {
         const profileResult = (await accountAPI.getProfile()) as any
@@ -190,7 +187,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       await authAPI.logout()
 
-      // Mostrar toast de sucesso
       toast.success('Saída realizada com sucesso!', {
         description: 'Até logo!',
         duration: 2000,
@@ -198,13 +194,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       console.error('Erro ao fazer logout:', error)
 
-      // Mostrar toast de erro
       toast.error('Erro no logout', {
         description: 'Houve um problema ao sair da conta',
         duration: 3000,
       })
     } finally {
       setUser(null)
+      setToken(null)
+      sessionStorage.removeItem('2fa_verified')
+      sessionStorage.removeItem('2fa_setup_checked')
       router.push('/login')
     }
   }
