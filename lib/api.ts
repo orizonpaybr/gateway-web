@@ -350,6 +350,45 @@ export const dashboardAPI = {
   }> => {
     return apiRequest(`/dashboard/interactive-movement?periodo=${periodo}`)
   },
+
+  // Buscar resumo de transações (8 cards)
+  getTransactionSummary: async (
+    periodo: string = 'hoje',
+  ): Promise<{
+    success: boolean
+    data: {
+      periodo: string
+      data_inicio: string
+      data_fim: string
+      quantidadeTransacoes: {
+        depositos: number
+        saques: number
+      }
+      tarifaCobrada: number
+      qrCodes: {
+        pagos: number
+        gerados: number
+      }
+      indiceConversao: number
+      ticketMedio: {
+        depositos: number
+        saques: number
+      }
+      valorMinMax: {
+        depositos: {
+          min: number
+          max: number
+        }
+      }
+      infracoes: number
+      percentualInfracoes: {
+        percentual: number
+        valorTotal: number
+      }
+    }
+  }> => {
+    return apiRequest(`/dashboard/transaction-summary?periodo=${periodo}`)
+  },
 }
 
 // API de autenticação de dois fatores

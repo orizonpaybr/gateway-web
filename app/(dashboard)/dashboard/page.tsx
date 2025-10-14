@@ -145,20 +145,6 @@ export default function DashboardPage() {
     },
   ]
 
-  const summaryData = {
-    quantidadeTransacoes: { depositos: 0, saques: 0 },
-    tarifaCobrada: 0,
-    qrCodes: { pagos: 0, gerados: 0 },
-    indiceConversao: 0,
-    ticketMedio: { depositos: 0, saques: 0 },
-    valorMinMax: {
-      depositos: { min: 0, max: 0 },
-      saques: { min: 0, max: 0 },
-    },
-    infracoes: 0,
-    percentualInfracoes: { percentual: 0, valorTotal: 0 },
-  }
-
   const recentTransactions = [
     {
       id: '1',
@@ -255,7 +241,7 @@ export default function DashboardPage() {
               <p className="text-sm text-gray-600">Seus dados de transações</p>
             </div>
 
-            <TransactionSummary data={summaryData} embedded={true} />
+            <TransactionSummary period={chartPeriod} embedded={true} />
           </div>
         </Card>
 

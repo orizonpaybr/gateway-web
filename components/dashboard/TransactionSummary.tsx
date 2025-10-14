@@ -1,6 +1,9 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import { Card } from '@/components/ui/Card'
+import { Skeleton } from '@/components/ui/Skeleton'
+import { dashboardAPI } from '@/lib/api'
 import {
   BarChart3,
   Receipt,
@@ -29,7 +32,6 @@ export interface TransactionSummaryData {
   }
   valorMinMax: {
     depositos: { min: number; max: number }
-    saques: { min: number; max: number }
   }
   infracoes: number
   percentualInfracoes: {
@@ -39,7 +41,7 @@ export interface TransactionSummaryData {
 }
 
 interface TransactionSummaryProps {
-  data?: TransactionSummaryData
+  period?: 'hoje' | 'ontem' | '7dias' | '30dias'
   embedded?: boolean
 }
 
@@ -51,16 +53,65 @@ const defaultData: TransactionSummaryData = {
   ticketMedio: { depositos: 0, saques: 0 },
   valorMinMax: {
     depositos: { min: 0, max: 0 },
-    saques: { min: 0, max: 0 },
   },
   infracoes: 0,
   percentualInfracoes: { percentual: 0, valorTotal: 0 },
 }
 
 export function TransactionSummary({
-  data = defaultData,
+  period = 'hoje',
   embedded = false,
 }: TransactionSummaryProps) {
+  const [isLoading, setIsLoading] = useState(true)
+  const [data, setData] = useState<TransactionSummaryData>(defaultData)
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const rawToken = localStorage.getItem('token')
+      const token =
+        rawToken === 'null' || rawToken === null || rawToken === ''
+          ? null
+          : rawToken
+
+      if (!token) {
+        setIsLoading(false)
+        return
+      }
+
+      setIsLoading(true)
+      try {
+        const response = await dashboardAPI.getTransactionSummary(period)
+        if (response.success) {
+          setData(response.data)
+        }
+      } catch (error) {
+        console.error('Erro ao buscar resumo de transações:', error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    const handleAuthTokenStored = () => {
+      fetchData()
+    }
+
+    window.addEventListener('auth-token-stored', handleAuthTokenStored)
+
+    const rawToken = localStorage.getItem('token')
+    const token =
+      rawToken === 'null' || rawToken === null || rawToken === ''
+        ? null
+        : rawToken
+    if (token) {
+      fetchData()
+    } else {
+      setIsLoading(false)
+    }
+
+    return () => {
+      window.removeEventListener('auth-token-stored', handleAuthTokenStored)
+    }
+  }, [period])
   const formatCurrency = (value: number) => {
     return value.toLocaleString('pt-BR', {
       style: 'currency',
@@ -93,26 +144,35 @@ export function TransactionSummary({
           <h3 className="text-sm font-medium text-gray-700 mb-2">
             Quantidade de Transações
           </h3>
-          <div className="space-y-2">
-            <div>
-              <div className="flex items-center gap-1.5 mb-1">
-                <div className="w-2 h-2 rounded-full bg-green-500" />
-                <span className="text-xs text-gray-600">Depósitos</span>
-              </div>
-              <p className="text-lg font-bold text-gray-900">
-                {data.quantidadeTransacoes.depositos}
-              </p>
+          {isLoading ? (
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-20" />
+              <Skeleton className="h-6 w-16" />
+              <Skeleton className="h-4 w-20" />
+              <Skeleton className="h-6 w-16" />
             </div>
-            <div>
-              <div className="flex items-center gap-1.5 mb-1">
-                <div className="w-2 h-2 rounded-full bg-red-500" />
-                <span className="text-xs text-gray-600">Saques</span>
+          ) : (
+            <div className="space-y-2">
+              <div>
+                <div className="flex items-center gap-1.5 mb-1">
+                  <div className="w-2 h-2 rounded-full bg-green-500" />
+                  <span className="text-xs text-gray-600">Depósitos</span>
+                </div>
+                <p className="text-lg font-bold text-gray-900">
+                  {data.quantidadeTransacoes.depositos}
+                </p>
               </div>
-              <p className="text-lg font-bold text-gray-900">
-                {data.quantidadeTransacoes.saques}
-              </p>
+              <div>
+                <div className="flex items-center gap-1.5 mb-1">
+                  <div className="w-2 h-2 rounded-full bg-red-500" />
+                  <span className="text-xs text-gray-600">Saques</span>
+                </div>
+                <p className="text-lg font-bold text-gray-900">
+                  {data.quantidadeTransacoes.saques}
+                </p>
+              </div>
             </div>
-          </div>
+          )}
         </div>
 
         <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
@@ -124,12 +184,21 @@ export function TransactionSummary({
           <h3 className="text-sm font-medium text-gray-700 mb-2">
             Tarifa Cobrada
           </h3>
-          <p className="text-2xl font-bold text-gray-900">
-            {formatCurrency(data.tarifaCobrada)}
-          </p>
-          <p className="text-xs text-gray-500 mt-1">
-            Soma das taxas de depósitos
-          </p>
+          {isLoading ? (
+            <>
+              <Skeleton className="h-8 w-32 mb-1" />
+              <Skeleton className="h-3 w-40" />
+            </>
+          ) : (
+            <>
+              <p className="text-2xl font-bold text-gray-900">
+                {formatCurrency(data.tarifaCobrada)}
+              </p>
+              <p className="text-xs text-gray-500 mt-1">
+                Soma das taxas de depósitos
+              </p>
+            </>
+          )}
         </div>
 
         <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
@@ -139,14 +208,21 @@ export function TransactionSummary({
             </div>
           </div>
           <h3 className="text-sm font-medium text-gray-700 mb-2">QR Codes</h3>
-          <div className="space-y-1">
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-gray-600">Pagos / Gerados</span>
+          {isLoading ? (
+            <div className="space-y-1">
+              <Skeleton className="h-3 w-28" />
+              <Skeleton className="h-8 w-24" />
             </div>
-            <p className="text-2xl font-bold text-gray-900">
-              {data.qrCodes.pagos} / {data.qrCodes.gerados}
-            </p>
-          </div>
+          ) : (
+            <div className="space-y-1">
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-gray-600">Pagos / Gerados</span>
+              </div>
+              <p className="text-2xl font-bold text-gray-900">
+                {data.qrCodes.pagos} / {data.qrCodes.gerados}
+              </p>
+            </div>
+          )}
         </div>
 
         <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
@@ -158,12 +234,21 @@ export function TransactionSummary({
           <h3 className="text-sm font-medium text-gray-700 mb-2">
             Índice de Conversão
           </h3>
-          <p className="text-2xl font-bold text-green-600">
-            {formatPercent(data.indiceConversao)}
-          </p>
-          <p className="text-xs text-gray-500 mt-1">
-            Taxa de conversão de depósitos
-          </p>
+          {isLoading ? (
+            <>
+              <Skeleton className="h-8 w-20 mb-1" />
+              <Skeleton className="h-3 w-40" />
+            </>
+          ) : (
+            <>
+              <p className="text-2xl font-bold text-green-600">
+                {formatPercent(data.indiceConversao)}
+              </p>
+              <p className="text-xs text-gray-500 mt-1">
+                Taxa de conversão de depósitos
+              </p>
+            </>
+          )}
         </div>
 
         <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
@@ -175,26 +260,35 @@ export function TransactionSummary({
           <h3 className="text-sm font-medium text-gray-700 mb-2">
             Ticket Médio
           </h3>
-          <div className="space-y-2">
-            <div>
-              <div className="flex items-center gap-1.5 mb-0.5">
-                <TrendingUp className="w-3 h-3 text-green-600" />
-                <span className="text-xs text-gray-600">Depósitos</span>
-              </div>
-              <p className="text-lg font-bold text-gray-900">
-                {formatCurrency(data.ticketMedio.depositos)}
-              </p>
+          {isLoading ? (
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-20" />
+              <Skeleton className="h-6 w-24" />
+              <Skeleton className="h-4 w-16" />
+              <Skeleton className="h-6 w-24" />
             </div>
-            <div>
-              <div className="flex items-center gap-1.5 mb-0.5">
-                <TrendingDown className="w-3 h-3 text-red-600" />
-                <span className="text-xs text-gray-600">Saques</span>
+          ) : (
+            <div className="space-y-2">
+              <div>
+                <div className="flex items-center gap-1.5 mb-0.5">
+                  <TrendingUp className="w-3 h-3 text-green-600" />
+                  <span className="text-xs text-gray-600">Depósitos</span>
+                </div>
+                <p className="text-lg font-bold text-gray-900">
+                  {formatCurrency(data.ticketMedio.depositos)}
+                </p>
               </div>
-              <p className="text-lg font-bold text-gray-900">
-                {formatCurrency(data.ticketMedio.saques)}
-              </p>
+              <div>
+                <div className="flex items-center gap-1.5 mb-0.5">
+                  <TrendingDown className="w-3 h-3 text-red-600" />
+                  <span className="text-xs text-gray-600">Saques</span>
+                </div>
+                <p className="text-lg font-bold text-gray-900">
+                  {formatCurrency(data.ticketMedio.saques)}
+                </p>
+              </div>
             </div>
-          </div>
+          )}
         </div>
 
         <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
@@ -206,28 +300,39 @@ export function TransactionSummary({
           <h3 className="text-sm font-medium text-gray-700 mb-2">
             Valor Mínimo / Valor Máximo
           </h3>
-          <div className="space-y-2 text-sm">
-            <div>
-              <div className="flex items-center justify-between mb-0.5">
-                <span className="text-xs text-red-600 font-medium">Mínimo</span>
-                <span className="text-xs text-gray-500">Depósitos</span>
-              </div>
-              <p className="text-base font-bold text-red-600">
-                {formatCurrency(data.valorMinMax.depositos.min)}
-              </p>
+          {isLoading ? (
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-5 w-24" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-5 w-24" />
             </div>
-            <div>
-              <div className="flex items-center justify-between mb-0.5">
-                <span className="text-xs text-green-600 font-medium">
-                  Máximo
-                </span>
-                <span className="text-xs text-gray-500">Depósitos</span>
+          ) : (
+            <div className="space-y-2 text-sm">
+              <div>
+                <div className="flex items-center justify-between mb-0.5">
+                  <span className="text-xs text-red-600 font-medium">
+                    Mínimo
+                  </span>
+                  <span className="text-xs text-gray-500">Depósitos</span>
+                </div>
+                <p className="text-base font-bold text-red-600">
+                  {formatCurrency(data.valorMinMax.depositos.min)}
+                </p>
               </div>
-              <p className="text-base font-bold text-green-600">
-                {formatCurrency(data.valorMinMax.depositos.max)}
-              </p>
+              <div>
+                <div className="flex items-center justify-between mb-0.5">
+                  <span className="text-xs text-green-600 font-medium">
+                    Máximo
+                  </span>
+                  <span className="text-xs text-gray-500">Depósitos</span>
+                </div>
+                <p className="text-base font-bold text-green-600">
+                  {formatCurrency(data.valorMinMax.depositos.max)}
+                </p>
+              </div>
             </div>
-          </div>
+          )}
         </div>
 
         <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
@@ -237,10 +342,21 @@ export function TransactionSummary({
             </div>
           </div>
           <h3 className="text-sm font-medium text-gray-700 mb-2">Infrações</h3>
-          <p className="text-2xl font-bold text-orange-600">{data.infracoes}</p>
-          <p className="text-xs text-gray-500 mt-1">
-            Seus depósitos bloqueados
-          </p>
+          {isLoading ? (
+            <>
+              <Skeleton className="h-8 w-16 mb-1" />
+              <Skeleton className="h-3 w-40" />
+            </>
+          ) : (
+            <>
+              <p className="text-2xl font-bold text-orange-600">
+                {data.infracoes}
+              </p>
+              <p className="text-xs text-gray-500 mt-1">
+                Seus depósitos bloqueados
+              </p>
+            </>
+          )}
         </div>
 
         <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
@@ -252,20 +368,27 @@ export function TransactionSummary({
           <h3 className="text-sm font-medium text-gray-700 mb-2">
             % de Infrações
           </h3>
-          <div className="space-y-1">
-            <div className="flex items-center justify-between">
-              <p className="text-2xl font-bold text-red-600">
-                {formatPercent(data.percentualInfracoes.percentual)}
-              </p>
-              <span className="text-xs text-gray-500">/</span>
-              <p className="text-lg font-bold text-gray-900">
-                {formatCurrency(data.percentualInfracoes.valorTotal)}
+          {isLoading ? (
+            <div className="space-y-1">
+              <Skeleton className="h-8 w-full mb-1" />
+              <Skeleton className="h-3 w-full" />
+            </div>
+          ) : (
+            <div className="space-y-1">
+              <div className="flex items-center justify-between">
+                <p className="text-2xl font-bold text-red-600">
+                  {formatPercent(data.percentualInfracoes.percentual)}
+                </p>
+                <span className="text-xs text-gray-500">/</span>
+                <p className="text-lg font-bold text-gray-900">
+                  {formatCurrency(data.percentualInfracoes.valorTotal)}
+                </p>
+              </div>
+              <p className="text-xs text-gray-500">
+                Percentual e valor de infrações sobre QR Codes pagos
               </p>
             </div>
-            <p className="text-xs text-gray-500">
-              Percentual e valor de infrações sobre QR Codes pagos
-            </p>
-          </div>
+          )}
         </div>
       </div>
     </div>
