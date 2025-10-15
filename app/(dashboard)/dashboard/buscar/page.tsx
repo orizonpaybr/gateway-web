@@ -9,6 +9,8 @@ import { Card } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
 import { Search, CheckCircle, XCircle, Clock } from 'lucide-react'
+import { Dialog } from '@/components/ui/Dialog'
+import { useRouter } from 'next/navigation'
 
 const searchSchema = z.object({
   transactionId: z.string().min(1, 'Digite um ID ou EndToEndID'),
@@ -17,10 +19,15 @@ const searchSchema = z.object({
 type SearchFormData = z.infer<typeof searchSchema>
 
 export default function BuscarPage() {
+  const router = useRouter()
   const [searchResult, setSearchResult] = useState<any>(null)
   const [isSearching, setIsSearching] = useState(false)
   const [searchValue, setSearchValue] = useState('')
   const debouncedSearchValue = useDebounce(searchValue, 500)
+  const [typeModalOpen, setTypeModalOpen] = useState(false)
+  const [selectedType, setSelectedType] = useState<'deposito' | 'saque' | null>(
+    null,
+  )
 
   const {
     register,
@@ -32,28 +39,59 @@ export default function BuscarPage() {
 
   const onSubmit = async (data: SearchFormData) => {
     setIsSearching(true)
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    try {
+      const params = new URLSearchParams()
+      params.append('page', '1')
+      params.append('limit', '1')
+      if (selectedType) params.append('tipo', selectedType)
+      params.append('busca', data.transactionId)
 
-    setSearchResult({
-      id: data.transactionId,
-      endToEndId: 'E1234567820251007123456789',
-      description: 'Recebimento - Cliente ABC',
-      value: 2500.0,
-      date: '07/10/2025 14:35:22',
-      status: 'concluída',
-      type: 'entrada',
-      sender: {
-        name: 'João Silva',
-        document: '123.456.789-00',
-        bank: 'Banco do Brasil',
-      },
-      receiver: {
-        name: 'Sua Empresa',
-        document: '98.765.432/0001-10',
-        bank: 'HorsePay',
-      },
-    })
-    setIsSearching(false)
+      const res = await fetch(
+        `${
+          process.env.NEXT_PUBLIC_API_URL ||
+          'https://playgameoficial.com.br/api'
+        }/transactions?${params.toString()}`,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization:
+              typeof window !== 'undefined' && localStorage.getItem('token')
+                ? `Bearer ${localStorage.getItem('token')}`
+                : '',
+          },
+        },
+      )
+
+      if (!res.ok) throw new Error('Erro ao buscar transação')
+      const json = await res.json()
+
+      if (json.success && json.data?.data?.length) {
+        const t = json.data.data[0]
+        router.push(`/dashboard/comprovante/${t.id}`)
+        setSearchResult({
+          id: t.id,
+          endToEndId: t.transaction_id,
+          description: t.descricao,
+          value: t.amount,
+          date: t.data,
+          status: t.status_legivel,
+          type: t.tipo,
+          sender: {
+            name: t.nome_cliente,
+            document: t.documento,
+            bank: t.adquirente,
+          },
+          receiver: { name: 'Você', document: '', bank: 'Orizon' },
+        })
+      } else {
+        setSearchResult(null)
+      }
+    } catch (e) {
+      console.error('Erro ao buscar:', e)
+      setSearchResult(null)
+    } finally {
+      setIsSearching(false)
+    }
   }
 
   const getStatusIcon = (status: string) => {
@@ -71,15 +109,21 @@ export default function BuscarPage() {
 
   return (
     <div className="space-y-6">
-      <div>
+      <div className="max-w-4xl mx-auto px-2 sm:px-0">
         <h1 className="text-2xl font-bold text-gray-900">Buscar Transações</h1>
         <p className="text-gray-600 text-sm mt-1">
           Pesquise transações por ID ou EndToEndID
         </p>
       </div>
 
-      <Card>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      <Card className="max-w-4xl mx-auto">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault()
+            setTypeModalOpen(true)
+          }}
+          className="space-y-4"
+        >
           <Input
             {...register('transactionId')}
             label="ID OU ENDTOENDID"
@@ -101,8 +145,40 @@ export default function BuscarPage() {
         </form>
       </Card>
 
+      <Dialog
+        open={typeModalOpen}
+        onClose={() => setTypeModalOpen(false)}
+        title="Selecione o tipo de transação"
+        size="sm"
+      >
+        <div className="space-y-3">
+          <Button
+            variant="outline"
+            className="w-full justify-center"
+            onClick={async () => {
+              setSelectedType('deposito')
+              setTypeModalOpen(false)
+              await handleSubmit(onSubmit)()
+            }}
+          >
+            Depósito
+          </Button>
+          <Button
+            variant="outline"
+            className="w-full justify-center"
+            onClick={async () => {
+              setSelectedType('saque')
+              setTypeModalOpen(false)
+              await handleSubmit(onSubmit)()
+            }}
+          >
+            Saque
+          </Button>
+        </div>
+      </Dialog>
+
       {searchResult && (
-        <Card>
+        <Card className="max-w-4xl mx-auto">
           <div className="flex items-start gap-4 mb-6">
             {getStatusIcon(searchResult.status)}
             <div>
