@@ -1,97 +1,81 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
+import { Skeleton } from '@/components/ui/Skeleton'
 import { ArrowUpRight, ArrowDownLeft, FileText, List } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import { transactionsAPI } from '@/lib/api'
+import { useAuth } from '@/contexts/AuthContext'
+import { useBalanceVisibility } from '@/contexts/BalanceVisibilityContext'
+import { formatCurrencyBRL, formatDateBR, formatTimeBR } from '@/lib/format'
 
 export interface Transaction {
-  id: string
-  type: 'deposito' | 'saque'
-  valor: number
+  id: number
+  transaction_id: string
+  tipo: 'deposito' | 'saque'
+  amount: number
   descricao: string
   data: string
-  hora: string
+  status: string
+  status_legivel: string
 }
 
 interface RecentTransactionsProps {
-  transactions?: Transaction[]
   onViewExtract?: () => void
 }
 
-const defaultTransactions: Transaction[] = [
-  {
-    id: '1',
-    type: 'saque',
-    valor: 29.0,
-    descricao: 'Pagamento Enviado',
-    data: '31/08/2025',
-    hora: '15:16',
-  },
-  {
-    id: '2',
-    type: 'deposito',
-    valor: 17.0,
-    descricao: 'Pagamento Recebido',
-    data: '30/08/2025',
-    hora: '05:42',
-  },
-  {
-    id: '3',
-    type: 'deposito',
-    valor: 17.0,
-    descricao: 'Pagamento Recebido',
-    data: '28/08/2025',
-    hora: '07:22',
-  },
-  {
-    id: '4',
-    type: 'saque',
-    valor: 38.0,
-    descricao: 'Pagamento Enviado',
-    data: '27/08/2025',
-    hora: '20:36',
-  },
-  {
-    id: '5',
-    type: 'deposito',
-    valor: 17.0,
-    descricao: 'Pagamento Recebido',
-    data: '27/08/2025',
-    hora: '17:59',
-  },
-  {
-    id: '6',
-    type: 'saque',
-    valor: 15.0,
-    descricao: 'Pagamento Enviado',
-    data: '27/08/2025',
-    hora: '04:00',
-  },
-  {
-    id: '7',
-    type: 'deposito',
-    valor: 25.5,
-    descricao: 'Pagamento Recebido',
-    data: '27/08/2025',
-    hora: '01:22',
-  },
-]
-
-export function RecentTransactions({
-  transactions = defaultTransactions,
-  onViewExtract,
-}: RecentTransactionsProps) {
+export function RecentTransactions({ onViewExtract }: RecentTransactionsProps) {
   const router = useRouter()
+  const [transactions, setTransactions] = useState<Transaction[]>([])
+  const [isLoading, setIsLoading] = useState(true)
 
-  const formatCurrency = (value: number) => {
-    return value.toLocaleString('pt-BR', {
-      style: 'currency',
-      currency: 'BRL',
-    })
-  }
+  // Usar AuthContext para token
+  const { user, authReady } = useAuth()
 
-  const handleViewReceipt = (transactionId: string) => {
+  const { isBalanceHidden } = useBalanceVisibility()
+  const token = user ? 'authenticated' : null
+
+  useEffect(() => {
+    const fetchTransactions = async () => {
+      if (!authReady || !user) {
+        setIsLoading(false)
+        return
+      }
+
+      setIsLoading(true)
+      try {
+        const response = await transactionsAPI.list({ limit: 7, page: 1 })
+        if (response.success) {
+          setTransactions(response.data.data)
+        }
+      } catch (error) {
+        console.error(
+          '❌ RecentTransactions - Erro ao buscar transações:',
+          error,
+        )
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    // Aguardar um pouco para garantir que o token está disponível
+    const timer = setTimeout(() => {
+      fetchTransactions()
+    }, 200)
+
+    return () => {
+      clearTimeout(timer)
+    }
+  }, [user, authReady])
+
+  const formatCurrency = (value: number) =>
+    formatCurrencyBRL(value, { hide: isBalanceHidden })
+  const formatDate = (dateString: string) => formatDateBR(dateString)
+  const formatTime = (dateString: string) => formatTimeBR(dateString)
+
+  const handleViewReceipt = (transactionId: number) => {
     router.push(`/dashboard/comprovante/${transactionId}`)
   }
 
@@ -132,69 +116,91 @@ export function RecentTransactions({
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {transactions.map((transaction) => (
-                <tr
-                  key={transaction.id}
-                  className="hover:bg-gray-50 transition-colors"
-                >
-                  <td className="px-4 py-3 whitespace-nowrap">
-                    <div className="flex items-center gap-2">
-                      <div
-                        className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
-                          transaction.type === 'deposito'
-                            ? 'bg-green-100 text-green-700'
-                            : 'bg-red-100 text-red-700'
-                        }`}
-                      >
-                        {transaction.type === 'deposito' ? (
-                          <>
-                            <ArrowDownLeft size={14} />
-                            <span>Pix Recebido</span>
-                          </>
-                        ) : (
-                          <>
-                            <ArrowUpRight size={14} />
-                            <span>Pix enviado</span>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 whitespace-nowrap">
-                    <span
-                      className={`text-sm font-semibold ${
-                        transaction.type === 'deposito'
-                          ? 'text-green-600'
-                          : 'text-red-600'
-                      }`}
+              {isLoading
+                ? Array.from({ length: 5 }).map((_, index) => (
+                    <tr key={index}>
+                      <td className="px-4 py-3">
+                        <Skeleton className="h-6 w-32" />
+                      </td>
+                      <td className="px-4 py-3">
+                        <Skeleton className="h-5 w-20" />
+                      </td>
+                      <td className="px-4 py-3">
+                        <Skeleton className="h-4 w-40" />
+                      </td>
+                      <td className="px-4 py-3">
+                        <Skeleton className="h-10 w-24" />
+                      </td>
+                      <td className="px-4 py-3">
+                        <Skeleton className="h-8 w-8 rounded" />
+                      </td>
+                    </tr>
+                  ))
+                : transactions.map((transaction) => (
+                    <tr
+                      key={transaction.id}
+                      className="hover:bg-gray-50 transition-colors"
                     >
-                      {formatCurrency(transaction.valor)}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className="text-sm text-gray-900">
-                      {transaction.descricao}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 whitespace-nowrap">
-                    <div className="text-sm">
-                      <div className="font-medium text-gray-900">
-                        {transaction.hora}
-                      </div>
-                      <div className="text-gray-500">{transaction.data}</div>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 whitespace-nowrap">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      icon={<FileText size={16} />}
-                      onClick={() => handleViewReceipt(transaction.id)}
-                      className="p-1.5 text-gray-400 hover:text-gray-600"
-                    />
-                  </td>
-                </tr>
-              ))}
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        <div className="flex items-center gap-2">
+                          <div
+                            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
+                              transaction.tipo === 'deposito'
+                                ? 'bg-green-100 text-green-700'
+                                : 'bg-red-100 text-red-700'
+                            }`}
+                          >
+                            {transaction.tipo === 'deposito' ? (
+                              <>
+                                <ArrowDownLeft size={14} />
+                                <span>Pix Recebido</span>
+                              </>
+                            ) : (
+                              <>
+                                <ArrowUpRight size={14} />
+                                <span>Pix enviado</span>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        <span
+                          className={`text-sm font-semibold ${
+                            transaction.tipo === 'deposito'
+                              ? 'text-green-600'
+                              : 'text-red-600'
+                          }`}
+                        >
+                          {formatCurrency(transaction.amount)}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className="text-sm text-gray-900">
+                          {transaction.descricao}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        <div className="text-sm">
+                          <div className="font-medium text-gray-900">
+                            {formatTime(transaction.data)}
+                          </div>
+                          <div className="text-gray-500">
+                            {formatDate(transaction.data)}
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          icon={<FileText size={16} />}
+                          onClick={() => handleViewReceipt(transaction.id)}
+                          className="p-1.5 text-gray-400 hover:text-gray-600"
+                        />
+                      </td>
+                    </tr>
+                  ))}
             </tbody>
           </table>
         </div>

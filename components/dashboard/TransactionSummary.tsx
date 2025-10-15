@@ -4,6 +4,9 @@ import { useState, useEffect } from 'react'
 import { Card } from '@/components/ui/Card'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { dashboardAPI } from '@/lib/api'
+import { useAuth } from '@/contexts/AuthContext'
+import { useBalanceVisibility } from '@/contexts/BalanceVisibilityContext'
+import { formatCurrencyBRL } from '@/lib/format'
 import {
   BarChart3,
   Receipt,
@@ -65,19 +68,17 @@ export function TransactionSummary({
   const [isLoading, setIsLoading] = useState(true)
   const [data, setData] = useState<TransactionSummaryData>(defaultData)
 
+  // Usar AuthContext para token
+  const { user, authReady } = useAuth()
+
+  const { isBalanceHidden } = useBalanceVisibility()
+
   useEffect(() => {
     const fetchData = async () => {
-      const rawToken = localStorage.getItem('token')
-      const token =
-        rawToken === 'null' || rawToken === null || rawToken === ''
-          ? null
-          : rawToken
-
-      if (!token) {
+      if (!authReady || !user) {
         setIsLoading(false)
         return
       }
-
       setIsLoading(true)
       try {
         const response = await dashboardAPI.getTransactionSummary(period)
@@ -85,39 +86,26 @@ export function TransactionSummary({
           setData(response.data)
         }
       } catch (error) {
-        console.error('Erro ao buscar resumo de transações:', error)
+        console.error(
+          '❌ TransactionSummary - Erro ao buscar resumo de transações:',
+          error,
+        )
       } finally {
         setIsLoading(false)
       }
     }
 
-    const handleAuthTokenStored = () => {
+    // Aguardar um pouco para garantir que o token está disponível
+    const timer = setTimeout(() => {
       fetchData()
-    }
-
-    window.addEventListener('auth-token-stored', handleAuthTokenStored)
-
-    const rawToken = localStorage.getItem('token')
-    const token =
-      rawToken === 'null' || rawToken === null || rawToken === ''
-        ? null
-        : rawToken
-    if (token) {
-      fetchData()
-    } else {
-      setIsLoading(false)
-    }
+    }, 150)
 
     return () => {
-      window.removeEventListener('auth-token-stored', handleAuthTokenStored)
+      clearTimeout(timer)
     }
-  }, [period])
-  const formatCurrency = (value: number) => {
-    return value.toLocaleString('pt-BR', {
-      style: 'currency',
-      currency: 'BRL',
-    })
-  }
+  }, [period, user, authReady])
+  const formatCurrency = (value: number) =>
+    formatCurrencyBRL(value, { hide: isBalanceHidden })
 
   const formatPercent = (value: number) => {
     return `${value.toFixed(2)}%`

@@ -11,6 +11,9 @@ import { RecentTransactions } from '@/components/dashboard/RecentTransactions'
 import { useRouter } from 'next/navigation'
 import { dashboardAPI } from '@/lib/api'
 import { toast } from 'sonner'
+import { useAuth } from '@/contexts/AuthContext'
+import { useBalanceVisibility } from '@/contexts/BalanceVisibilityContext'
+import { formatCurrencyBRL } from '@/lib/format'
 import {
   ArrowUpRight,
   ArrowDownLeft,
@@ -41,19 +44,17 @@ export default function DashboardPage() {
   })
   const [isLoading, setIsLoading] = useState(true)
 
+  // Usar AuthContext para token
+  const { user, authReady } = useAuth()
+
+  const { isBalanceHidden } = useBalanceVisibility()
+
   useEffect(() => {
     const fetchStats = async () => {
-      const rawToken = localStorage.getItem('token')
-      const token =
-        rawToken === 'null' || rawToken === null || rawToken === ''
-          ? null
-          : rawToken
-
-      if (!token) {
+      if (!authReady || !user) {
         setIsLoading(false)
         return
       }
-
       setIsLoading(true)
       try {
         const response = await dashboardAPI.getStats()
@@ -61,7 +62,10 @@ export default function DashboardPage() {
           setStats(response.data)
         }
       } catch (error) {
-        console.error('Erro ao carregar estatísticas:', error)
+        console.error(
+          '❌ DashboardPage - Erro ao carregar estatísticas:',
+          error,
+        )
         if (error instanceof Error && !error.message.includes('Token')) {
           toast.error('Erro ao carregar estatísticas do dashboard')
         }
@@ -70,35 +74,18 @@ export default function DashboardPage() {
       }
     }
 
-    const handleAuthTokenStored = () => {
+    // Aguardar um pouco para garantir que o token está disponível
+    const timer = setTimeout(() => {
       fetchStats()
-    }
-
-    window.addEventListener('auth-token-stored', handleAuthTokenStored)
-
-    const rawToken = localStorage.getItem('token')
-    const token =
-      rawToken === 'null' || rawToken === null || rawToken === ''
-        ? null
-        : rawToken
-
-    if (token) {
-      fetchStats()
-    } else {
-      setIsLoading(false)
-    }
+    }, 250)
 
     return () => {
-      window.removeEventListener('auth-token-stored', handleAuthTokenStored)
+      clearTimeout(timer)
     }
-  }, [])
+  }, [user, authReady])
 
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL',
-    }).format(value)
-  }
+  const formatCurrency = (value: number) =>
+    formatCurrencyBRL(value, { hide: isBalanceHidden })
 
   const statsDisplay = [
     {
@@ -142,33 +129,6 @@ export default function DashboardPage() {
       icon: List,
       label: 'Extrato Detalhado',
       onClick: () => router.push('/dashboard/extrato'),
-    },
-  ]
-
-  const recentTransactions = [
-    {
-      id: '1',
-      type: 'saque' as const,
-      valor: 29.0,
-      descricao: 'Pagamento Enviado',
-      data: '31/08/2025',
-      hora: '15:16',
-    },
-    {
-      id: '2',
-      type: 'deposito' as const,
-      valor: 17.0,
-      descricao: 'Pagamento Recebido',
-      data: '30/08/2025',
-      hora: '05:42',
-    },
-    {
-      id: '3',
-      type: 'deposito' as const,
-      valor: 17.0,
-      descricao: 'Pagamento Recebido',
-      data: '28/08/2025',
-      hora: '07:22',
     },
   ]
 
@@ -246,7 +206,6 @@ export default function DashboardPage() {
         </Card>
 
         <RecentTransactions
-          transactions={recentTransactions}
           onViewExtract={() => router.push('/dashboard/extrato')}
         />
       </div>

@@ -14,8 +14,11 @@ import {
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Skeleton } from '@/components/ui/Skeleton'
-import { Filter } from 'lucide-react'
+import { Filter, Plus, Minus } from 'lucide-react'
 import { dashboardAPI } from '@/lib/api'
+import { useAuth } from '@/contexts/AuthContext'
+import { useBalanceVisibility } from '@/contexts/BalanceVisibilityContext'
+import { formatCurrencyBRL } from '@/lib/format'
 
 interface TransactionChartProps {
   period?: 'hoje' | 'ontem' | '7dias' | '30dias'
@@ -51,6 +54,11 @@ export function TransactionChart({
   const [zoom, setZoom] = useState(100)
   const [showFilters, setShowFilters] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
+
+  // Usar AuthContext para token
+  const { user, authReady } = useAuth()
+
+  const { isBalanceHidden } = useBalanceVisibility()
   const [chartData, setChartData] = useState<ChartData[]>([])
   const [cardData, setCardData] = useState<CardData>({
     total_depositos: 0,
@@ -61,17 +69,10 @@ export function TransactionChart({
 
   useEffect(() => {
     const fetchData = async () => {
-      const rawToken = localStorage.getItem('token')
-      const token =
-        rawToken === 'null' || rawToken === null || rawToken === ''
-          ? null
-          : rawToken
-
-      if (!token) {
+      if (!authReady || !user) {
         setIsLoading(false)
         return
       }
-
       setIsLoading(true)
       try {
         const response = await dashboardAPI.getInteractiveMovement(period)
@@ -80,36 +81,27 @@ export function TransactionChart({
           setCardData(response.data.cards)
         }
       } catch (error) {
-        console.error('Erro ao buscar dados da movimentação:', error)
+        console.error(
+          '❌ TransactionChart - Erro ao buscar dados da movimentação:',
+          error,
+        )
       } finally {
         setIsLoading(false)
       }
     }
 
-    const handleAuthTokenStored = () => {
+    // Aguardar um pouco para garantir que o token está disponível
+    const timer = setTimeout(() => {
       fetchData()
-    }
-
-    window.addEventListener('auth-token-stored', handleAuthTokenStored)
-
-    const rawToken = localStorage.getItem('token')
-    const token =
-      rawToken === 'null' || rawToken === null || rawToken === ''
-        ? null
-        : rawToken
-    if (token) {
-      fetchData()
-    } else {
-      setIsLoading(false)
-    }
+    }, 100)
 
     return () => {
-      window.removeEventListener('auth-token-stored', handleAuthTokenStored)
+      clearTimeout(timer)
     }
-  }, [period])
+  }, [period, user, authReady])
 
   const handleZoomIn = () => {
-    setZoom((prev) => Math.min(prev + 10, 200))
+    setZoom((prev) => Math.min(prev + 10, 150))
   }
 
   const handleZoomOut = () => {
@@ -121,9 +113,8 @@ export function TransactionChart({
     onPeriodChange?.('hoje')
   }
 
-  const formatCurrency = (value: number) => {
-    return `R$ ${value.toFixed(2).replace('.', ',')}`
-  }
+  const formatCurrency = (value: number) =>
+    formatCurrencyBRL(value, { hide: isBalanceHidden })
 
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
@@ -151,13 +142,23 @@ export function TransactionChart({
   const content = (
     <div className="space-y-4">
       <div className="space-y-4">
-        <div>
-          <h2 className="text-lg font-semibold text-gray-900">
-            Movimentação Interativa
-          </h2>
-          <p className="text-sm text-gray-600">
-            Depósitos e saques por período
-          </p>
+        <div className="flex items-start justify-between">
+          <div>
+            <h2 className="text-lg font-semibold text-gray-900">
+              Movimentação Interativa
+            </h2>
+            <p className="text-sm text-gray-600">
+              Depósitos e saques por período
+            </p>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            icon={<Filter size={16} />}
+            onClick={() => setShowFilters(!showFilters)}
+          >
+            Filtros
+          </Button>
         </div>
 
         <div className="flex justify-end">
@@ -178,18 +179,21 @@ export function TransactionChart({
         </div>
 
         <div className="flex justify-end items-center gap-4">
-          <Button
-            variant="outline"
-            size="sm"
-            icon={<Filter size={16} />}
-            onClick={() => setShowFilters(!showFilters)}
-          >
-            Filtros
-          </Button>
-
           <div className="flex items-center gap-2 text-sm text-gray-700">
             <span>Zoom:</span>
-            <span className="font-medium">{zoom}%</span>
+            <Button
+              variant="outline"
+              size="sm"
+              icon={<Minus size={14} />}
+              onClick={handleZoomOut}
+            />
+            <span className="font-medium w-12 text-center">{zoom}%</span>
+            <Button
+              variant="outline"
+              size="sm"
+              icon={<Plus size={14} />}
+              onClick={handleZoomIn}
+            />
           </div>
 
           <Button variant="primary" size="sm" onClick={handleReset}>
