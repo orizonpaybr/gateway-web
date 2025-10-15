@@ -119,7 +119,6 @@ export function TwoFactorVerify() {
       return
     }
 
-
     setShouldRender(false)
     setIsVerified(true)
   }
@@ -237,7 +236,7 @@ export function TwoFactorVerify() {
               variant="outline"
               fullWidth
               onClick={handleLogout}
-              className="border-red-500 hover:border-red-600 text-red-500 hover:text-red-600"
+              className="border-red-500 text-red-500 hover:bg-red-100 hover:border-red-500 hover:text-red-500"
             >
               Sair e fazer login novamente
             </Button>
