@@ -5,6 +5,7 @@ import {
   useContext,
   useState,
   useEffect,
+  useRef,
   ReactNode,
 } from 'react'
 import { useRouter } from 'next/navigation'
@@ -31,6 +32,7 @@ interface AuthContextType {
   user: User | null
   isAuthenticated: boolean
   isLoading: boolean
+  authReady: boolean
   show2FAModal: boolean
   tempToken: string | null
   login: (
@@ -55,19 +57,51 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useLocalStorage<User | null>('user', null)
   const [token, setToken] = useLocalStorage<string | null>('token', null)
   const [isLoading, setIsLoading] = useState(true)
+  const [authReady, setAuthReady] = useState(false)
   const [show2FAModal, setShow2FAModal] = useState(false)
   const [tempToken, setTempToken] = useState<string | null>(null)
   const router = useRouter()
 
   useEffect(() => {
     // Verificar se há um token salvo no localStorage
-    checkAuth()
-  }, [])
+    // Aguardar um pouco para garantir que o localStorage está disponível
+    const timer = setTimeout(() => {
+      // Só executar checkAuth se houver token no localStorage E não estivermos na página de login
+      if (
+        typeof window !== 'undefined' &&
+        localStorage.getItem('token') &&
+        !window.location.pathname.includes('/login')
+      ) {
+        checkAuth()
+      } else {
+        setIsLoading(false)
+        // Sem token: ainda não autenticado (aguardando 2FA ou login)
+        setAuthReady(false)
+      }
+    }, 100)
+
+    return () => clearTimeout(timer)
+  }, []) // ✅ Executar apenas uma vez na montagem
+
+  // Removido useEffect que causava loop infinito
+  // O checkAuth já é executado no useEffect inicial quando há token
 
   const checkAuth = async () => {
     try {
-      // Early return se não há token ou dados de usuário
-      if (!token || !user) {
+      console.log(
+        '🔍 checkAuth - Iniciando verificação de autenticação (DEVE SER CHAMADO APENAS UMA VEZ)',
+      )
+      // Aguardar um pouco mais para garantir que o localStorage está disponível
+      await new Promise((resolve) => setTimeout(resolve, 200))
+
+      // Verificar diretamente no localStorage se os dados estão disponíveis
+      const storedToken =
+        typeof window !== 'undefined' ? localStorage.getItem('token') : null
+      const storedUser =
+        typeof window !== 'undefined' ? localStorage.getItem('user') : null
+
+      // Early return se não há token ou dados de usuário no localStorage
+      if (!storedToken || !storedUser) {
         setIsLoading(false)
         return
       }
@@ -75,26 +109,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Tentar validar o token com a API
       const result = await authAPI.verifyToken()
 
-      // Usar dados validados ou fallback do localStorage
-      const userData =
-        result.success && result.data?.user ? result.data.user : user
-
-      try {
-        const profileResult = (await accountAPI.getProfile()) as any
-        if (profileResult.success && profileResult.data) {
-          setUser({
-            id: profileResult.data.id,
-            name: profileResult.data.name,
-            email: profileResult.data.email,
-            username: profileResult.data.username,
-            status: profileResult.data.status,
-            status_text: profileResult.data.status_text,
-            agency: profileResult.data.agency,
-            balance: profileResult.data.balance,
-            phone: profileResult.data.phone,
-            cnpj: profileResult.data.cnpj,
-          })
-        } else {
+      if (result.success) {
+        try {
+          console.log('🔍 checkAuth - Token válido, buscando perfil')
+          const profileResult = (await accountAPI.getProfile()) as any
+          if (profileResult.success && profileResult.data) {
+            setUser({
+              id: profileResult.data.id,
+              name: profileResult.data.name,
+              email: profileResult.data.email,
+              username: profileResult.data.username,
+              status: profileResult.data.status,
+              status_text: profileResult.data.status_text,
+              agency: profileResult.data.agency,
+              balance: profileResult.data.balance,
+              phone: profileResult.data.phone,
+              cnpj: profileResult.data.cnpj,
+            })
+          } else {
+            // Usar dados do localStorage se API falhar
+            const userData = JSON.parse(storedUser)
+            setUser({
+              id: userData.id,
+              name: userData.name,
+              email: userData.email,
+              username: userData.username,
+              agency: userData.agency,
+            })
+          }
+        } catch (profileError) {
+          console.error('Erro ao buscar perfil:', profileError)
+          // Usar dados do localStorage como fallback
+          const userData = JSON.parse(storedUser)
           setUser({
             id: userData.id,
             name: userData.name,
@@ -103,22 +149,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             agency: userData.agency,
           })
         }
-      } catch (profileError) {
-        console.error('Erro ao buscar perfil:', profileError)
-        setUser({
-          id: userData.id,
-          name: userData.name,
-          email: userData.email,
-          username: userData.username,
-          agency: userData.agency,
-        })
+      } else {
+        console.log(
+          '❌ checkAuth - Token inválido, mas mantendo dados do localStorage',
+        )
+        // Manter dados do localStorage mesmo se token for inválido
+        // O usuário pode fazer logout manual se necessário
       }
     } catch (error) {
       console.error('Erro ao verificar autenticação:', error)
-      // Limpar dados em caso de erro
-      authAPI.logout()
+      // Não limpar dados automaticamente - deixar o usuário fazer logout manual
     } finally {
       setIsLoading(false)
+      setAuthReady(true)
     }
   }
 
@@ -144,6 +187,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       // Redirecionar para dashboard onde o modal de verificação aparecerá
       router.push('/dashboard')
+      // Ainda não pronto para carregar dados protegidos
+      setAuthReady(false)
       return {
         requires2FA: true,
         tempToken: response.temp_token,
@@ -151,7 +196,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     // Definir usuário se disponível
-    response.data?.user && setUser(extractUserData(response.data.user))
+    if (response.data?.user) {
+      setUser(extractUserData(response.data.user))
+      // Login sem 2FA: pronto para carregar dados
+      setAuthReady(true)
+    }
 
     return {}
   }
@@ -163,6 +212,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(extractUserData(response.data.user))
       setShow2FAModal(false)
       setTempToken(null)
+      // Agora com token definitivo, liberar carregamentos
+      setAuthReady(true)
 
       toast.success('Login realizado com sucesso!', {
         description: 'Bem-vindo de volta!',
@@ -226,6 +277,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         user,
         isAuthenticated: !!user,
         isLoading,
+        authReady,
         show2FAModal,
         tempToken,
         login,
