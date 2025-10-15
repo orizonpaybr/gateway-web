@@ -23,6 +23,7 @@ import { PixIcon } from '@/components/icons/PixIcon'
 import { WhatsAppIcon } from '@/components/icons/WhatsAppIcon'
 import { DocumentIcon } from '@/components/icons/DocumentIcon'
 import { Button } from '@/components/ui/Button'
+import { accountAPI } from '@/lib/api'
 
 interface MenuItem {
   icon: React.ElementType
@@ -91,10 +92,28 @@ export function Sidebar() {
   const { user, logout } = useAuth()
   const [expandedMenus, setExpandedMenus] = useState<string[]>([])
   const [isHydrated, setIsHydrated] = useState(false)
+  const [totalDepositos, setTotalDepositos] = useState<number | null>(null)
 
   useEffect(() => {
     setIsHydrated(true)
   }, [])
+
+  useEffect(() => {
+    const loadBalance = async () => {
+      try {
+        if (!user) return
+        const response = await accountAPI.getBalance()
+        if (response?.success && response.data) {
+          setTotalDepositos(response.data.totalInflows || 0)
+        }
+      } catch (e) {
+        console.error('Erro ao buscar saldo:', e)
+        setTotalDepositos(0)
+      }
+    }
+    const t = setTimeout(loadBalance, 200)
+    return () => clearTimeout(t)
+  }, [user])
 
   const handleLogout = async () => {
     try {
@@ -112,9 +131,9 @@ export function Sidebar() {
     )
   }
 
-  const currentBalance = 250
+  const currentBalance = totalDepositos ?? 0
   const targetBalance = 100000
-  const progress = (currentBalance / targetBalance) * 100
+  const progress = Math.min(100, (currentBalance / targetBalance) * 100)
 
   return (
     <aside className="fixed left-0 top-0 h-screen w-72 bg-gray-50 shadow-sm flex flex-col">
