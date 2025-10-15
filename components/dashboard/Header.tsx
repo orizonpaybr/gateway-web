@@ -1,9 +1,9 @@
 'use client'
 
-import { useState } from 'react'
 import { EyeOff, Eye, RefreshCw } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { usePathname } from 'next/navigation'
+import { useBalanceVisibility } from '@/contexts/BalanceVisibilityContext'
 
 const pageTitles: Record<string, string> = {
   '/dashboard': 'Dashboard Orizon',
@@ -21,7 +21,7 @@ const pageTitles: Record<string, string> = {
 }
 
 export function Header() {
-  const [balanceHidden, setBalanceHidden] = useState(false)
+  const { isBalanceHidden, toggleBalanceVisibility } = useBalanceVisibility()
   const pathname = usePathname()
   const pageTitle = pageTitles[pathname] || 'Dashboard Orizon'
 
@@ -39,12 +39,12 @@ export function Header() {
         <Button
           variant="ghost"
           size="sm"
-          icon={balanceHidden ? <Eye size={18} /> : <EyeOff size={18} />}
-          onClick={() => setBalanceHidden(!balanceHidden)}
-          title={balanceHidden ? 'Mostrar Saldo' : 'Ocultar Saldo'}
+          icon={isBalanceHidden ? <Eye size={18} /> : <EyeOff size={18} />}
+          onClick={toggleBalanceVisibility}
+          title={isBalanceHidden ? 'Mostrar Saldo' : 'Ocultar Saldo'}
         >
           <span className="hidden sm:inline">
-            {balanceHidden ? 'Mostrar' : 'Ocultar'} Saldo
+            {isBalanceHidden ? 'Mostrar' : 'Ocultar'} Saldo
           </span>
         </Button>
 
