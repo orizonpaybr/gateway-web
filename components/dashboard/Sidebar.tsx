@@ -89,7 +89,7 @@ const supportAndDocsItems: MenuItem[] = [
 
 export function Sidebar() {
   const pathname = usePathname()
-  const { user, logout } = useAuth()
+  const { user, authReady, logout } = useAuth()
   const [expandedMenus, setExpandedMenus] = useState<string[]>([])
   const [isHydrated, setIsHydrated] = useState(false)
   const [totalDepositos, setTotalDepositos] = useState<number | null>(null)
@@ -101,7 +101,7 @@ export function Sidebar() {
   useEffect(() => {
     const loadBalance = async () => {
       try {
-        if (!user) return
+        if (!authReady || !user) return
         const response = await accountAPI.getBalance()
         if (response?.success && response.data) {
           setTotalDepositos(response.data.totalInflows || 0)
@@ -113,7 +113,7 @@ export function Sidebar() {
     }
     const t = setTimeout(loadBalance, 200)
     return () => clearTimeout(t)
-  }, [user])
+  }, [user, authReady])
 
   const handleLogout = async () => {
     try {

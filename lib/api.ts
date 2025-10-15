@@ -251,15 +251,89 @@ export const authAPI = {
 }
 
 export const transactionsAPI = {
-  list: async (filters?: any) => {
-    // const params = new URLSearchParams(filters)
-    // return apiRequest(`/transactions?${params}`)
-    throw new Error('API não implementada')
+  list: async (filters?: {
+    page?: number
+    limit?: number
+    tipo?: 'deposito' | 'saque'
+    status?: string
+    busca?: string
+    data_inicio?: string
+    data_fim?: string
+  }): Promise<{
+    success: boolean
+    data: {
+      data: Array<{
+        id: number
+        transaction_id: string
+        tipo: 'deposito' | 'saque'
+        amount: number
+        valor_liquido: number
+        taxa: number
+        status: string
+        status_legivel: string
+        data: string
+        created_at: string
+        nome_cliente: string
+        documento: string
+        adquirente: string
+        descricao: string
+      }>
+      current_page: number
+      last_page: number
+      per_page: number
+      total: number
+      from: number
+      to: number
+    }
+  }> => {
+    const params = new URLSearchParams()
+    if (filters?.page) params.append('page', filters.page.toString())
+    if (filters?.limit) params.append('limit', filters.limit.toString())
+    if (filters?.tipo) params.append('tipo', filters.tipo)
+    if (filters?.status) params.append('status', filters.status)
+    if (filters?.busca) params.append('busca', filters.busca)
+    if (filters?.data_inicio) params.append('data_inicio', filters.data_inicio)
+    if (filters?.data_fim) params.append('data_fim', filters.data_fim)
+
+    return apiRequest(`/transactions?${params.toString()}`)
   },
 
-  getById: async (id: string) => {
-    // return apiRequest(`/transactions/${id}`)
-    throw new Error('API não implementada')
+  getById: async (
+    id: string,
+  ): Promise<{
+    success: boolean
+    data: {
+      id: number
+      transaction_id: string
+      tipo: 'deposito' | 'saque'
+      metodo: string
+      movimento: string
+      amount: number
+      valor_liquido: number
+      taxa: number
+      status: string
+      status_legivel: string
+      data: string
+      created_at: string
+      updated_at: string
+      origem: {
+        nome: string
+        documento: string
+      }
+      destino: {
+        nome: string
+        documento: string
+      }
+      adquirente: string
+      codigo_autenticacao: string
+      descricao: string
+      qrcode?: string
+      pix_key?: string
+      pix_key_type?: string
+      end_to_end?: string
+    }
+  }> => {
+    return apiRequest(`/transactions/${id}`)
   },
 }
 
@@ -289,9 +363,15 @@ export const qrCodeAPI = {
 }
 
 export const accountAPI = {
-  getBalance: async () => {
-    // return apiRequest('/account/balance')
-    throw new Error('API não implementada')
+  getBalance: async (): Promise<{
+    success: boolean
+    data: {
+      current: number
+      totalInflows: number
+      totalOutflows: number
+    }
+  }> => {
+    return apiRequest('/balance')
   },
 
   getProfile: async () => {
