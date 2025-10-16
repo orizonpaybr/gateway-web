@@ -15,6 +15,7 @@ import {
   RotateCcw,
   Calendar,
 } from 'lucide-react'
+import * as XLSX from 'xlsx'
 
 type DepositoItem = {
   id: number
@@ -136,6 +137,62 @@ export default function DepositosPage() {
 
   const hasData = !isLoading && items.length > 0
 
+  const buildRowsForExcel = (rows: DepositoItem[]) =>
+    rows.map((r) => ({
+      ID: r.id,
+      Transação: r.transaction_id,
+      Tipo: r.tipo,
+      Descrição: r.descricao,
+      'Data (ISO)': r.data,
+      'Valor Líquido (BRL)': r.valor_liquido,
+      Taxa: r.taxa,
+      Status: r.status_legivel || r.status,
+      Adquirente: r.adquirente,
+      Cliente: r.nome_cliente,
+      Documento: r.documento,
+    }))
+
+  const handleExport = async () => {
+    try {
+      let allRows: DepositoItem[] = []
+      const { inicio, fim } = computeDateRange()
+
+      if (items.length > 0) {
+        if (totalPages === 1) {
+          allRows = items
+        } else {
+          for (let p = 1; p <= totalPages; p++) {
+            const resp = await transactionsAPI.list({
+              page: p,
+              limit: perPage,
+              tipo: 'deposito',
+              busca: debouncedSearch || undefined,
+              data_inicio: inicio,
+              data_fim: fim,
+            })
+            if (resp?.success) {
+              allRows = allRows.concat(
+                (resp.data.data as unknown as DepositoItem[]) || [],
+              )
+            }
+          }
+        }
+      } else {
+        allRows = []
+      }
+
+      const ws = XLSX.utils.json_to_sheet(buildRowsForExcel(allRows))
+      const wb = XLSX.utils.book_new()
+      XLSX.utils.book_append_sheet(wb, ws, 'Depositos')
+      XLSX.writeFile(
+        wb,
+        `depositos_${new Date().toISOString().slice(0, 10)}.xlsx`,
+      )
+    } catch (e) {
+      console.error('Erro ao exportar XLSX:', e)
+    }
+  }
+
   return (
     <div className="p-4 md:p-6 space-y-4">
       <div className="flex items-center justify-between">
@@ -148,7 +205,11 @@ export default function DepositosPage() {
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <Button variant="outline" icon={<Download size={18} />}>
+          <Button
+            variant="outline"
+            icon={<Download size={18} />}
+            onClick={handleExport}
+          >
             Exportar
           </Button>
         </div>
