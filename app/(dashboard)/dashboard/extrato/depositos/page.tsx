@@ -198,7 +198,7 @@ export default function DepositosPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-semibold text-gray-900">
-            EXTRATO DA CONTA
+            Extrato da Conta
           </h1>
           <p className="text-sm text-gray-600">
             Detalhamento de movimentações financeiras da conta

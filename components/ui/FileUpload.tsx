@@ -1,5 +1,4 @@
 import React, { useRef, useState, useEffect } from 'react'
-import Image from 'next/image'
 import { cn } from '@/lib/utils'
 import { Upload, File, X } from 'lucide-react'
 
@@ -31,13 +30,10 @@ export const FileUpload: React.FC<FileUploadProps> = ({
       const previewUrl = URL.createObjectURL(value)
       setImagePreview(previewUrl)
       return () => URL.revokeObjectURL(previewUrl)
-    } else {
-      if (imagePreview) {
-        URL.revokeObjectURL(imagePreview)
-        setImagePreview(null)
-      }
     }
-  }, [value, imagePreview])
+
+    setImagePreview(null)
+  }, [value])
 
   const handleFile = (file: File) => {
     if (file.size > maxSize * 1024 * 1024) {
@@ -135,12 +131,11 @@ export const FileUpload: React.FC<FileUploadProps> = ({
         {value ? (
           <div className="flex items-center justify-center gap-3">
             {imagePreview ? (
-              <div className="relative w-16 h-16 rounded-lg overflow-hidden border border-gray-200">
-                <Image
+              <div className="w-16 h-16 rounded-lg overflow-hidden border border-gray-200">
+                <img
                   src={imagePreview}
                   alt="Preview"
-                  fill
-                  className="object-cover"
+                  className="object-cover w-full h-full"
                 />
               </div>
             ) : (
