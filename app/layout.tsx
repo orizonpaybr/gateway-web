@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import './globals.css'
 import { Toaster } from 'sonner'
 import { Providers } from '@/components/Providers'
+import { ReactQueryProvider } from '@/components/providers/ReactQueryProvider'
 
 export const metadata: Metadata = {
   title: 'Orizon Pay - Finance',
@@ -21,19 +22,21 @@ export default function RootLayout({
   return (
     <html lang="pt-BR">
       <body>
-        <Providers>
-          {children}
-          <Toaster
-            position="bottom-right"
-            richColors
-            toastOptions={{
-              style: {
-                background: '#FFFFFF',
-                border: '1px solid #EBEBEB',
-              },
-            }}
-          />
-        </Providers>
+        <ReactQueryProvider>
+          <Providers>
+            {children}
+            <Toaster
+              position="bottom-right"
+              richColors
+              toastOptions={{
+                style: {
+                  background: '#FFFFFF',
+                  border: '1px solid #EBEBEB',
+                },
+              }}
+            />
+          </Providers>
+        </ReactQueryProvider>
       </body>
     </html>
   )
