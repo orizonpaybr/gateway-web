@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -41,8 +42,8 @@ export function Dialog({
 
   if (!open) return null
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
+  const modalContent = (
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center">
       <div className="absolute inset-0 bg-black/40" onClick={onClose} />
       <div
         className={cn(
@@ -71,4 +72,7 @@ export function Dialog({
       </div>
     </div>
   )
+
+  // Renderizar o modal usando portal diretamente no body
+  return createPortal(modalContent, document.body)
 }
