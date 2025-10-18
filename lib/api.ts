@@ -345,20 +345,121 @@ export const pixAPI = {
     // })
     throw new Error('API não implementada')
   },
+
+  // Listar infrações do Pix
+  listInfracoes: async (filters?: {
+    page?: number
+    limit?: number
+    status?: string
+    busca?: string
+    data_inicio?: string
+    data_fim?: string
+  }): Promise<{
+    success: boolean
+    data: {
+      data: Array<{
+        id: number
+        status: string
+        data_criacao: string
+        data_limite: string
+        valor: number
+        end_to_end: string
+        tipo: string
+        descricao: string
+        created_at: string
+        updated_at: string
+      }>
+      current_page: number
+      last_page: number
+      per_page: number
+      total: number
+      from: number
+      to: number
+    }
+  }> => {
+    const params = new URLSearchParams()
+    if (filters?.page) params.append('page', filters.page.toString())
+    if (filters?.limit) params.append('limit', filters.limit.toString())
+    if (filters?.status) params.append('status', filters.status)
+    if (filters?.busca) params.append('busca', filters.busca)
+    if (filters?.data_inicio) params.append('data_inicio', filters.data_inicio)
+    if (filters?.data_fim) params.append('data_fim', filters.data_fim)
+
+    return apiRequest(`/pix/infracoes?${params.toString()}`)
+  },
+
+  // Buscar detalhes de uma infração específica
+  getInfracao: async (
+    id: string,
+  ): Promise<{
+    success: boolean
+    data: {
+      id: number
+      status: string
+      data_criacao: string
+      data_limite: string
+      valor: number
+      end_to_end: string
+      tipo: string
+      descricao: string
+      detalhes: string
+      transacao_relacionada?: {
+        id: number
+        transaction_id: string
+        valor: number
+        data: string
+      }
+      created_at: string
+      updated_at: string
+    }
+  }> => {
+    return apiRequest(`/pix/infracoes/${id}`)
+  },
 }
 
 export const qrCodeAPI = {
-  generate: async (data: any) => {
-    // return apiRequest('/qrcode/generate', {
-    //   method: 'POST',
-    //   body: JSON.stringify(data),
-    // })
-    throw new Error('API não implementada')
-  },
+  list: async (filters?: {
+    page?: number
+    limit?: number
+    status?: string
+    busca?: string
+    data_inicio?: string
+    data_fim?: string
+  }): Promise<{
+    success: boolean
+    data: {
+      data: Array<{
+        id: number
+        nome: string
+        descricao: string
+        valor: number
+        tipo: 'cobranca' | 'doacao'
+        status: 'ativo' | 'inativo' | 'expirado'
+        data_criacao: string
+        expires_at: string
+        transaction_id: string
+        qr_code: string
+        qr_code_image_url: string
+        created_at: string
+        updated_at: string
+      }>
+      current_page: number
+      last_page: number
+      per_page: number
+      total: number
+      from: number
+      to: number
+    }
+  }> => {
+    const params = new URLSearchParams()
+    if (filters?.page) params.append('page', filters.page.toString())
+    if (filters?.limit) params.append('limit', filters.limit.toString())
+    if (filters?.status) params.append('status', filters.status)
+    if (filters?.busca) params.append('busca', filters.busca)
+    if (filters?.data_inicio) params.append('data_inicio', filters.data_inicio)
+    if (filters?.data_fim) params.append('data_fim', filters.data_fim)
 
-  list: async (filters?: any) => {
-    // return apiRequest('/qrcode')
-    throw new Error('API não implementada')
+    return apiRequest(`/qrcodes?${params.toString()}`)
   },
 }
 
