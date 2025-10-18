@@ -1,17 +1,11 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { NotificationBanner } from '@/components/dashboard/NotificationBanner'
-import { TransactionChart } from '@/components/dashboard/TransactionChart'
-import { TransactionSummary } from '@/components/dashboard/TransactionSummary'
-import { RecentTransactions } from '@/components/dashboard/RecentTransactions'
 import { useRouter } from 'next/navigation'
-import { dashboardAPI } from '@/lib/api'
-import { toast } from 'sonner'
-import { useAuth } from '@/contexts/AuthContext'
 import { useBalanceVisibility } from '@/contexts/BalanceVisibilityContext'
 import { formatCurrencyBRL } from '@/lib/format'
 import {
@@ -23,114 +17,123 @@ import {
   List,
 } from 'lucide-react'
 import { PixIcon } from '@/components/icons/PixIcon'
+import { createLazyComponent } from '@/components/optimized/LazyComponent'
 
-interface DashboardStats {
-  saldo_disponivel: number
-  entradas_mes: number
-  saidas_mes: number
-  splits_mes: number
-}
+// Componentes lazy para melhor performance
+const LazyTransactionChart = createLazyComponent(() =>
+  import('@/components/dashboard/TransactionChart').then((m) => ({
+    default: m.TransactionChart,
+  })),
+)
+const LazyTransactionSummary = createLazyComponent(() =>
+  import('@/components/dashboard/TransactionSummary').then((m) => ({
+    default: m.TransactionSummary,
+  })),
+)
+const LazyRecentTransactions = createLazyComponent(() =>
+  import('@/components/dashboard/RecentTransactions').then((m) => ({
+    default: m.RecentTransactions,
+  })),
+)
+import {
+  useDashboardStats,
+  useInteractiveMovement,
+  useTransactionSummary,
+  useRecentTransactions,
+} from '@/hooks/useReactQuery'
 
 export default function DashboardPage() {
   const router = useRouter()
   const [chartPeriod, setChartPeriod] = useState<
     'hoje' | 'ontem' | '7dias' | '30dias'
-  >('hoje')
-  const [stats, setStats] = useState<DashboardStats>({
-    saldo_disponivel: 0,
-    entradas_mes: 0,
-    saidas_mes: 0,
-    splits_mes: 0,
-  })
-  const [isLoading, setIsLoading] = useState(true)
+  >('30dias')
 
   // Usar AuthContext para token
-  const { user, authReady } = useAuth()
-
   const { isBalanceHidden } = useBalanceVisibility()
 
-  useEffect(() => {
-    const fetchStats = async () => {
-      if (!authReady || !user) {
-        setIsLoading(false)
-        return
-      }
-      setIsLoading(true)
-      try {
-        const response = await dashboardAPI.getStats()
-        if (response.success) {
-          setStats(response.data)
-        }
-      } catch (error) {
-        console.error(
-          '❌ DashboardPage - Erro ao carregar estatísticas:',
-          error,
-        )
-        if (error instanceof Error && !error.message.includes('Token')) {
-          toast.error('Erro ao carregar estatísticas do dashboard')
-        }
-      } finally {
-        setIsLoading(false)
-      }
-    }
+  // React Query hooks para dados otimizados
+  const {
+    data: stats,
+    isLoading: statsLoading,
+    error: statsError,
+  } = useDashboardStats()
+  const { data: interactiveData, isLoading: interactiveLoading } =
+    useInteractiveMovement(chartPeriod)
+  const { data: summaryData, isLoading: summaryLoading } =
+    useTransactionSummary(chartPeriod)
+  const { data: recentData, isLoading: recentLoading } =
+    useRecentTransactions(7)
 
-    // Aguardar um pouco para garantir que o token está disponível
-    const timer = setTimeout(() => {
-      fetchStats()
-    }, 250)
+  // Memorizar handlers para evitar re-renders
+  const handlePeriodChange = useCallback(
+    (period: 'hoje' | 'ontem' | '7dias' | '30dias') => {
+      setChartPeriod(period)
+    },
+    [],
+  )
 
-    return () => {
-      clearTimeout(timer)
-    }
-  }, [user, authReady])
+  const isLoading =
+    statsLoading || interactiveLoading || summaryLoading || recentLoading
 
-  const formatCurrency = (value: number) =>
-    formatCurrencyBRL(value, { hide: isBalanceHidden })
+  // Memorizar formatação de moeda
+  const formatCurrency = useCallback(
+    (value: number) => formatCurrencyBRL(value, { hide: isBalanceHidden }),
+    [isBalanceHidden],
+  )
 
-  const statsDisplay = [
-    {
-      title: 'Saldo Disponível',
-      value: formatCurrency(stats.saldo_disponivel),
-      icon: DollarSign,
-      color: 'bg-green-100 text-green-600',
-    },
-    {
-      title: 'Entradas do Mês',
-      value: formatCurrency(stats.entradas_mes),
-      icon: ArrowDownLeft,
-      color: 'bg-blue-100 text-blue-600',
-    },
-    {
-      title: 'Saídas do Mês',
-      value: formatCurrency(stats.saidas_mes),
-      icon: ArrowUpRight,
-      color: 'bg-red-100 text-red-600',
-    },
-    {
-      title: 'Splits do Mês',
-      value: formatCurrency(stats.splits_mes),
-      icon: TrendingUp,
-      color: 'bg-purple-100 text-purple-600',
-    },
-  ]
+  // Memorizar dados das estatísticas
+  const statsDisplay = useMemo(() => {
+    if (!stats?.data) return []
 
-  const quickActions = [
-    {
-      icon: PixIcon,
-      label: 'Pix com Chave',
-      onClick: () => router.push('/dashboard/pix'),
-    },
-    {
-      icon: Search,
-      label: 'Buscar Transações',
-      onClick: () => router.push('/dashboard/buscar'),
-    },
-    {
-      icon: List,
-      label: 'Extrato Detalhado',
-      onClick: () => router.push('/dashboard/extrato'),
-    },
-  ]
+    return [
+      {
+        title: 'Saldo Disponível',
+        value: formatCurrency(stats.data.saldo_disponivel),
+        icon: DollarSign,
+        color: 'bg-green-100 text-green-600',
+      },
+      {
+        title: 'Entradas do Mês',
+        value: formatCurrency(stats.data.entradas_mes),
+        icon: ArrowDownLeft,
+        color: 'bg-blue-100 text-blue-600',
+      },
+      {
+        title: 'Saídas do Mês',
+        value: formatCurrency(stats.data.saidas_mes),
+        icon: ArrowUpRight,
+        color: 'bg-red-100 text-red-600',
+      },
+      {
+        title: 'Splits do Mês',
+        value: formatCurrency(stats.data.splits_mes),
+        icon: TrendingUp,
+        color: 'bg-purple-100 text-purple-600',
+      },
+    ]
+  }, [stats, formatCurrency])
+
+  // Memorizar ações rápidas
+  const quickActions = useMemo(
+    () => [
+      {
+        icon: PixIcon,
+        label: 'Pix com Chave',
+        onClick: () => router.push('/dashboard/pix'),
+      },
+      {
+        icon: Search,
+        label: 'Buscar Transações',
+        onClick: () => router.push('/dashboard/buscar'),
+      },
+      {
+        icon: List,
+        label: 'Extrato Detalhado',
+        onClick: () => router.push('/dashboard/extrato'),
+      },
+    ],
+    [router],
+  )
 
   return (
     <div className="space-y-6">
@@ -188,9 +191,9 @@ export default function DashboardPage() {
 
         <Card className="p-6">
           <div className="space-y-6">
-            <TransactionChart
+            <LazyTransactionChart
               period={chartPeriod}
-              onPeriodChange={setChartPeriod}
+              onPeriodChange={handlePeriodChange}
               embedded={true}
             />
 
@@ -201,11 +204,11 @@ export default function DashboardPage() {
               <p className="text-sm text-gray-600">Seus dados de transações</p>
             </div>
 
-            <TransactionSummary period={chartPeriod} embedded={true} />
+            <LazyTransactionSummary period={chartPeriod} embedded={true} />
           </div>
         </Card>
 
-        <RecentTransactions
+        <LazyRecentTransactions
           onViewExtract={() => router.push('/dashboard/extrato')}
         />
       </div>

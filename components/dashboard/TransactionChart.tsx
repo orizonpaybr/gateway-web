@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import {
   LineChart,
   Line,
@@ -15,28 +15,14 @@ import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { Filter, Plus, Minus } from 'lucide-react'
-import { dashboardAPI } from '@/lib/api'
-import { useAuth } from '@/contexts/AuthContext'
 import { useBalanceVisibility } from '@/contexts/BalanceVisibilityContext'
 import { formatCurrencyBRL } from '@/lib/format'
+import { useInteractiveMovement } from '@/hooks/useReactQuery'
 
 interface TransactionChartProps {
   period?: 'hoje' | 'ontem' | '7dias' | '30dias'
   onPeriodChange?: (period: 'hoje' | 'ontem' | '7dias' | '30dias') => void
   embedded?: boolean
-}
-
-interface ChartData {
-  periodo: string
-  depositos: number
-  saques: number
-}
-
-interface CardData {
-  total_depositos: number
-  qtd_depositos: number
-  total_saques: number
-  qtd_saques: number
 }
 
 const periodLabels = {
@@ -47,74 +33,73 @@ const periodLabels = {
 }
 
 export function TransactionChart({
-  period = 'hoje',
+  period = '30dias',
   onPeriodChange,
   embedded = false,
 }: TransactionChartProps) {
   const [zoom, setZoom] = useState(100)
   const [showFilters, setShowFilters] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
-
-  // Usar AuthContext para token
-  const { user, authReady } = useAuth()
-
   const { isBalanceHidden } = useBalanceVisibility()
-  const [chartData, setChartData] = useState<ChartData[]>([])
-  const [cardData, setCardData] = useState<CardData>({
-    total_depositos: 0,
-    qtd_depositos: 0,
-    total_saques: 0,
-    qtd_saques: 0,
-  })
 
-  useEffect(() => {
-    const fetchData = async () => {
-      if (!authReady || !user) {
-        setIsLoading(false)
-        return
-      }
-      setIsLoading(true)
-      try {
-        const response = await dashboardAPI.getInteractiveMovement(period)
-        if (response.success) {
-          setChartData(response.data.chart)
-          setCardData(response.data.cards)
-        }
-      } catch (error) {
-        console.error(
-          '❌ TransactionChart - Erro ao buscar dados da movimentação:',
-          error,
-        )
-      } finally {
-        setIsLoading(false)
+  // React Query hook para dados otimizados
+  const {
+    data: interactiveData,
+    isLoading,
+    error,
+  } = useInteractiveMovement(period)
+
+  // Memorizar dados processados
+  const processedData = useMemo(() => {
+    if (!interactiveData?.data) {
+      return {
+        chartData: [],
+        cardData: {
+          total_depositos: 0,
+          qtd_depositos: 0,
+          total_saques: 0,
+          qtd_saques: 0,
+        },
       }
     }
 
-    // Aguardar um pouco para garantir que o token está disponível
-    const timer = setTimeout(() => {
-      fetchData()
-    }, 100)
-
-    return () => {
-      clearTimeout(timer)
+    return {
+      chartData: interactiveData.data.chart || [],
+      cardData: interactiveData.data.cards || {
+        total_depositos: 0,
+        qtd_depositos: 0,
+        total_saques: 0,
+        qtd_saques: 0,
+      },
     }
-  }, [period, user, authReady])
+  }, [interactiveData])
 
-  const handleZoomIn = () => {
-    setZoom((prev) => Math.min(prev + 10, 150))
-  }
+  // Memorizar handlers
+  const handleZoomIn = useCallback(() => {
+    setZoom((prev) => Math.min(prev + 10, 200))
+  }, [])
 
-  const handleZoomOut = () => {
+  const handleZoomOut = useCallback(() => {
     setZoom((prev) => Math.max(prev - 10, 50))
-  }
+  }, [])
 
-  const handleReset = () => {
+  const handlePeriodChange = useCallback(
+    (newPeriod: 'hoje' | 'ontem' | '7dias' | '30dias') => {
+      onPeriodChange?.(newPeriod)
+    },
+    [onPeriodChange],
+  )
+
+  const handleReset = useCallback(() => {
     setZoom(100)
-    onPeriodChange?.('hoje')
-  }
+    onPeriodChange?.('30dias')
+  }, [onPeriodChange])
 
-  const formatCurrency = (value: number) =>
-    formatCurrencyBRL(value, { hide: isBalanceHidden })
+  const needsReset = zoom !== 100 || period !== '30dias'
+
+  const formatCurrency = useCallback(
+    (value: number) => formatCurrencyBRL(value, { hide: isBalanceHidden }),
+    [isBalanceHidden],
+  )
 
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
@@ -170,7 +155,7 @@ export function TransactionChart({
                 key={key}
                 variant={period === key ? 'primary' : 'outline'}
                 size="sm"
-                onClick={() => onPeriodChange?.(key)}
+                onClick={() => handlePeriodChange(key)}
               >
                 {periodLabels[key]}
               </Button>
@@ -196,7 +181,12 @@ export function TransactionChart({
             />
           </div>
 
-          <Button variant="primary" size="sm" onClick={handleReset}>
+          <Button
+            variant={needsReset ? 'primary' : 'outline'}
+            size="sm"
+            onClick={handleReset}
+            disabled={!needsReset}
+          >
             Resetar
           </Button>
         </div>
@@ -215,7 +205,7 @@ export function TransactionChart({
         ) : (
           <ResponsiveContainer width="100%" height="100%">
             <LineChart
-              data={chartData}
+              data={processedData.chartData}
               margin={{ top: 5, right: 10, left: 0, bottom: 5 }}
             >
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
@@ -277,7 +267,7 @@ export function TransactionChart({
             <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
               <p className="text-sm text-gray-600 mb-2">Total Depósitos</p>
               <p className="text-xl font-bold text-green-600 mb-1">
-                {formatCurrency(cardData.total_depositos)}
+                {formatCurrency(processedData.cardData.total_depositos)}
               </p>
               <p className="text-xs text-gray-500">Valor em reais</p>
             </div>
@@ -285,7 +275,7 @@ export function TransactionChart({
             <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
               <p className="text-sm text-gray-600 mb-2">Total Saques</p>
               <p className="text-xl font-bold text-red-600 mb-1">
-                {formatCurrency(cardData.total_saques)}
+                {formatCurrency(processedData.cardData.total_saques)}
               </p>
               <p className="text-xs text-gray-500">Valor em reais</p>
             </div>
@@ -293,7 +283,7 @@ export function TransactionChart({
             <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
               <p className="text-sm text-gray-600 mb-2">Qtd Depósitos</p>
               <p className="text-xl font-bold text-gray-900 mb-1">
-                {cardData.qtd_depositos}
+                {processedData.cardData.qtd_depositos}
               </p>
               <p className="text-xs text-gray-500">Transações</p>
             </div>
@@ -301,7 +291,7 @@ export function TransactionChart({
             <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
               <p className="text-sm text-gray-600 mb-2">Qtd Saques</p>
               <p className="text-xl font-bold text-gray-900 mb-1">
-                {cardData.qtd_saques}
+                {processedData.cardData.qtd_saques}
               </p>
               <p className="text-xs text-gray-500">Transações</p>
             </div>

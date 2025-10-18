@@ -9,6 +9,11 @@ import { transactionsAPI } from '@/lib/api'
 import { useAuth } from '@/contexts/AuthContext'
 import { toast } from 'sonner'
 import { ArrowLeft, Download, RefreshCw, Webhook } from 'lucide-react'
+import {
+  formatCurrencyBRL,
+  formatDateTimeBR,
+  formatDocumentBR,
+} from '@/lib/format'
 
 interface TransactionDetails {
   id: number
@@ -83,44 +88,9 @@ export default function ComprovantePage() {
     fetchTransaction()
   }, [id, user, router])
 
-  const formatCurrency = (value: number) => {
-    return value.toLocaleString('pt-BR', {
-      style: 'currency',
-      currency: 'BRL',
-    })
-  }
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString)
-    const day = String(date.getDate()).padStart(2, '0')
-    const month = String(date.getMonth() + 1).padStart(2, '0')
-    const year = date.getFullYear()
-    const hours = String(date.getHours()).padStart(2, '0')
-    const minutes = String(date.getMinutes()).padStart(2, '0')
-    return `${day}/${month}/${year} ${hours}:${minutes}`
-  }
-
-  const formatDocument = (doc: string) => {
-    if (doc.length === 11) {
-      // CPF: 000.000.000-00
-      return doc.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4')
-    } else if (doc.length === 14) {
-      // CNPJ: 00.000.000/0000-00
-      return doc.replace(
-        /(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/,
-        '$1.$2.$3/$4-$5',
-      )
-    }
-    return doc
-  }
-
-  const handleDownload = () => {
-    toast.info('Funcionalidade de download em desenvolvimento')
-  }
-
-  const handleRefresh = () => {
-    window.location.reload()
-  }
+  const formatCurrency = formatCurrencyBRL
+  const formatDate = formatDateTimeBR
+  const formatDocument = formatDocumentBR
 
   if (isLoading) {
     return (
@@ -144,22 +114,20 @@ export default function ComprovantePage() {
   }
 
   const getStatusColor = (status: string) => {
-    const statusUpper = status.toUpperCase()
-    if (statusUpper === 'PAID_OUT' || statusUpper === 'COMPLETED') {
-      return 'bg-green-100 text-green-700'
-    } else if (
-      statusUpper === 'PENDING' ||
-      statusUpper === 'WAITING_FOR_APPROVAL'
-    ) {
-      return 'bg-yellow-100 text-yellow-700'
-    } else if (
-      statusUpper === 'REJECTED' ||
-      statusUpper === 'CANCELLED' ||
-      statusUpper === 'BLOCKED'
-    ) {
-      return 'bg-red-100 text-red-700'
+    switch (status.toUpperCase()) {
+      case 'PAID_OUT':
+      case 'COMPLETED':
+        return 'bg-green-100 text-green-700'
+      case 'PENDING':
+      case 'WAITING_FOR_APPROVAL':
+        return 'bg-yellow-100 text-yellow-700'
+      case 'REJECTED':
+      case 'CANCELLED':
+      case 'BLOCKED':
+        return 'bg-red-100 text-red-700'
+      default:
+        return 'bg-gray-100 text-gray-700'
     }
-    return 'bg-gray-100 text-gray-700'
   }
 
   return (
@@ -195,7 +163,7 @@ export default function ComprovantePage() {
               </div>
             </div>
             <div className="text-right">
-              <p className="text-xs text-gray-600">VALOR</p>
+              <p className="text-xs text-gray-600">VALOR:</p>
               <p className="text-2xl font-bold text-gray-900">
                 {formatCurrency(transaction.amount)}
               </p>
@@ -205,7 +173,7 @@ export default function ComprovantePage() {
           <div className="grid grid-cols-2 gap-6">
             <div>
               <p className="text-xs font-semibold text-gray-500 uppercase mb-1">
-                Tipo
+                Tipo:
               </p>
               <p className="text-base font-medium text-gray-900">
                 {transaction.metodo}
@@ -214,7 +182,7 @@ export default function ComprovantePage() {
 
             <div>
               <p className="text-xs font-semibold text-gray-500 uppercase mb-1">
-                Status
+                Status:
               </p>
               <span
                 className={`inline-flex px-3 py-1 text-sm font-medium rounded-full ${getStatusColor(
@@ -227,7 +195,7 @@ export default function ComprovantePage() {
 
             <div>
               <p className="text-xs font-semibold text-gray-500 uppercase mb-1">
-                Método de Iniciação
+                Método de Iniciação:
               </p>
               <p className="text-base font-medium text-gray-900">
                 {transaction.tipo === 'deposito'
@@ -238,7 +206,7 @@ export default function ComprovantePage() {
 
             <div>
               <p className="text-xs font-semibold text-gray-500 uppercase mb-1">
-                Identificador
+                Identificador:
               </p>
               <p className="text-sm font-mono text-gray-900 break-all">
                 {transaction.transaction_id}
@@ -247,7 +215,7 @@ export default function ComprovantePage() {
 
             <div>
               <p className="text-xs font-semibold text-gray-500 uppercase mb-1">
-                Liquidação
+                Liquidação:
               </p>
               <p className="text-base font-medium text-gray-900">
                 {formatDate(transaction.data)}
@@ -256,7 +224,7 @@ export default function ComprovantePage() {
 
             <div>
               <p className="text-xs font-semibold text-gray-500 uppercase mb-1">
-                Movimento
+                Movimento:
               </p>
               <p className="text-base font-medium text-gray-900">
                 {transaction.movimento}
@@ -283,19 +251,21 @@ export default function ComprovantePage() {
                     <circle cx="12" cy="7" r="4" />
                   </svg>
                 </div>
-                <h3 className="text-sm font-semibold text-gray-900">Origem</h3>
+                <h3 className="text-sm font-semibold text-gray-900">Origem:</h3>
               </div>
 
               <div className="space-y-3 pl-10">
                 <div>
-                  <p className="text-xs text-gray-500 uppercase mb-0.5">Nome</p>
+                  <p className="text-xs text-gray-500 uppercase mb-0.5">
+                    Nome:
+                  </p>
                   <p className="text-sm font-medium text-gray-900">
                     {transaction.origem.nome}
                   </p>
                 </div>
                 <div>
                   <p className="text-xs text-gray-500 uppercase mb-0.5">
-                    CPF / CNPJ
+                    CPF / CNPJ:
                   </p>
                   <p className="text-sm font-medium text-gray-900">
                     {formatDocument(transaction.origem.documento)}
@@ -322,19 +292,23 @@ export default function ComprovantePage() {
                     <circle cx="12" cy="7" r="4" />
                   </svg>
                 </div>
-                <h3 className="text-sm font-semibold text-gray-900">Destino</h3>
+                <h3 className="text-sm font-semibold text-gray-900">
+                  Destino:
+                </h3>
               </div>
 
               <div className="space-y-3 pl-10">
                 <div>
-                  <p className="text-xs text-gray-500 uppercase mb-0.5">Nome</p>
+                  <p className="text-xs text-gray-500 uppercase mb-0.5">
+                    Nome:
+                  </p>
                   <p className="text-sm font-medium text-gray-900">
                     {transaction.destino.nome}
                   </p>
                 </div>
                 <div>
                   <p className="text-xs text-gray-500 uppercase mb-0.5">
-                    CPF / CNPJ
+                    CPF / CNPJ:
                   </p>
                   <p className="text-sm font-medium text-gray-900">
                     {formatDocument(transaction.destino.documento)}
@@ -346,7 +320,7 @@ export default function ComprovantePage() {
 
           <div className="pt-6 border-t border-gray-200">
             <p className="text-xs font-semibold text-gray-500 uppercase mb-2 text-center">
-              Código de Autenticação
+              Código de Autenticação:
             </p>
             <p className="text-base font-mono text-gray-900 text-center break-all bg-gray-50 p-4 rounded-lg">
               {transaction.codigo_autenticacao}
@@ -356,13 +330,13 @@ export default function ComprovantePage() {
           <div className="pt-6 border-t border-gray-200">
             <div className="space-y-3">
               <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600">Valor Bruto</span>
+                <span className="text-sm text-gray-600">Valor Bruto:</span>
                 <span className="text-sm font-semibold text-gray-900">
                   {formatCurrency(transaction.amount)}
                 </span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600">Taxa</span>
+                <span className="text-sm text-gray-600">Taxa:</span>
                 <span className="text-sm font-semibold text-red-600">
                   - {formatCurrency(transaction.taxa)}
                 </span>

@@ -1,13 +1,13 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { useDebounce } from '@/hooks/useDebounce'
-import { transactionsAPI } from '@/lib/api'
-import { useAuth } from '@/contexts/AuthContext'
+import { useTransactions } from '@/hooks/useReactQuery'
+import { toast } from 'sonner'
 import {
   ArrowUpRight,
   Filter,
@@ -16,179 +16,93 @@ import {
   RotateCcw,
 } from 'lucide-react'
 import * as XLSX from 'xlsx'
-
-type SaqueItem = {
-  id: number
-  transaction_id: string
-  tipo: 'deposito' | 'saque'
-  amount: number
-  valor_liquido: number
-  taxa: number
-  status: string
-  status_legivel: string
-  data: string
-  created_at: string
-  nome_cliente: string
-  documento: string
-  adquirente: string
-  descricao: string
-}
+import {
+  createPaginationFilters,
+  createResetDatesHandler,
+  formatDateForExport,
+} from '@/lib/dateUtils'
 
 export default function SaquesPage() {
-  const { authReady, user } = useAuth()
   const [search, setSearch] = useState('')
   const debouncedSearch = useDebounce(search, 500)
-  const [period, setPeriod] = useState<'hoje' | '7d' | '30d' | 'custom'>('hoje')
-  const [isLoading, setIsLoading] = useState(false)
+  const [period, setPeriod] = useState<'hoje' | '7d' | '30d' | 'custom' | null>(
+    null,
+  )
   const [showDatePicker, setShowDatePicker] = useState(false)
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
   const [page, setPage] = useState(1)
   const perPage = 20
 
-  const [items, setItems] = useState<SaqueItem[]>([])
-  const [totalPages, setTotalPages] = useState(1)
-  const [totalItems, setTotalItems] = useState(0)
-
-  const normalize = (s: string) =>
-    s
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .toLowerCase()
-
-  const computeDateRange = () => {
-    const now = new Date()
-    let inicio: string | undefined
-    let fim: string | undefined
-
-    if (period === 'hoje') {
-      const d1 = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-      const d2 = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-      inicio = d1.toISOString().slice(0, 10)
-      fim = d2.toISOString().slice(0, 10)
-    } else if (period === '7d') {
-      const d1 = new Date(now)
-      d1.setDate(now.getDate() - 6)
-      inicio = d1.toISOString().slice(0, 10)
-      fim = now.toISOString().slice(0, 10)
-    } else if (period === '30d') {
-      const d1 = new Date(now)
-      d1.setDate(now.getDate() - 29)
-      inicio = d1.toISOString().slice(0, 10)
-      fim = now.toISOString().slice(0, 10)
-    } else if (period === 'custom' && startDate && endDate) {
-      inicio = startDate
-      fim = endDate
-    }
-
-    return { inicio, fim }
-  }
-
-  useEffect(() => {
-    const fetchData = async () => {
-      if (!authReady || !user) return
-      setIsLoading(true)
-      try {
-        const { inicio, fim } = computeDateRange()
-        const resp = await transactionsAPI.list({
-          page,
-          limit: perPage,
-          tipo: 'saque',
-          busca: debouncedSearch || undefined,
-          data_inicio: inicio,
-          data_fim: fim,
-        })
-        if (resp?.success) {
-          setItems(resp.data.data as unknown as SaqueItem[])
-          setTotalPages(resp.data.last_page)
-          setTotalItems(resp.data.total)
-        } else {
-          setItems([])
-          setTotalPages(1)
-          setTotalItems(0)
-        }
-      } catch (e) {
-        console.error('Erro ao carregar saques:', e)
-        setItems([])
-        setTotalPages(1)
-        setTotalItems(0)
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    setPage((prev) =>
-      prev > 1 && (period !== 'custom' || debouncedSearch) ? 1 : prev,
+  // Memorizar filtros para React Query usando função centralizada
+  const filters = useMemo(() => {
+    return createPaginationFilters(
+      page,
+      perPage,
+      debouncedSearch,
+      period,
+      startDate,
+      endDate,
+      'saque',
     )
-    fetchData()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [authReady, user, period, startDate, endDate, debouncedSearch, page])
+  }, [page, perPage, debouncedSearch, period, startDate, endDate])
 
-  const canPrev = page > 1
-  const canNext = page < totalPages
+  // React Query hook
+  const { data, isLoading, error } = useTransactions(filters)
 
-  const resetDates = () => {
-    setStartDate('')
-    setEndDate('')
-    setShowDatePicker(false)
-    setPeriod('hoje')
-    setPage(1)
-  }
+  // Memorizar dados processados
+  const processedData = useMemo(() => {
+    if (!data?.data) return { items: [], totalPages: 1, totalItems: 0 }
 
-  const hasData = !isLoading && items.length > 0
+    return {
+      items: data.data.data || [],
+      totalPages: data.data.last_page || 1,
+      totalItems: data.data.total || 0,
+    }
+  }, [data])
 
-  const buildRowsForExcel = (rows: SaqueItem[]) =>
-    rows.map((r) => ({
-      ID: r.id,
-      Transação: r.transaction_id,
-      Tipo: r.tipo,
-      Descrição: r.descricao,
-      'Data (ISO)': r.data,
-      'Valor Líquido (BRL)': r.valor_liquido,
-      Taxa: r.taxa,
-      Status: r.status_legivel || r.status,
-      Adquirente: r.adquirente,
-      Cliente: r.nome_cliente,
-      Documento: r.documento,
+  // Memorizar handlers
+  const handleExport = useCallback(() => {
+    if (processedData.items.length === 0) {
+      toast.error('Nenhum saque para exportar')
+      return
+    }
+
+    const exportData = processedData.items.map((saque) => ({
+      ID: saque.id,
+      'Transaction ID': saque.transaction_id,
+      'Nome Cliente': saque.nome_cliente,
+      Documento: saque.documento,
+      Valor: saque.amount,
+      'Valor Líquido': saque.valor_liquido,
+      Taxa: saque.taxa,
+      Status: saque.status_legivel,
+      Data: formatDateForExport(saque.data),
+      Adquirente: saque.adquirente,
+      Descrição: saque.descricao,
     }))
 
-  const handleExport = async () => {
-    try {
-      let allRows: SaqueItem[] = []
-      const { inicio, fim } = computeDateRange()
+    const ws = XLSX.utils.json_to_sheet(exportData)
+    const wb = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(wb, ws, 'Saques')
+    XLSX.writeFile(wb, `saques_${new Date().toISOString().slice(0, 10)}.xlsx`)
+    toast.success('Arquivo exportado com sucesso!')
+  }, [processedData.items])
 
-      if (items.length > 0) {
-        if (totalPages === 1) {
-          allRows = items
-        } else {
-          for (let p = 1; p <= totalPages; p++) {
-            const resp = await transactionsAPI.list({
-              page: p,
-              limit: perPage,
-              tipo: 'saque',
-              busca: debouncedSearch || undefined,
-              data_inicio: inicio,
-              data_fim: fim,
-            })
-            if (resp?.success) {
-              allRows = allRows.concat(
-                (resp.data.data as unknown as SaqueItem[]) || [],
-              )
-            }
-          }
-        }
-      } else {
-        allRows = []
-      }
+  const resetDates = useCallback(
+    createResetDatesHandler(
+      setStartDate,
+      setEndDate,
+      setShowDatePicker,
+      setPeriod,
+      setPage,
+    ),
+    [],
+  )
 
-      const ws = XLSX.utils.json_to_sheet(buildRowsForExcel(allRows))
-      const wb = XLSX.utils.book_new()
-      XLSX.utils.book_append_sheet(wb, ws, 'Saques')
-      XLSX.writeFile(wb, `saques_${new Date().toISOString().slice(0, 10)}.xlsx`)
-    } catch (e) {
-      console.error('Erro ao exportar XLSX:', e)
-    }
-  }
+  const canPrev = page > 1
+  const canNext = page < processedData.totalPages
+  const hasData = !isLoading && processedData.items.length > 0
 
   return (
     <div className="p-4 md:p-6 space-y-4">
@@ -229,9 +143,22 @@ export default function SaquesPage() {
 
           <div className="relative flex items-center gap-2">
             <Button
+              variant={period === null ? 'primary' : 'outline'}
+              onClick={() => {
+                setPeriod(null)
+                setStartDate('')
+                setEndDate('')
+                setPage(1)
+              }}
+            >
+              Todos
+            </Button>
+            <Button
               variant={period === 'hoje' ? 'primary' : 'outline'}
               onClick={() => {
                 setPeriod('hoje')
+                setStartDate('')
+                setEndDate('')
                 setPage(1)
               }}
             >
@@ -241,6 +168,8 @@ export default function SaquesPage() {
               variant={period === '7d' ? 'primary' : 'outline'}
               onClick={() => {
                 setPeriod('7d')
+                setStartDate('')
+                setEndDate('')
                 setPage(1)
               }}
             >
@@ -250,6 +179,8 @@ export default function SaquesPage() {
               variant={period === '30d' ? 'primary' : 'outline'}
               onClick={() => {
                 setPeriod('30d')
+                setStartDate('')
+                setEndDate('')
                 setPage(1)
               }}
             >
@@ -356,7 +287,7 @@ export default function SaquesPage() {
                       </td>
                     </tr>
                   ) : (
-                    items.map((saque) => (
+                    processedData.items.map((saque) => (
                       <tr
                         key={saque.id}
                         className="border-b border-gray-100 hover:bg-gray-50"
@@ -409,7 +340,8 @@ export default function SaquesPage() {
         <div className="mt-4 flex items-center justify-between">
           <p className="text-sm text-gray-600">
             Itens por página: <span className="font-medium">{perPage}</span> •
-            Total: <span className="font-medium">{totalItems}</span>
+            Total:{' '}
+            <span className="font-medium">{processedData.totalItems}</span>
           </p>
           <div className="flex items-center gap-2">
             <Button

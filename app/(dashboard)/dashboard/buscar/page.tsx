@@ -47,10 +47,7 @@ export default function BuscarPage() {
       params.append('busca', data.transactionId)
 
       const res = await fetch(
-        `${
-          process.env.NEXT_PUBLIC_API_URL ||
-          'https://playgameoficial.com.br/api'
-        }/transactions?${params.toString()}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/transactions?${params.toString()}`,
         {
           headers: {
             'Content-Type': 'application/json',
@@ -108,15 +105,19 @@ export default function BuscarPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="max-w-4xl mx-auto px-2 sm:px-0">
-        <h1 className="text-2xl font-bold text-gray-900">Buscar Transações</h1>
-        <p className="text-gray-600 text-sm mt-1">
-          Pesquise transações por ID ou EndToEndID
-        </p>
+    <div className="p-4 md:p-6 space-y-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-xl font-semibold text-gray-900">
+            Buscar Transações
+          </h1>
+          <p className="text-sm text-gray-600">
+            Pesquise transações por ID ou EndToEndID
+          </p>
+        </div>
       </div>
 
-      <Card className="max-w-4xl mx-auto">
+      <Card className="p-4">
         <form
           onSubmit={(e) => {
             e.preventDefault()
@@ -178,7 +179,7 @@ export default function BuscarPage() {
       </Dialog>
 
       {searchResult && (
-        <Card className="max-w-4xl mx-auto">
+        <Card className="p-4">
           <div className="flex items-start gap-4 mb-6">
             {getStatusIcon(searchResult.status)}
             <div>

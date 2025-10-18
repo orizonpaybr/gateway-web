@@ -1,13 +1,13 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { useDebounce } from '@/hooks/useDebounce'
-import { transactionsAPI } from '@/lib/api'
-import { useAuth } from '@/contexts/AuthContext'
+import { useTransactions } from '@/hooks/useReactQuery'
+import { toast } from 'sonner'
 import {
   ArrowDownLeft,
   Filter,
@@ -16,39 +16,96 @@ import {
   Calendar,
 } from 'lucide-react'
 import * as XLSX from 'xlsx'
-
-type DepositoItem = {
-  id: number
-  transaction_id: string
-  tipo: 'deposito' | 'saque'
-  amount: number
-  valor_liquido: number
-  taxa: number
-  status: string
-  status_legivel: string
-  data: string
-  created_at: string
-  nome_cliente: string
-  documento: string
-  adquirente: string
-  descricao: string
-}
+import {
+  createPaginationFilters,
+  createResetDatesHandler,
+  formatDateForExport,
+} from '@/lib/dateUtils'
 
 export default function DepositosPage() {
-  const { authReady, user } = useAuth()
   const [search, setSearch] = useState('')
   const debouncedSearch = useDebounce(search, 500)
-  const [period, setPeriod] = useState<'hoje' | '7d' | '30d' | 'custom'>('hoje')
-  const [isLoading, setIsLoading] = useState(false)
+  const [period, setPeriod] = useState<'hoje' | '7d' | '30d' | 'custom' | null>(
+    null,
+  )
   const [showDatePicker, setShowDatePicker] = useState(false)
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
   const [page, setPage] = useState(1)
   const perPage = 20
 
-  const [items, setItems] = useState<DepositoItem[]>([])
-  const [totalPages, setTotalPages] = useState(1)
-  const [totalItems, setTotalItems] = useState(0)
+  // Memorizar filtros para React Query usando função centralizada
+  const filters = useMemo(() => {
+    return createPaginationFilters(
+      page,
+      perPage,
+      debouncedSearch,
+      period,
+      startDate,
+      endDate,
+      'deposito',
+    )
+  }, [page, perPage, debouncedSearch, period, startDate, endDate])
+
+  // React Query hook
+  const { data, isLoading, error } = useTransactions(filters)
+
+  // Memoizar dados processados
+  const processedData = useMemo(() => {
+    if (!data?.data) return { items: [], totalPages: 1, totalItems: 0 }
+
+    return {
+      items: data.data.data || [],
+      totalPages: data.data.last_page || 1,
+      totalItems: data.data.total || 0,
+    }
+  }, [data])
+
+  // Memorizar handlers
+  const handleExport = useCallback(() => {
+    if (processedData.items.length === 0) {
+      toast.error('Nenhum depósito para exportar')
+      return
+    }
+
+    const exportData = processedData.items.map((deposito) => ({
+      ID: deposito.id,
+      'Transaction ID': deposito.transaction_id,
+      'Nome Cliente': deposito.nome_cliente,
+      Documento: deposito.documento,
+      Valor: deposito.amount,
+      'Valor Líquido': deposito.valor_liquido,
+      Taxa: deposito.taxa,
+      Status: deposito.status_legivel,
+      Data: formatDateForExport(deposito.data),
+      Adquirente: deposito.adquirente,
+      Descrição: deposito.descricao,
+    }))
+
+    const ws = XLSX.utils.json_to_sheet(exportData)
+    const wb = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(wb, ws, 'Depósitos')
+    XLSX.writeFile(
+      wb,
+      `depositos_${new Date().toISOString().slice(0, 10)}.xlsx`,
+    )
+    toast.success('Arquivo exportado com sucesso!')
+  }, [processedData.items])
+
+  const resetDates = useCallback(
+    createResetDatesHandler(
+      setStartDate,
+      setEndDate,
+      setShowDatePicker,
+      setPeriod,
+      setPage,
+    ),
+    [],
+  )
+
+  const canPrev = page > 1
+  const canNext = page < processedData.totalPages
+  const hasData = !isLoading && processedData.items.length > 0
 
   const normalize = (s: string) =>
     s
@@ -82,115 +139,6 @@ export default function DepositosPage() {
     }
 
     return { inicio, fim }
-  }
-
-  useEffect(() => {
-    const fetchData = async () => {
-      if (!authReady || !user) return
-      setIsLoading(true)
-      try {
-        const { inicio, fim } = computeDateRange()
-        const resp = await transactionsAPI.list({
-          page,
-          limit: perPage,
-          tipo: 'deposito',
-          busca: debouncedSearch || undefined,
-          data_inicio: inicio,
-          data_fim: fim,
-        })
-        if (resp?.success) {
-          setItems(resp.data.data as unknown as DepositoItem[])
-          setTotalPages(resp.data.last_page)
-          setTotalItems(resp.data.total)
-        } else {
-          setItems([])
-          setTotalPages(1)
-          setTotalItems(0)
-        }
-      } catch (e) {
-        console.error('Erro ao carregar depósitos:', e)
-        setItems([])
-        setTotalPages(1)
-        setTotalItems(0)
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    setPage((prev) =>
-      prev > 1 && (period !== 'custom' || debouncedSearch) ? 1 : prev,
-    )
-    fetchData()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [authReady, user, period, startDate, endDate, debouncedSearch, page])
-
-  const canPrev = page > 1
-  const canNext = page < totalPages
-
-  const resetDates = () => {
-    setStartDate('')
-    setEndDate('')
-    setShowDatePicker(false)
-    setPeriod('hoje')
-    setPage(1)
-  }
-
-  const hasData = !isLoading && items.length > 0
-
-  const buildRowsForExcel = (rows: DepositoItem[]) =>
-    rows.map((r) => ({
-      ID: r.id,
-      Transação: r.transaction_id,
-      Tipo: r.tipo,
-      Descrição: r.descricao,
-      'Data (ISO)': r.data,
-      'Valor Líquido (BRL)': r.valor_liquido,
-      Taxa: r.taxa,
-      Status: r.status_legivel || r.status,
-      Adquirente: r.adquirente,
-      Cliente: r.nome_cliente,
-      Documento: r.documento,
-    }))
-
-  const handleExport = async () => {
-    try {
-      let allRows: DepositoItem[] = []
-      const { inicio, fim } = computeDateRange()
-
-      if (items.length > 0) {
-        if (totalPages === 1) {
-          allRows = items
-        } else {
-          for (let p = 1; p <= totalPages; p++) {
-            const resp = await transactionsAPI.list({
-              page: p,
-              limit: perPage,
-              tipo: 'deposito',
-              busca: debouncedSearch || undefined,
-              data_inicio: inicio,
-              data_fim: fim,
-            })
-            if (resp?.success) {
-              allRows = allRows.concat(
-                (resp.data.data as unknown as DepositoItem[]) || [],
-              )
-            }
-          }
-        }
-      } else {
-        allRows = []
-      }
-
-      const ws = XLSX.utils.json_to_sheet(buildRowsForExcel(allRows))
-      const wb = XLSX.utils.book_new()
-      XLSX.utils.book_append_sheet(wb, ws, 'Depositos')
-      XLSX.writeFile(
-        wb,
-        `depositos_${new Date().toISOString().slice(0, 10)}.xlsx`,
-      )
-    } catch (e) {
-      console.error('Erro ao exportar XLSX:', e)
-    }
   }
 
   return (
@@ -234,9 +182,22 @@ export default function DepositosPage() {
 
           <div className="relative flex items-center gap-2">
             <Button
+              variant={period === null ? 'primary' : 'outline'}
+              onClick={() => {
+                setPeriod(null)
+                setStartDate('')
+                setEndDate('')
+                setPage(1)
+              }}
+            >
+              Todos
+            </Button>
+            <Button
               variant={period === 'hoje' ? 'primary' : 'outline'}
               onClick={() => {
                 setPeriod('hoje')
+                setStartDate('')
+                setEndDate('')
                 setPage(1)
               }}
             >
@@ -246,6 +207,8 @@ export default function DepositosPage() {
               variant={period === '7d' ? 'primary' : 'outline'}
               onClick={() => {
                 setPeriod('7d')
+                setStartDate('')
+                setEndDate('')
                 setPage(1)
               }}
             >
@@ -255,6 +218,8 @@ export default function DepositosPage() {
               variant={period === '30d' ? 'primary' : 'outline'}
               onClick={() => {
                 setPeriod('30d')
+                setStartDate('')
+                setEndDate('')
                 setPage(1)
               }}
             >
@@ -361,7 +326,7 @@ export default function DepositosPage() {
                       </td>
                     </tr>
                   ) : (
-                    items.map((deposito) => (
+                    processedData.items.map((deposito) => (
                       <tr
                         key={deposito.id}
                         className="border-b border-gray-100 hover:bg-gray-50"
@@ -405,7 +370,8 @@ export default function DepositosPage() {
         <div className="mt-4 flex items-center justify-between">
           <p className="text-sm text-gray-600">
             Itens por página: <span className="font-medium">{perPage}</span> •
-            Total: <span className="font-medium">{totalItems}</span>
+            Total:{' '}
+            <span className="font-medium">{processedData.totalItems}</span>
           </p>
           <div className="flex items-center gap-2">
             <Button
