@@ -4,26 +4,38 @@ import { EyeOff, Eye, RefreshCw } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { usePathname } from 'next/navigation'
 import { useBalanceVisibility } from '@/contexts/BalanceVisibilityContext'
+import { useDashboardStats } from '@/hooks/useReactQuery'
+import { formatCurrencyBRL } from '@/lib/format'
 
 const pageTitles: Record<string, string> = {
   '/dashboard': 'Dashboard Orizon',
   '/dashboard/jornada': 'Jornada Orizon',
-  '/dashboard/buscar': 'Buscar Transações',
-  '/dashboard/extrato': 'Extrato',
-  '/dashboard/pix': 'Pix',
-  '/dashboard/qr-codes': 'QR Codes',
-  '/dashboard/infracoes': 'Infrações',
-  '/dashboard/pendentes': 'Transações Pendentes',
-  '/dashboard/conta': 'Dados da Conta',
-  '/dashboard/configuracoes': 'Configurações',
-  '/dashboard/suporte': 'Suporte',
-  '/dashboard/api-docs': 'API Docs',
+  '/dashboard/buscar': 'Dashboard Orizon',
+  '/dashboard/extrato': 'Dashboard Orizon',
+  '/dashboard/pix': 'Dashboard Orizon',
+  '/dashboard/qr-codes': 'Dashboard Orizon',
+  '/dashboard/infracoes': 'Dashboard Orizon',
+  '/dashboard/pendentes': 'Dashboard Orizon',
+  '/dashboard/conta': 'Dashboard Orizon',
+  '/dashboard/configuracoes': 'Dashboard Orizon',
+  '/dashboard/suporte': 'Dashboard Orizon',
+  '/dashboard/api-docs': 'Dashboard Orizon',
 }
 
 export function Header() {
   const { isBalanceHidden, toggleBalanceVisibility } = useBalanceVisibility()
   const pathname = usePathname()
   const pageTitle = pageTitles[pathname] || 'Dashboard Orizon'
+
+  // Buscar dados do dashboard apenas quando não estiver na página inicial
+  const isHomePage = pathname === '/dashboard'
+  const { data: stats } = useDashboardStats()
+
+  // Formatar saldo disponível
+  const availableBalance = stats?.data?.saldo_disponivel || 0
+  const formattedBalance = formatCurrencyBRL(availableBalance, {
+    hide: isBalanceHidden,
+  })
 
   const handleRefresh = () => {
     window.location.reload()
@@ -44,7 +56,9 @@ export function Header() {
           title={isBalanceHidden ? 'Mostrar Saldo' : 'Ocultar Saldo'}
         >
           <span className="hidden sm:inline">
-            {isBalanceHidden ? 'Mostrar' : 'Ocultar'} Saldo
+            {!isHomePage
+              ? formattedBalance
+              : (isBalanceHidden ? 'Mostrar' : 'Ocultar') + ' Saldo'}
           </span>
         </Button>
 
