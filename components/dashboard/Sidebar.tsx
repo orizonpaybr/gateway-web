@@ -23,6 +23,7 @@ import { PixIcon } from '@/components/icons/PixIcon'
 import { WhatsAppIcon } from '@/components/icons/WhatsAppIcon'
 import { DocumentIcon } from '@/components/icons/DocumentIcon'
 import { Button } from '@/components/ui/Button'
+import { AnimatedAvatar } from '@/components/ui/AnimatedAvatar'
 import { accountAPI } from '@/lib/api'
 
 interface MenuItem {
@@ -210,7 +211,7 @@ export function Sidebar() {
                       className={cn(
                         'flex items-center justify-between w-full px-4 py-3 rounded-lg text-sm font-medium transition-colors',
                         isActive || hasActiveSubmenu
-                          ? 'bg-primary text-white'
+                          ? 'bg-primary text-white hover:!bg-primary hover:!text-white'
                           : 'text-gray-700 hover:bg-gray-100',
                       )}
                     >
@@ -311,9 +312,10 @@ export function Sidebar() {
       <div className="px-4 py-5 border-t border-gray-200">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white font-semibold">
-              {(isHydrated && user?.name?.charAt(0)?.toUpperCase()) || 'U'}
-            </div>
+            <AnimatedAvatar
+              name={isHydrated ? user?.name || '' : ''}
+              size="md"
+            />
             <div className="flex flex-col">
               <p className="text-sm font-semibold text-blue-900">
                 {isHydrated && user?.name ? user.name.split(' ')[0] : 'Usuário'}
