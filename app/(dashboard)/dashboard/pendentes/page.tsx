@@ -1,215 +1,333 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
-import { Clock, CheckCircle, XCircle, Search } from 'lucide-react'
+import { Skeleton } from '@/components/ui/Skeleton'
+import { useDebounce } from '@/hooks/useDebounce'
+import { useTransactions } from '@/hooks/useReactQuery'
+import { Clock, Filter, RotateCcw, Calendar, Eye } from 'lucide-react'
+import {
+  createPaginationFilters,
+  createResetDatesHandler,
+} from '@/lib/dateUtils'
+import { TransactionDetailsModal } from '@/components/modals/TransactionDetailsModal'
 
 export default function PendentesPage() {
-  const [searchTerm, setSearchTerm] = useState('')
+  const [search, setSearch] = useState('')
+  const debouncedSearch = useDebounce(search, 500)
+  const [period, setPeriod] = useState<'hoje' | '7d' | '30d' | 'custom' | null>(
+    null,
+  )
+  const [showDatePicker, setShowDatePicker] = useState(false)
+  const [startDate, setStartDate] = useState('')
+  const [endDate, setEndDate] = useState('')
+  const [page, setPage] = useState(1)
+  const perPage = 20
+  const [detailsId, setDetailsId] = useState<string | number | null>(null)
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false)
 
-  const transacoesPendentes = [
-    {
-      id: '1',
-      description: 'Recebimento - Aguardando confirmação',
-      reference: 'REF-2025-010',
-      value: 1450.0,
-      date: '07/10/2025 15:30',
-      type: 'entrada',
-      reason: 'Aguardando confirmação do banco',
-    },
-    {
-      id: '2',
-      description: 'Saque - Em processamento',
-      reference: 'REF-2025-011',
-      value: -800.0,
-      date: '07/10/2025 14:20',
-      type: 'saida',
-      reason: 'Processamento bancário',
-    },
-    {
-      id: '3',
-      description: 'Transferência Pix - Análise',
-      reference: 'REF-2025-012',
-      value: -250.0,
-      date: '07/10/2025 11:15',
-      type: 'saida',
-      reason: 'Em análise de segurança',
-    },
-  ]
+  // Filtros com status fixo PENDING
+  const filters = useMemo(() => {
+    const base = createPaginationFilters(
+      page,
+      perPage,
+      debouncedSearch,
+      period,
+      startDate,
+      endDate,
+    )
+    return { ...base, status: 'PENDING' }
+  }, [page, perPage, debouncedSearch, period, startDate, endDate])
 
-  const filteredTransacoes = transacoesPendentes.filter((transacao) =>
-    searchTerm
-      ? transacao.description
-          .toLowerCase()
-          .includes(searchTerm.toLowerCase()) ||
-        transacao.reference.toLowerCase().includes(searchTerm.toLowerCase())
-      : true,
+  const { data, isLoading } = useTransactions(filters)
+
+  const processedData = useMemo(() => {
+    if (!data?.data) return { items: [], totalPages: 1, totalItems: 0 }
+
+    return {
+      items: data.data.data || [],
+      totalPages: data.data.last_page || 1,
+      totalItems: data.data.total || 0,
+    }
+  }, [data])
+
+  const resetDates = useCallback(
+    createResetDatesHandler(
+      setStartDate,
+      setEndDate,
+      setShowDatePicker,
+      setPeriod,
+      setPage,
+    ),
+    [],
   )
 
-  const valorTotal = transacoesPendentes.reduce(
-    (acc, t) => acc + Math.abs(t.value),
-    0,
-  )
-
-  const handleApprove = (id: string) => {
-    console.log('Aprovar transação:', id)
-    alert('Funcionalidade será implementada com a integração da API')
-  }
-
-  const handleReject = (id: string) => {
-    console.log('Rejeitar transação:', id)
-    alert('Funcionalidade será implementada com a integração da API')
-  }
+  const canPrev = page > 1
+  const canNext = page < processedData.totalPages
+  const hasData = processedData.items.length > 0
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">
-          Transações Pendentes
-        </h1>
-        <p className="text-gray-600 text-sm mt-1">
-          Gerencie transações que aguardam aprovação ou processamento
-        </p>
+    <div className="p-4 md:p-6 space-y-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-xl font-semibold text-gray-900">
+            Transações Pendentes
+          </h1>
+          <p className="text-sm text-gray-600">
+            Itens aguardando processamento/aprovação
+          </p>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Card hover>
-          <div className="flex items-start justify-between">
-            <div>
-              <p className="text-sm text-gray-600 mb-2">Transações Pendentes</p>
-              <p className="text-2xl font-bold text-gray-900">
-                {transacoesPendentes.length}
-              </p>
-            </div>
-            <div className="p-3 rounded-lg bg-yellow-100 text-yellow-600">
-              <Clock size={24} />
-            </div>
+      <Card className="p-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            <Input
+              placeholder="Buscar..."
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value)
+                setPage(1)
+              }}
+              className="w-full sm:w-72"
+            />
+            <Button variant="outline" icon={<Filter size={16} />}>
+              Avançado
+            </Button>
           </div>
-        </Card>
 
-        <Card hover>
-          <div className="flex items-start justify-between">
-            <div>
-              <p className="text-sm text-gray-600 mb-2">Valor Total Pendente</p>
-              <p className="text-2xl font-bold text-yellow-600">
-                {valorTotal.toLocaleString('pt-BR', {
-                  style: 'currency',
-                  currency: 'BRL',
-                })}
-              </p>
-            </div>
-            <div className="p-3 rounded-lg bg-yellow-100 text-yellow-600">
-              <Clock size={24} />
-            </div>
-          </div>
-        </Card>
-      </div>
+          <div className="relative flex items-center gap-2">
+            <Button
+              variant={period === null ? 'primary' : 'outline'}
+              onClick={() => {
+                setPeriod(null)
+                setStartDate('')
+                setEndDate('')
+                setPage(1)
+              }}
+            >
+              Todos
+            </Button>
+            <Button
+              variant={period === 'hoje' ? 'primary' : 'outline'}
+              onClick={() => {
+                setPeriod('hoje')
+                setStartDate('')
+                setEndDate('')
+                setPage(1)
+              }}
+            >
+              Hoje
+            </Button>
+            <Button
+              variant={period === '7d' ? 'primary' : 'outline'}
+              onClick={() => {
+                setPeriod('7d')
+                setStartDate('')
+                setEndDate('')
+                setPage(1)
+              }}
+            >
+              7 dias
+            </Button>
+            <Button
+              variant={period === '30d' ? 'primary' : 'outline'}
+              onClick={() => {
+                setPeriod('30d')
+                setStartDate('')
+                setEndDate('')
+                setPage(1)
+              }}
+            >
+              30 dias
+            </Button>
+            <Button
+              variant={period === 'custom' ? 'primary' : 'outline'}
+              icon={<Calendar size={16} />}
+              onClick={() => setShowDatePicker((v) => !v)}
+            />
+            <Button
+              variant="outline"
+              icon={<RotateCcw size={16} />}
+              onClick={resetDates}
+            />
 
-      <Card>
-        <Input
-          placeholder="Buscar por descrição ou referência..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          icon={<Search size={18} />}
-        />
-      </Card>
-
-      {filteredTransacoes.length === 0 ? (
-        <Card>
-          <div className="py-12 text-center">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4">
-              <CheckCircle className="text-green-600" size={32} />
-            </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              Nenhuma transação pendente!
-            </h3>
-            <p className="text-gray-600">
-              Todas as suas transações foram processadas.
-            </p>
-          </div>
-        </Card>
-      ) : (
-        <div className="space-y-4">
-          {filteredTransacoes.map((transacao) => (
-            <Card key={transacao.id} hover>
-              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                <div className="flex items-start gap-4 flex-1">
-                  <div className="p-3 rounded-lg bg-yellow-100 text-yellow-600">
-                    <Clock size={24} />
+            {showDatePicker && (
+              <div className="absolute right-0 top-11 z-10 bg-white border border-gray-200 rounded-lg shadow-md p-3 w-64">
+                <div className="space-y-2">
+                  <div>
+                    <label className="block text-xs text-gray-600 mb-1">
+                      Data inicial
+                    </label>
+                    <Input
+                      type="date"
+                      value={startDate}
+                      onChange={(e) => setStartDate(e.target.value)}
+                    />
                   </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h3 className="font-semibold text-gray-900">
-                        {transacao.description}
-                      </h3>
-                      <span
-                        className={`inline-flex px-2 py-0.5 text-xs font-medium rounded-full ${
-                          transacao.type === 'entrada'
-                            ? 'bg-green-100 text-green-700'
-                            : 'bg-red-100 text-red-700'
-                        }`}
-                      >
-                        {transacao.type === 'entrada' ? 'Entrada' : 'Saída'}
-                      </span>
-                    </div>
-                    <p className="text-sm text-gray-600 mb-2">
-                      Referência: {transacao.reference}
-                    </p>
-                    <div className="flex flex-wrap items-center gap-4 text-sm">
-                      <div>
-                        <span className="text-gray-600">Valor: </span>
-                        <span
-                          className={`font-semibold ${
-                            transacao.value > 0
-                              ? 'text-green-600'
-                              : 'text-red-600'
-                          }`}
-                        >
-                          {transacao.value > 0 ? '+' : ''}
-                          {transacao.value.toLocaleString('pt-BR', {
-                            style: 'currency',
-                            currency: 'BRL',
-                          })}
-                        </span>
-                      </div>
-                      <div>
-                        <span className="text-gray-600">Data: </span>
-                        <span className="text-gray-900">{transacao.date}</span>
-                      </div>
-                    </div>
-                    <div className="mt-2 bg-yellow-50 border border-yellow-200 rounded px-3 py-2">
-                      <p className="text-xs text-yellow-800">
-                        <span className="font-medium">Motivo: </span>
-                        {transacao.reason}
-                      </p>
-                    </div>
+                  <div>
+                    <label className="block text-xs text-gray-600 mb-1">
+                      Data final
+                    </label>
+                    <Input
+                      type="date"
+                      value={endDate}
+                      onChange={(e) => setEndDate(e.target.value)}
+                    />
                   </div>
-                </div>
-
-                <div className="flex md:flex-col gap-2">
-                  <Button
-                    size="sm"
-                    icon={<CheckCircle size={16} />}
-                    onClick={() => handleApprove(transacao.id)}
-                  >
-                    Aprovar
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    icon={<XCircle size={16} />}
-                    onClick={() => handleReject(transacao.id)}
-                  >
-                    Rejeitar
-                  </Button>
+                  <div className="flex items-center justify-end gap-2 pt-1">
+                    <Button
+                      variant="ghost"
+                      onClick={() => setShowDatePicker(false)}
+                    >
+                      Cancelar
+                    </Button>
+                    <Button
+                      onClick={() => {
+                        setPeriod('custom')
+                        setPage(1)
+                        setShowDatePicker(false)
+                      }}
+                    >
+                      Aplicar
+                    </Button>
+                  </div>
                 </div>
               </div>
-            </Card>
-          ))}
+            )}
+          </div>
         </div>
-      )}
+
+        <div className="mt-4">
+          {!hasData ? (
+            <div className="py-16 text-center text-gray-600">
+              <div className="flex items-center justify-center mb-4">
+                <div className="w-12 h-12 rounded-lg bg-yellow-100 flex items-center justify-center">
+                  <Clock className="text-yellow-600" />
+                </div>
+              </div>
+              <p className="font-medium">
+                Nenhuma transação pendente encontrada
+              </p>
+              <p className="text-sm text-gray-500 mt-1">
+                Não há transações pendentes para o período selecionado.
+              </p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-gray-200">
+                    <th className="text-left py-3 px-4 text-xs font-semibold text-gray-600 uppercase">
+                      Descrição
+                    </th>
+                    <th className="text-left py-3 px-4 text-xs font-semibold text-gray-600 uppercase">
+                      Referência
+                    </th>
+                    <th className="text-left py-3 px-4 text-xs font-semibold text-gray-600 uppercase">
+                      Data
+                    </th>
+                    <th className="text-left py-3 px-4 text-xs font-semibold text-gray-600 uppercase">
+                      Valor
+                    </th>
+                    <th className="text-left py-3 px-4 text-xs font-semibold text-gray-600 uppercase">
+                      Ações
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {isLoading ? (
+                    <tr>
+                      <td colSpan={4} className="p-4">
+                        <div className="space-y-2">
+                          <Skeleton className="h-5 w-full" />
+                          <Skeleton className="h-5 w-5/6" />
+                        </div>
+                      </td>
+                    </tr>
+                  ) : (
+                    processedData.items.map((t: any) => (
+                      <tr
+                        key={t.id}
+                        className="border-b border-gray-100 hover:bg-gray-50"
+                      >
+                        <td className="py-3 px-4">
+                          <div className="flex items-center gap-3">
+                            <div className="p-2 rounded-lg bg-yellow-100 text-yellow-600">
+                              <Clock size={16} />
+                            </div>
+                            <span className="text-sm font-medium text-gray-900">
+                              {t.descricao}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="py-3 px-4 text-sm text-gray-600">
+                          {t.transaction_id}
+                        </td>
+                        <td className="py-3 px-4 text-sm text-gray-600">
+                          {new Date(t.data).toLocaleDateString('pt-BR')}
+                        </td>
+                        <td className="py-3 px-4">
+                          <span className="text-sm font-semibold text-gray-900">
+                            {t.tipo === 'deposito' ? '+' : '-'}
+                            {t.valor_liquido.toLocaleString('pt-BR', {
+                              style: 'currency',
+                              currency: 'BRL',
+                            })}
+                          </span>
+                        </td>
+                        <td className="py-3 px-4">
+                          <button
+                            onClick={() => {
+                              setDetailsId(t.id)
+                              setIsDetailsOpen(true)
+                            }}
+                            className="text-gray-900 hover:text-gray-700"
+                            aria-label="Ver detalhes"
+                          >
+                            <Eye size={18} />
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+
+        <div className="mt-4 flex items-center justify-between">
+          <p className="text-sm text-gray-600">
+            Itens por página: <span className="font-medium">{perPage}</span> •
+            Total:{' '}
+            <span className="font-medium">{processedData.totalItems}</span>
+          </p>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              disabled={!canPrev}
+              onClick={() => canPrev && setPage((p) => p - 1)}
+            >
+              {'<'}
+            </Button>
+            <Button
+              variant="outline"
+              disabled={!canNext}
+              onClick={() => canNext && setPage((p) => p + 1)}
+            >
+              {'>'}
+            </Button>
+          </div>
+        </div>
+      </Card>
+      <TransactionDetailsModal
+        isOpen={isDetailsOpen}
+        onClose={() => setIsDetailsOpen(false)}
+        transactionId={detailsId}
+      />
     </div>
   )
 }
