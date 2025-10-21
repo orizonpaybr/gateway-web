@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense, lazy, memo } from 'react'
 import {
   Home,
   Search,
@@ -24,7 +24,12 @@ import { WhatsAppIcon } from '@/components/icons/WhatsAppIcon'
 import { DocumentIcon } from '@/components/icons/DocumentIcon'
 import { Button } from '@/components/ui/Button'
 import { AnimatedAvatar } from '@/components/ui/AnimatedAvatar'
-import { accountAPI } from '@/lib/api'
+import { useSidebarGamification } from '@/hooks/useSidebarGamification'
+
+// Lazy loading do componente de progresso
+const SidebarProgress = lazy(
+  () => import('@/components/gamification/SidebarProgress'),
+)
 
 interface MenuItem {
   icon: React.ElementType
@@ -88,33 +93,25 @@ const supportAndDocsItems: MenuItem[] = [
   },
 ]
 
-export function Sidebar() {
+export const Sidebar = memo(function Sidebar() {
   const pathname = usePathname()
   const { user, authReady, logout } = useAuth()
   const [expandedMenus, setExpandedMenus] = useState<string[]>([])
   const [isHydrated, setIsHydrated] = useState(false)
-  const [totalDepositos, setTotalDepositos] = useState<number | null>(null)
+
+  // Hook otimizado para gamificação da Sidebar
+  const {
+    currentLevel,
+    totalDeposited,
+    currentLevelMax,
+    nextLevelData,
+    isLoading: gamificationLoading,
+    error: gamificationError,
+  } = useSidebarGamification()
 
   useEffect(() => {
     setIsHydrated(true)
   }, [])
-
-  useEffect(() => {
-    const loadBalance = async () => {
-      try {
-        if (!authReady || !user) return
-        const response = await accountAPI.getBalance()
-        if (response?.success && response.data) {
-          setTotalDepositos(response.data.totalInflows || 0)
-        }
-      } catch (e) {
-        console.error('Erro ao buscar saldo:', e)
-        setTotalDepositos(0)
-      }
-    }
-    const t = setTimeout(loadBalance, 200)
-    return () => clearTimeout(t)
-  }, [user, authReady])
 
   const handleLogout = async () => {
     try {
@@ -132,10 +129,6 @@ export function Sidebar() {
     )
   }
 
-  const currentBalance = totalDepositos ?? 0
-  const targetBalance = 100000
-  const progress = Math.min(100, (currentBalance / targetBalance) * 100)
-
   return (
     <aside className="fixed left-0 top-0 h-screen w-72 bg-gray-50 shadow-sm flex flex-col">
       <div className="p-4 border-b border-gray-200">
@@ -151,43 +144,37 @@ export function Sidebar() {
       </div>
 
       <div className="px-4 py-5">
-        <div className="bg-white rounded-lg p-5 space-y-3 shadow-sm border border-gray-100">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 bg-amber-600 rounded-full" />
-              <span className="text-sm font-semibold text-gray-900">
-                Bronze
-              </span>
+        <Suspense
+          fallback={
+            <div className="bg-white rounded-lg p-5 space-y-3 shadow-sm border border-gray-100">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 bg-gray-300 rounded-full animate-pulse" />
+                  <div className="h-4 w-16 bg-gray-300 rounded animate-pulse" />
+                </div>
+                <div className="h-3 w-20 bg-gray-300 rounded animate-pulse" />
+              </div>
+              <div className="space-y-2">
+                <div className="w-full h-1.5 bg-gray-200 rounded-full" />
+                <div className="flex justify-between items-center">
+                  <div className="h-3 w-16 bg-gray-300 rounded animate-pulse" />
+                  <div className="h-3 w-20 bg-gray-300 rounded animate-pulse" />
+                </div>
+                <div className="text-center">
+                  <div className="h-3 w-24 bg-gray-300 rounded animate-pulse mx-auto" />
+                </div>
+              </div>
             </div>
-            <Link
-              href="/dashboard/jornada"
-              className="text-xs text-primary hover:underline font-medium"
-            >
-              Ver progresso
-            </Link>
-          </div>
-
-          <div className="space-y-2">
-            <div className="w-full h-1.5 bg-gray-200 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-amber-600 transition-all duration-300"
-                style={{ width: `${progress}%` }}
-              />
-            </div>
-
-            <div className="flex justify-between items-center text-xs text-gray-600">
-              <span>R$ {currentBalance.toLocaleString('pt-BR')}</span>
-              <span>R$ {targetBalance.toLocaleString('pt-BR')}</span>
-            </div>
-
-            <div className="text-center">
-              <span className="text-xs text-primary font-medium">
-                R$ {(targetBalance - currentBalance).toLocaleString('pt-BR')}{' '}
-                para Prata
-              </span>
-            </div>
-          </div>
-        </div>
+          }
+        >
+          <SidebarProgress
+            currentLevel={currentLevel}
+            totalDeposited={totalDeposited}
+            currentLevelMax={currentLevelMax}
+            nextLevelData={nextLevelData}
+            isLoading={gamificationLoading}
+          />
+        </Suspense>
       </div>
 
       <nav className="flex-1 overflow-y-auto px-4 py-6">
@@ -342,4 +329,4 @@ export function Sidebar() {
       </div>
     </aside>
   )
-}
+})
