@@ -1,5 +1,6 @@
 // lib/react-query.ts
 import { QueryClient } from '@tanstack/react-query'
+import { useAuth } from '@/contexts/AuthContext'
 
 export const queryClient = new QueryClient({
   defaultOptions: {
@@ -194,6 +195,51 @@ export function useUpdateAccount() {
   })
 }
 
+export function useGamificationData() {
+  const { authReady } = useAuth()
+
+  return useQuery({
+    queryKey: ['gamification', 'journey'],
+    queryFn: async () => {
+      const token =
+        typeof window !== 'undefined' ? localStorage.getItem('token') : null
+
+      if (!token) {
+        throw new Error('Token não encontrado')
+      }
+
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/gamification/journey`,
+        {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        },
+      )
+
+      if (!response.ok) {
+        throw new Error('Erro ao buscar dados de gamificação')
+      }
+
+      const data = await response.json()
+
+      if (!data.success) {
+        throw new Error(data.message || 'Erro ao carregar dados')
+      }
+
+      return data
+    },
+    enabled: authReady, // ✅ Só executar quando authReady for true
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    retry: 2,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+  })
+}
+
 // ===== UTILITY HOOKS =====
 export function useInvalidateQueries() {
   const queryClient = useQueryClient()
@@ -212,5 +258,7 @@ export function useInvalidateQueries() {
       queryClient.invalidateQueries({ queryKey: ['profile'] }),
     invalidateAccount: () =>
       queryClient.invalidateQueries({ queryKey: ['account'] }),
+    invalidateGamification: () =>
+      queryClient.invalidateQueries({ queryKey: ['gamification'] }),
   }
 }
