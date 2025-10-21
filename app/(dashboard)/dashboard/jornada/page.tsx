@@ -1,222 +1,153 @@
 'use client'
 
+import React, { Suspense, lazy } from 'react'
+import { useGamification } from '@/hooks/useGamification'
+import { Skeleton } from '@/components/ui/Skeleton'
 import { Card } from '@/components/ui/Card'
-import { Trophy, TrendingUp, Target, Award } from 'lucide-react'
 
-const levels = [
-  { name: 'Bronze', color: 'bg-amber-700', minDeposit: 0 },
-  { name: 'Prata', color: 'bg-gray-400', minDeposit: 10000 },
-  { name: 'Ouro', color: 'bg-yellow-400', minDeposit: 50000 },
-  { name: 'Safira', color: 'bg-blue-500', minDeposit: 100000 },
-  { name: 'Diamante', color: 'bg-purple-500', minDeposit: 250000 },
-]
+// Lazy loading dos componentes de gamificação
+const CurrentLevelProgress = lazy(
+  () => import('@/components/gamification/CurrentLevelProgress'),
+)
+const AchievementTrail = lazy(
+  () => import('@/components/gamification/AchievementTrail'),
+)
+const AchievementMessages = lazy(
+  () => import('@/components/gamification/AchievementMessages'),
+)
+const SummaryCards = lazy(
+  () => import('@/components/gamification/SummaryCards'),
+)
+
+// Componente de loading para lazy loading
+const GamificationSkeleton = () => (
+  <div className="space-y-8 p-6">
+    <Card className="p-8 bg-gradient-to-br from-blue-50 to-indigo-50">
+      <div className="flex items-center gap-6">
+        <Skeleton className="w-16 h-16 rounded-full" />
+        <div className="flex-1">
+          <Skeleton className="h-6 w-32 mb-2" />
+          <Skeleton className="h-8 w-24 mb-4" />
+          <Skeleton className="h-2 w-full rounded-full mb-2" />
+          <Skeleton className="h-4 w-48" />
+        </div>
+      </div>
+    </Card>
+
+    <Card className="p-6">
+      <Skeleton className="h-6 w-48 mb-6" />
+      <div className="grid grid-cols-5 gap-4 mb-4">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <div key={i} className="flex justify-center">
+            <Skeleton className="w-12 h-12 rounded-full" />
+          </div>
+        ))}
+      </div>
+      <Skeleton className="w-full h-2 rounded-full mb-6" />
+      <div className="grid grid-cols-5 gap-4">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <div key={i} className="text-center">
+            <Skeleton className="h-4 w-16 mx-auto mb-2" />
+            <Skeleton className="h-4 w-20 mx-auto mb-2" />
+            <Skeleton className="h-2 w-full rounded-full mb-2" />
+            <Skeleton className="h-4 w-24 mx-auto" />
+          </div>
+        ))}
+      </div>
+    </Card>
+
+    <Card className="p-6">
+      <Skeleton className="h-6 w-48 mb-6" />
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <Card key={i} className="p-4 border">
+            <div className="flex items-center gap-3 mb-3">
+              <Skeleton className="w-8 h-8 rounded-full" />
+              <Skeleton className="h-4 w-16" />
+            </div>
+            <Skeleton className="h-16 w-full" />
+          </Card>
+        ))}
+      </div>
+    </Card>
+
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {Array.from({ length: 3 }).map((_, i) => (
+        <Card key={i} className="p-6">
+          <div className="flex items-center justify-between mb-4">
+            <Skeleton className="h-4 w-24" />
+            <Skeleton className="h-8 w-8 rounded-full" />
+          </div>
+          <Skeleton className="h-8 w-32" />
+        </Card>
+      ))}
+    </div>
+  </div>
+)
 
 export default function JornadaPage() {
-  const currentLevel = 'Prata'
-  const totalDeposited = 32500
-  const currentLevelIndex = levels.findIndex((l) => l.name === currentLevel)
-  const nextLevel = levels[currentLevelIndex + 1]
-  const progress = nextLevel
-    ? ((totalDeposited - levels[currentLevelIndex].minDeposit) /
-        (nextLevel.minDeposit - levels[currentLevelIndex].minDeposit)) *
-      100
-    : 100
+  const { data, isLoading, error, refreshData } = useGamification()
 
-  const achievements = [
-    {
-      title: 'Primeiro Depósito',
-      description: 'Realize seu primeiro depósito',
-      completed: true,
-      icon: Trophy,
-    },
-    {
-      title: 'Nível Bronze',
-      description: 'Alcance o nível Bronze',
-      completed: true,
-      icon: Award,
-    },
-    {
-      title: 'R$ 10.000 Depositados',
-      description: 'Deposite R$ 10.000',
-      completed: true,
-      icon: TrendingUp,
-    },
-    {
-      title: 'Nível Prata',
-      description: 'Alcance o nível Prata',
-      completed: true,
-      icon: Award,
-    },
-    {
-      title: 'R$ 50.000 Depositados',
-      description: 'Deposite R$ 50.000',
-      completed: false,
-      icon: Target,
-    },
-    {
-      title: 'Nível Ouro',
-      description: 'Alcance o nível Ouro',
-      completed: false,
-      icon: Award,
-    },
-  ]
+  if (error) {
+    return (
+      <div className="space-y-8 p-6">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            Jornada Orizon
+          </h1>
+          <p className="text-gray-600">Sua evolução no mundo dos pagamentos</p>
+        </div>
+
+        <Card className="p-6 text-center">
+          <h2 className="text-xl font-semibold text-red-600 mb-4">
+            Erro ao carregar dados de gamificação
+          </h2>
+          <p className="text-gray-600 mb-4">
+            {error?.message || 'Ocorreu um erro inesperado'}
+          </p>
+          <button
+            onClick={refreshData}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            Tentar novamente
+          </button>
+        </Card>
+      </div>
+    )
+  }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">Jornada HorsePay</h1>
-        <p className="text-gray-600 text-sm mt-1">
-          Acompanhe seu progresso e desbloqueie novos níveis
-        </p>
+    <div className="space-y-8 p-6">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">
+          Jornada Orizon
+        </h1>
+        <p className="text-gray-600">Sua evolução no mundo dos pagamentos</p>
       </div>
 
-      <Card padding="lg">
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-br from-gray-300 to-gray-500 rounded-full mb-4">
-            <Trophy size={48} className="text-white" />
-          </div>
-          <h2 className="text-3xl font-bold text-gray-900 mb-2">
-            Nível {currentLevel}
-          </h2>
-          <p className="text-gray-600">
-            Total depositado:{' '}
-            <span className="font-semibold text-gray-900">
-              {totalDeposited.toLocaleString('pt-BR', {
-                style: 'currency',
-                currency: 'BRL',
-              })}
-            </span>
-          </p>
-        </div>
+      <Suspense fallback={<GamificationSkeleton />}>
+        {isLoading ? (
+          <GamificationSkeleton />
+        ) : data ? (
+          <>
+            <CurrentLevelProgress
+              currentLevel={data.currentLevel}
+              totalDeposited={data.totalDeposited}
+              currentLevelMax={data.currentLevelMax}
+              nextLevelData={data.nextLevelData}
+              progress={data.currentProgress}
+            />
 
-        {nextLevel && (
-          <div>
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-sm font-medium text-gray-700">
-                Progresso para {nextLevel.name}
-              </span>
-              <span className="text-sm font-medium text-primary">
-                {progress.toFixed(1)}%
-              </span>
-            </div>
-            <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-gradient-to-r from-primary to-primary-light transition-all duration-500"
-                style={{ width: `${progress}%` }}
-              />
-            </div>
-            <p className="text-xs text-gray-500 mt-2 text-center">
-              Faltam{' '}
-              {(nextLevel.minDeposit - totalDeposited).toLocaleString('pt-BR', {
-                style: 'currency',
-                currency: 'BRL',
-              })}{' '}
-              para alcançar o próximo nível
-            </p>
-          </div>
+            <AchievementTrail levels={data.achievementTrail} />
+
+            <AchievementMessages messages={data.achievementMessages} />
+
+            <SummaryCards cards={data.summaryCards} />
+          </>
+        ) : (
+          <GamificationSkeleton />
         )}
-      </Card>
-
-      <Card>
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">
-          Todos os Níveis
-        </h2>
-        <div className="space-y-3">
-          {levels.map((level, index) => {
-            const isUnlocked = index <= currentLevelIndex
-            const isCurrent = level.name === currentLevel
-
-            return (
-              <div
-                key={level.name}
-                className={`flex items-center gap-4 p-4 rounded-lg border-2 transition-all ${
-                  isCurrent
-                    ? 'border-primary bg-primary/5'
-                    : isUnlocked
-                    ? 'border-green-200 bg-green-50'
-                    : 'border-gray-200 bg-gray-50'
-                }`}
-              >
-                <div
-                  className={`w-12 h-12 ${
-                    level.color
-                  } rounded-full flex items-center justify-center ${
-                    !isUnlocked && 'opacity-40'
-                  }`}
-                >
-                  <Trophy size={24} className="text-white" />
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <h3 className="font-semibold text-gray-900">
-                      {level.name}
-                    </h3>
-                    {isCurrent && (
-                      <span className="text-xs bg-primary text-white px-2 py-0.5 rounded-full">
-                        Atual
-                      </span>
-                    )}
-                    {isUnlocked && !isCurrent && (
-                      <span className="text-xs bg-green-500 text-white px-2 py-0.5 rounded-full">
-                        Desbloqueado
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-sm text-gray-600 mt-1">
-                    Depósito mínimo:{' '}
-                    {level.minDeposit.toLocaleString('pt-BR', {
-                      style: 'currency',
-                      currency: 'BRL',
-                    })}
-                  </p>
-                </div>
-              </div>
-            )
-          })}
-        </div>
-      </Card>
-
-      <Card>
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Conquistas</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {achievements.map((achievement) => {
-            const Icon = achievement.icon
-            return (
-              <div
-                key={achievement.title}
-                className={`flex items-start gap-4 p-4 rounded-lg border ${
-                  achievement.completed
-                    ? 'border-green-200 bg-green-50'
-                    : 'border-gray-200 bg-gray-50'
-                }`}
-              >
-                <div
-                  className={`p-3 rounded-lg ${
-                    achievement.completed
-                      ? 'bg-green-500 text-white'
-                      : 'bg-gray-300 text-gray-500'
-                  }`}
-                >
-                  <Icon size={20} />
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-medium text-gray-900">
-                    {achievement.title}
-                  </h3>
-                  <p className="text-sm text-gray-600 mt-1">
-                    {achievement.description}
-                  </p>
-                  {achievement.completed && (
-                    <span className="inline-block text-xs text-green-600 font-medium mt-2">
-                      ✓ Conquistado
-                    </span>
-                  )}
-                </div>
-              </div>
-            )
-          })}
-        </div>
-      </Card>
+      </Suspense>
     </div>
   )
 }
