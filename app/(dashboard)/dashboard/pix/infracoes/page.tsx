@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, useCallback } from 'react'
+import { useState, useMemo, useCallback, memo } from 'react'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
@@ -32,7 +32,7 @@ type InfracaoItem = {
   descricao: string
 }
 
-export default function PixInfracoesPage() {
+const PixInfracoesPage = memo(function PixInfracoesPage() {
   const [search, setSearch] = useState('')
   const debouncedSearch = useDebounce(search, 500)
   const [period, setPeriod] = useState<'hoje' | '7d' | '30d' | 'custom' | null>(
@@ -444,4 +444,6 @@ export default function PixInfracoesPage() {
       />
     </div>
   )
-}
+})
+
+export default PixInfracoesPage

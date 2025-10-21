@@ -1,7 +1,6 @@
 'use client'
 
-import { useState } from 'react'
-import { useDebounce } from '@/hooks/useDebounce'
+import { useState, memo, useCallback } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -11,6 +10,7 @@ import { Button } from '@/components/ui/Button'
 import { Search, CheckCircle, XCircle, Clock } from 'lucide-react'
 import { Dialog } from '@/components/ui/Dialog'
 import { useRouter } from 'next/navigation'
+import { useAuth } from '@/contexts/AuthContext'
 
 const searchSchema = z.object({
   transactionId: z.string().min(1, 'Digite um ID ou EndToEndID'),
@@ -18,12 +18,12 @@ const searchSchema = z.object({
 
 type SearchFormData = z.infer<typeof searchSchema>
 
-export default function BuscarPage() {
+const BuscarPage = memo(function BuscarPage() {
   const router = useRouter()
+  const { authReady } = useAuth()
   const [searchResult, setSearchResult] = useState<any>(null)
   const [isSearching, setIsSearching] = useState(false)
   const [searchValue, setSearchValue] = useState('')
-  const debouncedSearchValue = useDebounce(searchValue, 500)
   const [typeModalOpen, setTypeModalOpen] = useState(false)
   const [selectedType, setSelectedType] = useState<'deposito' | 'saque' | null>(
     null,
@@ -37,61 +37,70 @@ export default function BuscarPage() {
     resolver: zodResolver(searchSchema),
   })
 
-  const onSubmit = async (data: SearchFormData) => {
-    setIsSearching(true)
-    try {
-      const params = new URLSearchParams()
-      params.append('page', '1')
-      params.append('limit', '1')
-      if (selectedType) params.append('tipo', selectedType)
-      params.append('busca', data.transactionId)
+  // Memorizar função de busca
+  const onSubmit = useCallback(
+    async (data: SearchFormData) => {
+      if (!authReady) return
 
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/transactions?${params.toString()}`,
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization:
-              typeof window !== 'undefined' && localStorage.getItem('token')
-                ? `Bearer ${localStorage.getItem('token')}`
-                : '',
+      setIsSearching(true)
+      try {
+        const params = new URLSearchParams()
+        params.append('page', '1')
+        params.append('limit', '1')
+        if (selectedType) params.append('tipo', selectedType)
+        params.append('busca', data.transactionId)
+
+        const res = await fetch(
+          `${
+            process.env.NEXT_PUBLIC_API_URL
+          }/transactions?${params.toString()}`,
+          {
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization:
+                typeof window !== 'undefined' && localStorage.getItem('token')
+                  ? `Bearer ${localStorage.getItem('token')}`
+                  : '',
+            },
           },
-        },
-      )
+        )
 
-      if (!res.ok) throw new Error('Erro ao buscar transação')
-      const json = await res.json()
+        if (!res.ok) throw new Error('Erro ao buscar transação')
+        const json = await res.json()
 
-      if (json.success && json.data?.data?.length) {
-        const t = json.data.data[0]
-        router.push(`/dashboard/comprovante/${t.id}`)
-        setSearchResult({
-          id: t.id,
-          endToEndId: t.transaction_id,
-          description: t.descricao,
-          value: t.amount,
-          date: t.data,
-          status: t.status_legivel,
-          type: t.tipo,
-          sender: {
-            name: t.nome_cliente,
-            document: t.documento,
-            bank: t.adquirente,
-          },
-          receiver: { name: 'Você', document: '', bank: 'Orizon' },
-        })
-      } else {
+        if (json.success && json.data?.data?.length) {
+          const t = json.data.data[0]
+          router.push(`/dashboard/comprovante/${t.id}`)
+          setSearchResult({
+            id: t.id,
+            endToEndId: t.transaction_id,
+            description: t.descricao,
+            value: t.amount,
+            date: t.data,
+            status: t.status_legivel,
+            type: t.tipo,
+            sender: {
+              name: t.nome_cliente,
+              document: t.documento,
+              bank: t.adquirente,
+            },
+            receiver: { name: 'Você', document: '', bank: 'Orizon' },
+          })
+        } else {
+          setSearchResult(null)
+        }
+      } catch (e) {
+        console.error('Erro ao buscar:', e)
         setSearchResult(null)
+      } finally {
+        setIsSearching(false)
       }
-    } catch (e) {
-      console.error('Erro ao buscar:', e)
-      setSearchResult(null)
-    } finally {
-      setIsSearching(false)
-    }
-  }
+    },
+    [authReady, selectedType, router],
+  )
 
-  const getStatusIcon = (status: string) => {
+  // Memorizar função de ícone de status
+  const getStatusIcon = useCallback((status: string) => {
     switch (status) {
       case 'concluída':
         return <CheckCircle className="text-green-500" size={24} />
@@ -102,7 +111,15 @@ export default function BuscarPage() {
       default:
         return <Clock className="text-gray-500" size={24} />
     }
-  }
+  }, [])
+
+  // Memorizar função de formatação de moeda
+  const formatCurrency = useCallback((value: number) => {
+    return value.toLocaleString('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
+    })
+  }, [])
 
   return (
     <div className="p-4 md:p-6 space-y-4">
@@ -237,10 +254,7 @@ export default function BuscarPage() {
                   Valor
                 </label>
                 <p className="text-2xl font-bold text-gray-900 mt-1">
-                  {searchResult.value.toLocaleString('pt-BR', {
-                    style: 'currency',
-                    currency: 'BRL',
-                  })}
+                  {formatCurrency(searchResult.value)}
                 </p>
               </div>
 
@@ -312,4 +326,6 @@ export default function BuscarPage() {
       )}
     </div>
   )
-}
+})
+
+export default BuscarPage

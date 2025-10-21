@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { memo, useState, useEffect, useCallback } from 'react'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Skeleton } from '@/components/ui/Skeleton'
@@ -26,7 +26,9 @@ interface RecentTransactionsProps {
   onViewExtract?: () => void
 }
 
-export function RecentTransactions({ onViewExtract }: RecentTransactionsProps) {
+export const RecentTransactions = memo(function RecentTransactions({
+  onViewExtract,
+}: RecentTransactionsProps) {
   const router = useRouter()
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -70,14 +72,27 @@ export function RecentTransactions({ onViewExtract }: RecentTransactionsProps) {
     }
   }, [user, authReady])
 
-  const formatCurrency = (value: number) =>
-    formatCurrencyBRL(value, { hide: isBalanceHidden })
-  const formatDate = (dateString: string) => formatDateBR(dateString)
-  const formatTime = (dateString: string) => formatTimeBR(dateString)
+  // Memorizar funções de formatação
+  const formatCurrency = useCallback(
+    (value: number) => formatCurrencyBRL(value, { hide: isBalanceHidden }),
+    [isBalanceHidden],
+  )
 
-  const handleViewReceipt = (transactionId: number) => {
-    router.push(`/dashboard/comprovante/${transactionId}`)
-  }
+  const formatDate = useCallback(
+    (dateString: string) => formatDateBR(dateString),
+    [],
+  )
+  const formatTime = useCallback(
+    (dateString: string) => formatTimeBR(dateString),
+    [],
+  )
+
+  const handleViewReceipt = useCallback(
+    (transactionId: number) => {
+      router.push(`/dashboard/comprovante/${transactionId}`)
+    },
+    [router],
+  )
 
   return (
     <div className="space-y-4">
@@ -216,4 +231,4 @@ export function RecentTransactions({ onViewExtract }: RecentTransactionsProps) {
       </Card>
     </div>
   )
-}
+})

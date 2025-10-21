@@ -1,13 +1,13 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, memo, useCallback } from 'react'
 import { useDebounce } from '@/hooks/useDebounce'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Download, Filter, ArrowUpRight, ArrowDownLeft } from 'lucide-react'
 
-export default function ExtratoPage() {
+const ExtratoPage = memo(function ExtratoPage() {
   const [filterType, setFilterType] = useState<'all' | 'entrada' | 'saida'>(
     'all',
   )
@@ -89,7 +89,6 @@ export default function ExtratoPage() {
     },
   ]
 
-
   const filteredTransactions = useMemo(() => {
     return transactions.filter((transaction) => {
       const typeMatch = filterType === 'all' || transaction.type === filterType
@@ -107,22 +106,38 @@ export default function ExtratoPage() {
     })
   }, [transactions, filterType, debouncedSearchTerm])
 
-  const totalEntradas = transactions
-    .filter((t) => t.type === 'entrada')
-    .reduce((acc, t) => acc + t.value, 0)
+  // Memorizar cálculos de totais
+  const { totalEntradas, totalSaidas, saldo } = useMemo(() => {
+    const entradas = transactions
+      .filter((t) => t.type === 'entrada')
+      .reduce((acc, t) => acc + t.value, 0)
 
-  const totalSaidas = transactions
-    .filter((t) => t.type === 'saida')
-    .reduce((acc, t) => acc + Math.abs(t.value), 0)
+    const saidas = transactions
+      .filter((t) => t.type === 'saida')
+      .reduce((acc, t) => acc + Math.abs(t.value), 0)
 
-  const saldo = totalEntradas - totalSaidas
+    return {
+      totalEntradas: entradas,
+      totalSaidas: saidas,
+      saldo: entradas - saidas,
+    }
+  }, [transactions])
 
-  const handleExport = () => {
+  // Memorizar função de exportação
+  const handleExport = useCallback(() => {
     console.log('Exportando extrato...')
     alert(
       'Funcionalidade de exportação será implementada com a integração da API',
     )
-  }
+  }, [])
+
+  // Memorizar função de formatação de moeda
+  const formatCurrency = useCallback((value: number) => {
+    return value.toLocaleString('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
+    })
+  }, [])
 
   return (
     <div className="space-y-6">
@@ -144,10 +159,7 @@ export default function ExtratoPage() {
             <div>
               <p className="text-sm text-gray-600 mb-2">Total em Entradas</p>
               <p className="text-2xl font-bold text-green-600">
-                {totalEntradas.toLocaleString('pt-BR', {
-                  style: 'currency',
-                  currency: 'BRL',
-                })}
+                {formatCurrency(totalEntradas)}
               </p>
             </div>
             <div className="p-3 rounded-lg bg-green-100 text-green-600">
@@ -161,10 +173,7 @@ export default function ExtratoPage() {
             <div>
               <p className="text-sm text-gray-600 mb-2">Total em Saídas</p>
               <p className="text-2xl font-bold text-red-600">
-                {totalSaidas.toLocaleString('pt-BR', {
-                  style: 'currency',
-                  currency: 'BRL',
-                })}
+                {formatCurrency(totalSaidas)}
               </p>
             </div>
             <div className="p-3 rounded-lg bg-red-100 text-red-600">
@@ -178,10 +187,7 @@ export default function ExtratoPage() {
             <div>
               <p className="text-sm text-gray-600 mb-2">Saldo do Período</p>
               <p className="text-2xl font-bold text-gray-900">
-                {saldo.toLocaleString('pt-BR', {
-                  style: 'currency',
-                  currency: 'BRL',
-                })}
+                {formatCurrency(saldo)}
               </p>
             </div>
             <div className="p-3 rounded-lg bg-blue-100 text-blue-600">
@@ -309,10 +315,7 @@ export default function ExtratoPage() {
                         }`}
                       >
                         {transaction.value > 0 ? '+' : ''}
-                        {transaction.value.toLocaleString('pt-BR', {
-                          style: 'currency',
-                          currency: 'BRL',
-                        })}
+                        {formatCurrency(transaction.value)}
                       </span>
                     </td>
                   </tr>
@@ -341,4 +344,6 @@ export default function ExtratoPage() {
       </Card>
     </div>
   )
-}
+})
+
+export default ExtratoPage

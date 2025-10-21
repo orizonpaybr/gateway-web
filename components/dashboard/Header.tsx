@@ -1,5 +1,6 @@
 'use client'
 
+import { memo } from 'react'
 import { EyeOff, Eye, RefreshCw } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { usePathname } from 'next/navigation'
@@ -22,7 +23,7 @@ const pageTitles: Record<string, string> = {
   '/dashboard/api-docs': 'Dashboard Orizon',
 }
 
-export function Header() {
+export const Header = memo(function Header() {
   const { isBalanceHidden, toggleBalanceVisibility } = useBalanceVisibility()
   const pathname = usePathname()
   const pageTitle = pageTitles[pathname] || 'Dashboard Orizon'
@@ -72,4 +73,4 @@ export function Header() {
       </div>
     </header>
   )
-}
+})

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { memo, useState, useEffect } from 'react'
 import { Card } from '@/components/ui/Card'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { dashboardAPI } from '@/lib/api'
@@ -61,7 +61,7 @@ const defaultData: TransactionSummaryData = {
   percentualInfracoes: { percentual: 0, valorTotal: 0 },
 }
 
-export function TransactionSummary({
+export const TransactionSummary = memo(function TransactionSummary({
   period = 'hoje',
   embedded = false,
 }: TransactionSummaryProps) {
@@ -383,4 +383,4 @@ export function TransactionSummary({
   )
 
   return embedded ? content : <Card className="p-6">{content}</Card>
-}
+})

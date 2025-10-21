@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, useCallback } from 'react'
+import { useState, useMemo, useCallback, memo } from 'react'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
@@ -14,7 +14,7 @@ import {
 } from '@/lib/dateUtils'
 import { TransactionDetailsModal } from '@/components/modals/TransactionDetailsModal'
 
-export default function PendentesPage() {
+const PendentesPage = memo(function PendentesPage() {
   const [search, setSearch] = useState('')
   const debouncedSearch = useDebounce(search, 500)
   const [period, setPeriod] = useState<'hoje' | '7d' | '30d' | 'custom' | null>(
@@ -330,4 +330,6 @@ export default function PendentesPage() {
       />
     </div>
   )
-}
+})
+
+export default PendentesPage

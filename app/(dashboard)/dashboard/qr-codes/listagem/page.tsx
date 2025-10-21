@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, useCallback } from 'react'
+import { useState, useMemo, useCallback, memo } from 'react'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
@@ -15,7 +15,7 @@ import {
 } from '@/lib/dateUtils'
 import { formatCurrencyBRL } from '@/lib/format'
 
-export default function QRCodeListagemPage() {
+const QRCodeListagemPage = memo(function QRCodeListagemPage() {
   const [search, setSearch] = useState('')
   const debouncedSearch = useDebounce(search, 500)
   const [period, setPeriod] = useState<'hoje' | '7d' | '30d' | 'custom' | null>(
@@ -411,4 +411,6 @@ export default function QRCodeListagemPage() {
       </Card>
     </div>
   )
-}
+})
+
+export default QRCodeListagemPage

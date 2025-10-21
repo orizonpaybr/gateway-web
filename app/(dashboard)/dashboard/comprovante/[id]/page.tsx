@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, memo, useCallback } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
@@ -8,7 +8,7 @@ import { Skeleton } from '@/components/ui/Skeleton'
 import { transactionsAPI } from '@/lib/api'
 import { useAuth } from '@/contexts/AuthContext'
 import { toast } from 'sonner'
-import { ArrowLeft, Download, RefreshCw, Webhook } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
 import {
   formatCurrencyBRL,
   formatDateTimeBR,
@@ -46,7 +46,7 @@ interface TransactionDetails {
   end_to_end?: string
 }
 
-export default function ComprovantePage() {
+const ComprovantePage = memo(function ComprovantePage() {
   const router = useRouter()
   const params = useParams()
   const id = params.id as string
@@ -88,9 +88,10 @@ export default function ComprovantePage() {
     fetchTransaction()
   }, [id, user, router])
 
-  const formatCurrency = formatCurrencyBRL
-  const formatDate = formatDateTimeBR
-  const formatDocument = formatDocumentBR
+  // Memorizar funções de formatação
+  const formatCurrency = useCallback(formatCurrencyBRL, [])
+  const formatDate = useCallback(formatDateTimeBR, [])
+  const formatDocument = useCallback(formatDocumentBR, [])
 
   if (isLoading) {
     return (
@@ -113,7 +114,8 @@ export default function ComprovantePage() {
     return null
   }
 
-  const getStatusColor = (status: string) => {
+  // Memorizar função de cor de status
+  const getStatusColor = useCallback((status: string) => {
     switch (status.toUpperCase()) {
       case 'PAID_OUT':
       case 'COMPLETED':
@@ -128,7 +130,7 @@ export default function ComprovantePage() {
       default:
         return 'bg-gray-100 text-gray-700'
     }
-  }
+  }, [])
 
   return (
     <div className="space-y-6">
@@ -363,4 +365,6 @@ export default function ComprovantePage() {
       </Card>
     </div>
   )
-}
+})
+
+export default ComprovantePage

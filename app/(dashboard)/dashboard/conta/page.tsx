@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useMemo, memo } from 'react'
 import { Card } from '@/components/ui/Card'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { useAccountData } from '@/hooks/useReactQuery'
@@ -17,7 +17,7 @@ import {
   Cloud,
 } from 'lucide-react'
 
-export default function ContaPage() {
+const ContaPage = memo(function ContaPage() {
   const { data: accountResponse, isLoading } = useAccountData() as any
   const account =
     accountResponse && (accountResponse as any).data
@@ -303,7 +303,9 @@ export default function ContaPage() {
       )}
     </div>
   )
-}
+})
+
+export default ContaPage
 
 function Info({
   label,
