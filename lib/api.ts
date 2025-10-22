@@ -462,6 +462,102 @@ export const qrCodeAPI = {
   },
 }
 
+export const extratoAPI = {
+  // Buscar extrato completo com paginação e filtros
+  list: async (filters?: {
+    page?: number
+    limit?: number
+    periodo?: 'hoje' | '7d' | '30d' | 'custom'
+    data_inicio?: string
+    data_fim?: string
+    busca?: string
+    tipo?: 'entrada' | 'saida'
+  }): Promise<{
+    success: boolean
+    data: {
+      data: Array<{
+        id: number
+        transaction_id: string
+        tipo: 'entrada' | 'saida'
+        descricao: string
+        valor: number
+        valor_liquido: number
+        taxa: number
+        status: string
+        status_legivel: string
+        data: string
+        created_at: string
+        nome_cliente: string
+        documento: string
+        adquirente: string
+        end_to_end?: string
+      }>
+      current_page: number
+      last_page: number
+      per_page: number
+      total: number
+      from: number
+      to: number
+      resumo: {
+        total_entradas: number
+        total_entradas_liquidas: number
+        total_taxas_entradas: number
+        total_saidas: number
+        total_saidas_liquidas: number
+        total_taxas_saidas: number
+        saldo_atual: number
+        saldo_periodo: number
+      }
+      periodo: string
+      data_inicio: string
+      data_fim: string
+    }
+  }> => {
+    const params = new URLSearchParams()
+    if (filters?.page) params.append('page', filters.page.toString())
+    if (filters?.limit) params.append('limit', filters.limit.toString())
+    if (filters?.periodo) params.append('periodo', filters.periodo)
+    if (filters?.data_inicio) params.append('data_inicio', filters.data_inicio)
+    if (filters?.data_fim) params.append('data_fim', filters.data_fim)
+    if (filters?.busca) params.append('busca', filters.busca)
+    if (filters?.tipo) params.append('tipo', filters.tipo)
+
+    return apiRequest(`/extrato?${params.toString()}`)
+  },
+
+  // Buscar resumo do extrato (sem paginação)
+  getSummary: async (filters?: {
+    periodo?: 'hoje' | '7d' | '30d' | 'custom'
+    data_inicio?: string
+    data_fim?: string
+  }): Promise<{
+    success: boolean
+    data: {
+      resumo: {
+        total_entradas: number
+        total_entradas_liquidas: number
+        total_taxas_entradas: number
+        total_saidas: number
+        total_saidas_liquidas: number
+        total_taxas_saidas: number
+        saldo_atual: number
+        saldo_periodo: number
+      }
+      periodo: string
+      data_inicio: string
+      data_fim: string
+    }
+  }> => {
+    const params = new URLSearchParams()
+    params.append('limit', '1') // Apenas para obter o resumo
+    if (filters?.periodo) params.append('periodo', filters.periodo)
+    if (filters?.data_inicio) params.append('data_inicio', filters.data_inicio)
+    if (filters?.data_fim) params.append('data_fim', filters.data_fim)
+
+    return apiRequest(`/extrato?${params.toString()}`)
+  },
+}
+
 export const accountAPI = {
   getBalance: async (): Promise<{
     success: boolean

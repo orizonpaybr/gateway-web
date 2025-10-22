@@ -26,6 +26,7 @@ import {
   authAPI,
   accountAPI,
   qrCodeAPI,
+  extratoAPI,
 } from '@/lib/api'
 import { toast } from 'sonner'
 
@@ -58,6 +59,41 @@ export function useTransactions(filters: any = {}) {
     staleTime: 1 * 60 * 1000, // 1 minuto para transações
     gcTime: 3 * 60 * 1000, // 3 minutos
     refetchOnWindowFocus: false,
+  })
+}
+
+// ===== EXTRATO HOOKS =====
+interface ExtratoFilters {
+  page?: number
+  limit?: number
+  periodo?: 'hoje' | '7d' | '30d' | 'custom'
+  data_inicio?: string
+  data_fim?: string
+  busca?: string
+  tipo?: 'entrada' | 'saida'
+}
+
+export function useExtrato(filters: ExtratoFilters = {}) {
+  return useQuery({
+    queryKey: ['extrato', filters],
+    queryFn: () => extratoAPI.list(filters),
+    staleTime: 2 * 60 * 1000, // 2 minutos para extrato
+    gcTime: 5 * 60 * 1000, // 5 minutos
+    refetchOnWindowFocus: false,
+    retry: 2,
+  })
+}
+
+export function useExtratoSummary(
+  filters: Omit<ExtratoFilters, 'page' | 'limit'> = {},
+) {
+  return useQuery({
+    queryKey: ['extrato', 'summary', filters],
+    queryFn: () => extratoAPI.getSummary(filters),
+    staleTime: 2 * 60 * 1000, // 2 minutos para resumo
+    gcTime: 5 * 60 * 1000, // 5 minutos
+    refetchOnWindowFocus: false,
+    retry: 2,
   })
 }
 
@@ -260,5 +296,7 @@ export function useInvalidateQueries() {
       queryClient.invalidateQueries({ queryKey: ['account'] }),
     invalidateGamification: () =>
       queryClient.invalidateQueries({ queryKey: ['gamification'] }),
+    invalidateExtrato: () =>
+      queryClient.invalidateQueries({ queryKey: ['extrato'] }),
   }
 }
