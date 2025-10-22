@@ -10,7 +10,7 @@ import { formatCurrencyBRL } from '@/lib/format'
 
 const pageTitles: Record<string, string> = {
   '/dashboard': 'Dashboard Orizon',
-  '/dashboard/jornada': 'Jornada Orizon',
+  '/dashboard/jornada': 'Dashboard Orizon',
   '/dashboard/buscar': 'Dashboard Orizon',
   '/dashboard/extrato': 'Dashboard Orizon',
   '/dashboard/pix': 'Dashboard Orizon',
