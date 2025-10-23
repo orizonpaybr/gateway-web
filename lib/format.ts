@@ -41,3 +41,28 @@ export function formatDocumentBR(doc: string) {
   }
   return doc
 }
+
+export function formatCurrencyInput(value: string): string {
+  if (!value || value === '') return ''
+  const numericValue = value.replace(/\D/g, '')
+  if (numericValue === '') return ''
+  const floatValue = parseFloat(numericValue) / 100
+  if (isNaN(floatValue)) return ''
+  return floatValue.toLocaleString('pt-BR', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })
+}
+
+export function cleanCurrency(value: string): string {
+  return value.replace(/\D/g, '')
+}
+
+export function parseCurrencyInput(value: string): number {
+  const cleaned = cleanCurrency(value)
+  return cleaned ? parseFloat(cleaned) : 0
+}
+
+export function centsToBRL(cents: number): number {
+  return cents / 100
+}

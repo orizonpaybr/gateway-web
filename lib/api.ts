@@ -336,6 +336,44 @@ export const transactionsAPI = {
   },
 }
 
+// Tipos para Chaves PIX
+export type PixKeyType = 'cpf' | 'cnpj' | 'telefone' | 'email' | 'aleatoria'
+
+export interface PixKey {
+  id: number
+  key_type: PixKeyType
+  key_type_label: string
+  key_value: string
+  key_value_formatted: string
+  key_label: string | null
+  is_active: boolean
+  is_default: boolean
+  icon: string
+  verified_at: string | null
+  created_at: string
+}
+
+export interface CreatePixKeyData {
+  key_type: PixKeyType
+  key_value: string
+  key_label?: string
+  is_default?: boolean
+}
+
+export interface UpdatePixKeyData {
+  key_label?: string
+  is_default?: boolean
+  is_active?: boolean
+}
+
+export interface PixWithdrawData {
+  key_id?: number
+  key_type?: PixKeyType
+  key_value?: string
+  amount: number
+  description?: string
+}
+
 export const pixAPI = {
   transfer: async (data: any) => {
     // return apiRequest('/pix/transfer', {
@@ -344,6 +382,105 @@ export const pixAPI = {
     // })
     throw new Error('API não implementada')
   },
+
+  // ===== GERENCIAMENTO DE CHAVES PIX =====
+
+  // Listar todas as chaves PIX do usuário
+  listKeys: async (): Promise<{
+    success: boolean
+    data: PixKey[]
+  }> => {
+    return apiRequest('/pix/keys')
+  },
+
+  // Criar nova chave PIX
+  createKey: async (
+    data: CreatePixKeyData,
+  ): Promise<{
+    success: boolean
+    message: string
+    data: PixKey
+  }> => {
+    return apiRequest('/pix/keys', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })
+  },
+
+  // Buscar chave PIX específica
+  getKey: async (
+    id: number,
+  ): Promise<{
+    success: boolean
+    data: PixKey
+  }> => {
+    return apiRequest(`/pix/keys/${id}`)
+  },
+
+  // Atualizar chave PIX
+  updateKey: async (
+    id: number,
+    data: UpdatePixKeyData,
+  ): Promise<{
+    success: boolean
+    message: string
+    data: PixKey
+  }> => {
+    return apiRequest(`/pix/keys/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    })
+  },
+
+  // Deletar chave PIX
+  deleteKey: async (
+    id: number,
+  ): Promise<{
+    success: boolean
+    message: string
+  }> => {
+    return apiRequest(`/pix/keys/${id}`, {
+      method: 'DELETE',
+    })
+  },
+
+  // Definir chave como padrão
+  setDefaultKey: async (
+    id: number,
+  ): Promise<{
+    success: boolean
+    message: string
+  }> => {
+    return apiRequest(`/pix/keys/${id}/set-default`, {
+      method: 'POST',
+    })
+  },
+
+  // Realizar saque com chave PIX
+  withdrawWithKey: async (
+    data: PixWithdrawData,
+  ): Promise<{
+    success: boolean
+    message: string
+    data: {
+      transaction_id: string
+      amount: number
+      key_type: string
+      key_value: string
+      description: string
+      status: string
+      estimated_time: string
+      created_at: string
+      adquirente: string
+    }
+  }> => {
+    return apiRequest('/pix/withdraw-with-key', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })
+  },
+
+  // ===== INFRAÇÕES PIX =====
 
   // Listar infrações do Pix
   listInfracoes: async (filters?: {

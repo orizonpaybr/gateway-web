@@ -41,9 +41,12 @@ interface QRCodeFilters {
 }
 
 export function useQRCodes(filters: QRCodeFilters = {}) {
+  const { authReady } = useAuth()
+
   return useQuery({
     queryKey: ['qrcodes', filters],
     queryFn: () => qrCodeAPI.list(filters),
+    enabled: authReady, // ✅ Só executar quando autenticado
     staleTime: 2 * 60 * 1000, // 2 minutos para dados dinâmicos
     gcTime: 5 * 60 * 1000, // 5 minutos
     refetchOnWindowFocus: false,
@@ -53,9 +56,12 @@ export function useQRCodes(filters: QRCodeFilters = {}) {
 
 // ===== TRANSACTIONS HOOKS =====
 export function useTransactions(filters: any = {}) {
+  const { authReady } = useAuth()
+
   return useQuery({
     queryKey: ['transactions', filters],
     queryFn: () => transactionsAPI.list(filters),
+    enabled: authReady, // ✅ Só executar quando autenticado
     staleTime: 1 * 60 * 1000, // 1 minuto para transações
     gcTime: 3 * 60 * 1000, // 3 minutos
     refetchOnWindowFocus: false,
@@ -74,9 +80,12 @@ interface ExtratoFilters {
 }
 
 export function useExtrato(filters: ExtratoFilters = {}) {
+  const { authReady } = useAuth()
+
   return useQuery({
     queryKey: ['extrato', filters],
     queryFn: () => extratoAPI.list(filters),
+    enabled: authReady, // ✅ Só executar quando autenticado
     staleTime: 2 * 60 * 1000, // 2 minutos para extrato
     gcTime: 5 * 60 * 1000, // 5 minutos
     refetchOnWindowFocus: false,
@@ -87,9 +96,12 @@ export function useExtrato(filters: ExtratoFilters = {}) {
 export function useExtratoSummary(
   filters: Omit<ExtratoFilters, 'page' | 'limit'> = {},
 ) {
+  const { authReady } = useAuth()
+
   return useQuery({
     queryKey: ['extrato', 'summary', filters],
     queryFn: () => extratoAPI.getSummary(filters),
+    enabled: authReady, // ✅ Só executar quando autenticado
     staleTime: 2 * 60 * 1000, // 2 minutos para resumo
     gcTime: 5 * 60 * 1000, // 5 minutos
     refetchOnWindowFocus: false,
@@ -98,9 +110,12 @@ export function useExtratoSummary(
 }
 
 export function useRecentTransactions(limit: number = 7) {
+  const { authReady } = useAuth()
+
   return useQuery({
     queryKey: ['transactions', 'recent', limit],
     queryFn: () => transactionsAPI.list({ limit, page: 1 }),
+    enabled: authReady, // ✅ Só executar quando autenticado
     staleTime: 1 * 60 * 1000,
     gcTime: 3 * 60 * 1000,
     refetchOnWindowFocus: false,
@@ -109,9 +124,12 @@ export function useRecentTransactions(limit: number = 7) {
 
 // ===== DASHBOARD HOOKS =====
 export function useDashboardStats() {
+  const { authReady } = useAuth()
+
   return useQuery({
     queryKey: ['dashboard', 'stats'],
     queryFn: () => dashboardAPI.getStats(),
+    enabled: authReady, // ✅ Só executar quando autenticado
     staleTime: 2 * 60 * 1000, // 2 minutos para estatísticas
     gcTime: 5 * 60 * 1000, // 5 minutos
     refetchOnWindowFocus: false,
@@ -119,9 +137,12 @@ export function useDashboardStats() {
 }
 
 export function useTransactionChart(period: string = '7d') {
+  const { authReady } = useAuth()
+
   return useQuery({
     queryKey: ['dashboard', 'chart', period],
     queryFn: () => dashboardAPI.getInteractiveMovement(period),
+    enabled: authReady, // ✅ Só executar quando autenticado
     staleTime: 1 * 60 * 1000, // 1 minuto para gráficos
     gcTime: 3 * 60 * 1000, // 3 minutos
     refetchOnWindowFocus: false,
@@ -129,9 +150,12 @@ export function useTransactionChart(period: string = '7d') {
 }
 
 export function useTransactionSummary(period: string = '7d') {
+  const { authReady } = useAuth()
+
   return useQuery({
     queryKey: ['dashboard', 'summary', period],
     queryFn: () => dashboardAPI.getTransactionSummary(period),
+    enabled: authReady, // ✅ Só executar quando autenticado
     staleTime: 1 * 60 * 1000, // 1 minuto para resumos
     gcTime: 3 * 60 * 1000, // 3 minutos
     refetchOnWindowFocus: false,
@@ -139,9 +163,12 @@ export function useTransactionSummary(period: string = '7d') {
 }
 
 export function useInteractiveMovement(period: string = '7d') {
+  const { authReady } = useAuth()
+
   return useQuery({
     queryKey: ['dashboard', 'interactive', period],
     queryFn: () => dashboardAPI.getInteractiveMovement(period),
+    enabled: authReady, // ✅ Só executar quando autenticado
     staleTime: 1 * 60 * 1000, // 1 minuto para movimento interativo
     gcTime: 3 * 60 * 1000, // 3 minutos
     refetchOnWindowFocus: false,
@@ -150,9 +177,12 @@ export function useInteractiveMovement(period: string = '7d') {
 
 // ===== PIX INFRAÇÕES HOOKS =====
 export function usePixInfracoes(filters: any = {}) {
+  const { authReady } = useAuth()
+
   return useQuery({
     queryKey: ['pix-infracoes', filters],
     queryFn: () => pixAPI.listInfracoes(filters),
+    enabled: authReady, // ✅ Só executar quando autenticado
     staleTime: 2 * 60 * 1000, // 2 minutos para infrações
     gcTime: 5 * 60 * 1000, // 5 minutos
     refetchOnWindowFocus: false,
@@ -205,9 +235,12 @@ export function useLogout() {
 
 // ===== ACCOUNT HOOKS =====
 export function useAccountData() {
+  const { authReady } = useAuth()
+
   return useQuery({
     queryKey: ['account'],
     queryFn: () => accountAPI.getProfile(),
+    enabled: authReady, // ✅ Só executar quando autenticado
     staleTime: 5 * 60 * 1000, // 5 minutos para dados da conta
     gcTime: 10 * 60 * 1000, // 10 minutos
     refetchOnWindowFocus: false,
