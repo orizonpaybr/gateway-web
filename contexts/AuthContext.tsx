@@ -268,6 +268,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   ) => {
     const response = await authAPI.register(data, documents)
     response.data?.user && setUser(extractUserData(response.data.user))
+    // ✅ Limpar tempToken ao registrar novo usuário
+    // Evita que TwoFactorVerify mostre modal quando não deve
+    setTempToken(null)
     return response
   }
 

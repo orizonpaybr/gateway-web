@@ -4,23 +4,35 @@ import { useState, useEffect, useRef } from 'react'
 import { twoFactorAPI } from '@/lib/api'
 import { useAuth } from '@/contexts/AuthContext'
 import { useRouter } from 'next/navigation'
-import { Setup2FAModal } from '@/components/modals/Setup2FAModal'
+import { TwoFactorModal } from '@/components/modals/TwoFactorModal'
 
 export function TwoFactorSetup() {
   const [showModal, setShowModal] = useState(false)
   const [isChecking, setIsChecking] = useState(false)
   const [isBlocking, setIsBlocking] = useState(false)
   const [hasInitialized, setHasInitialized] = useState(false)
+  const [lastUserId, setLastUserId] = useState<string | null>(null)
   const { user } = useAuth()
   const router = useRouter()
 
   useEffect(() => {
     const check2FAStatus = async () => {
       if (!user) {
+        // Usuário fez logout - resetar estado para próximo login
+        setHasInitialized(false)
+        setLastUserId(null)
+        setShowModal(false)
         setIsChecking(false)
-        setHasInitialized(true)
+        setIsBlocking(false)
         return
       }
+
+      // Se é um usuário diferente, resetar hasInitialized
+      if (lastUserId && lastUserId !== user.id) {
+        setHasInitialized(false)
+      }
+
+      setLastUserId(user.id)
 
       const setupChecked = sessionStorage.getItem('2fa_setup_checked')
       const verified = sessionStorage.getItem('2fa_verified')
@@ -37,10 +49,24 @@ export function TwoFactorSetup() {
         try {
           const response = await twoFactorAPI.getStatus()
 
-          if (response.success && (!response.enabled || !response.configured)) {
-            setShowModal(true)
-            setIsBlocking(true)
+          // LÓGICA CORRIGIDA:
+          // 1. Se 2FA nunca foi configurado (enabled=false E configured=false) → FORÇAR configuração
+          // 2. Se 2FA está desativado mas já foi configurado (enabled=false E configured=true) → Permitir acesso
+          // 3. Se 2FA está ativado (enabled=true) → Permitir acesso (já configurado)
+
+          if (response.success) {
+            const isFirstAccess = !response.enabled && !response.configured
+
+            if (isFirstAccess) {
+              // Primeiro acesso - FORÇAR configuração obrigatória
+              setShowModal(true)
+              setIsBlocking(true) // BLOQUEAR acesso até configurar
+            } else {
+              // 2FA já foi configurado (ativado ou desativado pelo usuário)
+              sessionStorage.setItem('2fa_setup_checked', 'true')
+            }
           } else {
+            // Erro na API - permitir acesso para não bloquear usuário
             sessionStorage.setItem('2fa_setup_checked', 'true')
           }
         } catch (error) {
@@ -48,8 +74,8 @@ export function TwoFactorSetup() {
             '❌ TwoFactorSetup - Erro ao verificar status 2FA:',
             error,
           )
-          setShowModal(true)
-          setIsBlocking(true)
+          // Em caso de erro, não forçar configuração - deixar usuário acessar
+          sessionStorage.setItem('2fa_setup_checked', 'true')
         } finally {
           setIsChecking(false)
           setHasInitialized(true)
@@ -75,27 +101,18 @@ export function TwoFactorSetup() {
     setShowModal(false)
   }
 
-  if (isChecking) {
-    return (
-      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-        <div className="bg-white rounded-xl p-8 text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-gray-600">Verificando segurança...</p>
-        </div>
-      </div>
-    )
-  }
-
   return (
     <>
       {isBlocking && showModal && (
         <div className="fixed inset-0 bg-black/80 z-40" />
       )}
 
-      <Setup2FAModal
+      <TwoFactorModal
         isOpen={showModal}
         onClose={handleClose}
         onSuccess={handleSuccess}
+        mode="initial-setup"
+        isBlocking={isBlocking}
       />
     </>
   )

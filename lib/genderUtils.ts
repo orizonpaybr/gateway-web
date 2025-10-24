@@ -68,6 +68,34 @@ const FEMALE_NAMES = new Set([
   'diana',
   'lilian',
   'sueli',
+  'kamilla',
+  'kamila',
+  'julia',
+  'sophia',
+  'alice',
+  'laura',
+  'manuela',
+  'luiza',
+  'valentina',
+  'emanuelly',
+  'heloisa',
+  'livia',
+  'agatha',
+  'melissa',
+  'marina',
+  'lara',
+  'nicole',
+  'yasmin',
+  'sara',
+  'lorena',
+  'milena',
+  'pietra',
+  'luna',
+  'antonella',
+  'maria eduarda',
+  'ana clara',
+  'ana julia',
+  'ana luiza',
 ])
 
 // Nomes masculinos comuns no Brasil - usando Set para performance O(1)
@@ -139,7 +167,7 @@ export function detectGenderByName(
   // Pega o primeiro nome e converte para minúsculo
   const firstName = fullName.trim().split(' ')[0].toLowerCase()
 
-  // Verificação O(1) usando Set
+  // 1ª verificação: Lista de nomes conhecidos (O(1) usando Set)
   if (MALE_NAMES.has(firstName)) {
     return 'male'
   }
@@ -148,6 +176,30 @@ export function detectGenderByName(
     return 'female'
   }
 
+  // 2ª verificação: Heurística para nomes não conhecidos
+  // No português, nomes terminando em 'a' geralmente são femininos
+  // Exceções comuns: Luca, Andrea (pode ser masculino em italiano)
+  if (firstName.length >= 3) {
+    const lastChar = firstName.charAt(firstName.length - 1)
+
+    // Nomes terminados em 'a' (exceto exceções conhecidas)
+    if (lastChar === 'a' && !['luca'].includes(firstName)) {
+      return 'female'
+    }
+
+    // Nomes terminados em 'o' geralmente são masculinos
+    if (lastChar === 'o') {
+      return 'male'
+    }
+
+    // Nomes terminados em 'elle', 'elly' são femininos
+    if (firstName.endsWith('elle') || firstName.endsWith('elly')) {
+      return 'female'
+    }
+  }
+
+  // Se não conseguiu identificar, retorna desconhecido
+  // Nesses casos, usa avatar masculino como padrão
   return 'unknown'
 }
 
