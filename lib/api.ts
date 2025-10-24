@@ -119,16 +119,19 @@ export const authAPI = {
    * Verificação 2FA
    */
   verify2FA: async (tempToken: string, code: string): Promise<AuthResponse> => {
+    const payload = { temp_token: tempToken, code }
+
     const response = await fetch(`${BASE_URL}/auth/verify-2fa`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ temp_token: tempToken, code }),
+      body: JSON.stringify(payload),
     })
 
     const data = await response.json()
 
     // Guard clause para erro
     if (!data.success) {
+      console.error('❌ Erro na verificação 2FA:', data)
       throw new Error(data.message || 'Código 2FA inválido')
     }
 
@@ -246,6 +249,44 @@ export const authAPI = {
     } finally {
       clearAuthData()
     }
+  },
+
+  /**
+   * Trocar senha do usuário
+   * Requer 2FA PIN para confirmar a operação
+   */
+  changePassword: async (
+    currentPassword: string,
+    newPassword: string,
+    newPasswordConfirmation: string,
+    twoFAPin: string, // PIN de 2FA obrigatório
+  ): Promise<AuthResponse> => {
+    const response = await fetch(`${BASE_URL}/auth/change-password`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${
+          typeof window !== 'undefined'
+            ? localStorage.getItem('token') || ''
+            : ''
+        }`,
+      },
+      body: JSON.stringify({
+        current_password: currentPassword,
+        new_password: newPassword,
+        new_password_confirmation: newPasswordConfirmation,
+        twofa_pin: twoFAPin, // Enviar PIN de 2FA
+      }),
+    })
+
+    const data = await response.json()
+
+    // Guard clause para erro
+    if (!data.success) {
+      throw new Error(data.message || 'Erro ao trocar senha')
+    }
+
+    return data
   },
 }
 
