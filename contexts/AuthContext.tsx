@@ -88,9 +88,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const checkAuth = async () => {
     try {
-      console.log(
-        '🔍 checkAuth - Iniciando verificação de autenticação (DEVE SER CHAMADO APENAS UMA VEZ)',
-      )
       // Aguardar um pouco mais para garantir que o localStorage está disponível
       await new Promise((resolve) => setTimeout(resolve, 200))
 
@@ -111,7 +108,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (result.success) {
         try {
-          console.log('🔍 checkAuth - Token válido, buscando perfil')
           const profileResult = (await accountAPI.getProfile()) as any
           if (profileResult.success && profileResult.data) {
             setUser({

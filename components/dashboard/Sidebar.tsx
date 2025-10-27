@@ -16,6 +16,7 @@ import {
   ChevronDown,
   ChevronUp,
   ExternalLink,
+  X,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/contexts/AuthContext'
@@ -25,6 +26,7 @@ import { DocumentIcon } from '@/components/icons/DocumentIcon'
 import { Button } from '@/components/ui/Button'
 import { AnimatedAvatar } from '@/components/ui/AnimatedAvatar'
 import { useSidebarGamification } from '@/hooks/useSidebarGamification'
+import { useMobileMenu } from '@/contexts/MobileMenuContext'
 
 // Lazy loading do componente de progresso
 const SidebarProgress = lazy(
@@ -98,6 +100,8 @@ export const Sidebar = memo(function Sidebar() {
   const { user, authReady, logout } = useAuth()
   const [expandedMenus, setExpandedMenus] = useState<string[]>([])
   const [isHydrated, setIsHydrated] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
+  const { isMobileMenuOpen, closeMobileMenu } = useMobileMenu()
 
   // Hook otimizado para gamificação da Sidebar
   const {
@@ -112,6 +116,26 @@ export const Sidebar = memo(function Sidebar() {
   useEffect(() => {
     setIsHydrated(true)
   }, [])
+
+  // Detectar se está em mobile
+  useEffect(() => {
+    const checkIsMobile = () => {
+      setIsMobile(window.innerWidth < 768)
+    }
+
+    checkIsMobile()
+    window.addEventListener('resize', checkIsMobile)
+
+    return () => window.removeEventListener('resize', checkIsMobile)
+  }, [])
+
+  // Fechar menu mobile ao trocar de página
+  useEffect(() => {
+    if (isMobile) {
+      closeMobileMenu()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname, isMobile])
 
   const handleLogout = async () => {
     try {
@@ -130,203 +154,242 @@ export const Sidebar = memo(function Sidebar() {
   }
 
   return (
-    <aside className="fixed left-0 top-0 h-screen w-72 bg-gray-50 shadow-sm flex flex-col">
-      <div className="p-4 border-b border-gray-200">
-        <Link href="/dashboard" className="flex items-center justify-center">
-          <Image
-            src="/LOGO-ORIZON-AZUL-PRETA.png"
-            alt="Orizon Pay"
-            width={120}
-            height={36}
-            priority
-          />
-        </Link>
-      </div>
+    <>
+      {isMobile && isMobileMenuOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40 md:hidden"
+          onClick={closeMobileMenu}
+        />
+      )}
 
-      <div className="px-4 py-5">
-        <Suspense
-          fallback={
-            <div className="bg-white rounded-lg p-5 space-y-3 shadow-sm border border-gray-100">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 bg-gray-300 rounded-full animate-pulse" />
-                  <div className="h-4 w-16 bg-gray-300 rounded animate-pulse" />
-                </div>
-                <div className="h-3 w-20 bg-gray-300 rounded animate-pulse" />
-              </div>
-              <div className="space-y-2">
-                <div className="w-full h-1.5 bg-gray-200 rounded-full" />
-                <div className="flex justify-between items-center">
-                  <div className="h-3 w-16 bg-gray-300 rounded animate-pulse" />
+      <aside
+        className={cn(
+          'fixed left-0 top-0 h-screen bg-gray-50 shadow-sm flex flex-col z-50 transition-transform duration-300 ease-in-out',
+          'w-72', // Desktop width
+          // Em mobile: esconde se fechado, mostra se aberto
+          // Em desktop: sempre visível
+          isMobile
+            ? isMobileMenuOpen
+              ? 'translate-x-0'
+              : '-translate-x-full'
+            : '',
+        )}
+      >
+        <div className="p-4 border-b border-gray-200 flex items-center justify-between">
+          <Link
+            href="/dashboard"
+            className="flex items-center justify-center flex-1"
+            onClick={closeMobileMenu}
+          >
+            <Image
+              src="/LOGO-ORIZON-AZUL-PRETA.png"
+              alt="Orizon Pay"
+              width={120}
+              height={36}
+              priority
+            />
+          </Link>
+
+          {isMobile && (
+            <button
+              onClick={closeMobileMenu}
+              className="p-2 rounded-lg hover:bg-gray-100 transition-colors ml-2"
+              aria-label="Fechar menu"
+            >
+              <X size={24} className="text-gray-600" />
+            </button>
+          )}
+        </div>
+
+        <div className="px-4 py-5">
+          <Suspense
+            fallback={
+              <div className="bg-white rounded-lg p-5 space-y-3 shadow-sm border border-gray-100">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 bg-gray-300 rounded-full animate-pulse" />
+                    <div className="h-4 w-16 bg-gray-300 rounded animate-pulse" />
+                  </div>
                   <div className="h-3 w-20 bg-gray-300 rounded animate-pulse" />
                 </div>
-                <div className="text-center">
-                  <div className="h-3 w-24 bg-gray-300 rounded animate-pulse mx-auto" />
+                <div className="space-y-2">
+                  <div className="w-full h-1.5 bg-gray-200 rounded-full" />
+                  <div className="flex justify-between items-center">
+                    <div className="h-3 w-16 bg-gray-300 rounded animate-pulse" />
+                    <div className="h-3 w-20 bg-gray-300 rounded animate-pulse" />
+                  </div>
+                  <div className="text-center">
+                    <div className="h-3 w-24 bg-gray-300 rounded animate-pulse mx-auto" />
+                  </div>
                 </div>
               </div>
-            </div>
-          }
-        >
-          <SidebarProgress
-            currentLevel={currentLevel}
-            totalDeposited={totalDeposited}
-            currentLevelMax={currentLevelMax}
-            nextLevelData={nextLevelData}
-            isLoading={gamificationLoading}
-          />
-        </Suspense>
-      </div>
+            }
+          >
+            <SidebarProgress
+              currentLevel={currentLevel}
+              totalDeposited={totalDeposited}
+              currentLevelMax={currentLevelMax}
+              nextLevelData={nextLevelData}
+              isLoading={gamificationLoading}
+            />
+          </Suspense>
+        </div>
 
-      <nav className="flex-1 overflow-y-auto px-4 py-6">
-        <ul className="space-y-2">
-          {mainMenuItems.map((item) => {
-            const Icon = item.icon
-            const isActive = pathname === item.href
-            const isSubmenuExpanded = expandedMenus.includes(item.label)
-            const hasActiveSubmenu = item.submenu?.some(
-              (subItem) => pathname === subItem.href,
-            )
+        <nav className="flex-1 overflow-y-auto px-4 py-6">
+          <ul className="space-y-2">
+            {mainMenuItems.map((item) => {
+              const Icon = item.icon
+              const isActive = pathname === item.href
+              const isSubmenuExpanded = expandedMenus.includes(item.label)
+              const hasActiveSubmenu = item.submenu?.some(
+                (subItem) => pathname === subItem.href,
+              )
 
-            return (
-              <li key={item.href}>
-                {item.hasSubmenu ? (
-                  <div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => toggleSubmenu(item.label)}
+              return (
+                <li key={item.href}>
+                  {item.hasSubmenu ? (
+                    <div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => toggleSubmenu(item.label)}
+                        className={cn(
+                          'flex items-center justify-between w-full px-4 py-3 rounded-lg text-sm font-medium transition-colors',
+                          isActive || hasActiveSubmenu
+                            ? 'bg-primary text-white hover:!bg-primary hover:!text-white'
+                            : 'text-gray-700 hover:bg-gray-100',
+                        )}
+                      >
+                        <div className="flex items-center gap-3">
+                          <Icon size={18} />
+                          {item.label}
+                        </div>
+                        {isSubmenuExpanded ? (
+                          <ChevronUp size={16} />
+                        ) : (
+                          <ChevronDown size={16} />
+                        )}
+                      </Button>
+
+                      {isSubmenuExpanded && item.submenu && (
+                        <ul className="mt-1 ml-6 space-y-1">
+                          {item.submenu.map((subItem) => {
+                            const isSubActive = pathname === subItem.href
+                            return (
+                              <li key={subItem.href}>
+                                <Link
+                                  href={subItem.href}
+                                  onClick={() => isMobile && closeMobileMenu()}
+                                  className={cn(
+                                    'block px-4 py-2.5 rounded-lg text-sm transition-colors',
+                                    isSubActive
+                                      ? 'bg-primary text-white'
+                                      : 'text-gray-600 hover:bg-gray-100',
+                                  )}
+                                >
+                                  {subItem.label}
+                                </Link>
+                              </li>
+                            )
+                          })}
+                        </ul>
+                      )}
+                    </div>
+                  ) : (
+                    <Link
+                      href={item.href}
+                      onClick={() => isMobile && closeMobileMenu()}
                       className={cn(
-                        'flex items-center justify-between w-full px-4 py-3 rounded-lg text-sm font-medium transition-colors',
-                        isActive || hasActiveSubmenu
-                          ? 'bg-primary text-white hover:!bg-primary hover:!text-white'
+                        'flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors',
+                        isActive
+                          ? 'bg-primary text-white'
                           : 'text-gray-700 hover:bg-gray-100',
                       )}
                     >
-                      <div className="flex items-center gap-3">
-                        <Icon size={18} />
-                        {item.label}
-                      </div>
-                      {isSubmenuExpanded ? (
-                        <ChevronUp size={16} />
-                      ) : (
-                        <ChevronDown size={16} />
-                      )}
-                    </Button>
+                      <Icon size={18} />
+                      {item.label}
+                    </Link>
+                  )}
+                </li>
+              )
+            })}
+          </ul>
 
-                    {isSubmenuExpanded && item.submenu && (
-                      <ul className="mt-1 ml-6 space-y-1">
-                        {item.submenu.map((subItem) => {
-                          const isSubActive = pathname === subItem.href
-                          return (
-                            <li key={subItem.href}>
-                              <Link
-                                href={subItem.href}
-                                className={cn(
-                                  'block px-4 py-2.5 rounded-lg text-sm transition-colors',
-                                  isSubActive
-                                    ? 'bg-primary text-white'
-                                    : 'text-gray-600 hover:bg-gray-100',
-                                )}
-                              >
-                                {subItem.label}
-                              </Link>
-                            </li>
-                          )
-                        })}
-                      </ul>
-                    )}
-                  </div>
-                ) : (
-                  <Link
+          <div className="my-6 border-t border-gray-200" />
+
+          <ul className="space-y-2">
+            {supportAndDocsItems.map((item) => {
+              const Icon = item.icon
+              const LinkComponent = item.isExternal ? 'a' : Link
+
+              return (
+                <li key={item.label}>
+                  <LinkComponent
                     href={item.href}
+                    target={item.isExternal ? '_blank' : undefined}
+                    rel={item.isExternal ? 'noopener noreferrer' : undefined}
                     className={cn(
-                      'flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors',
-                      isActive
-                        ? 'bg-primary text-white'
-                        : 'text-gray-700 hover:bg-gray-100',
+                      'flex items-center justify-between px-4 py-3 rounded-lg text-sm font-medium transition-colors',
+                      'text-gray-700 hover:bg-gray-100',
                     )}
                   >
-                    <Icon size={18} />
-                    {item.label}
-                  </Link>
-                )}
-              </li>
-            )
-          })}
-        </ul>
-
-        <div className="my-6 border-t border-gray-200" />
-
-        <ul className="space-y-2">
-          {supportAndDocsItems.map((item) => {
-            const Icon = item.icon
-            const LinkComponent = item.isExternal ? 'a' : Link
-
-            return (
-              <li key={item.label}>
-                <LinkComponent
-                  href={item.href}
-                  target={item.isExternal ? '_blank' : undefined}
-                  rel={item.isExternal ? 'noopener noreferrer' : undefined}
-                  className={cn(
-                    'flex items-center justify-between px-4 py-3 rounded-lg text-sm font-medium transition-colors',
-                    'text-gray-700 hover:bg-gray-100',
-                  )}
-                >
-                  <div className="flex items-center gap-3">
-                    <Icon />
-                    <div className="flex flex-col">
-                      <span className="font-semibold text-blue-900">
-                        {item.label}
-                      </span>
-                      {item.secondaryText && (
-                        <span className="text-xs text-blue-600">
-                          {item.secondaryText}
+                    <div className="flex items-center gap-3">
+                      <Icon />
+                      <div className="flex flex-col">
+                        <span className="font-semibold text-blue-900">
+                          {item.label}
                         </span>
-                      )}
+                        {item.secondaryText && (
+                          <span className="text-xs text-blue-600">
+                            {item.secondaryText}
+                          </span>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                  {item.isExternal && (
-                    <ExternalLink size={16} className="text-gray-400" />
-                  )}
-                </LinkComponent>
-              </li>
-            )
-          })}
-        </ul>
-      </nav>
+                    {item.isExternal && (
+                      <ExternalLink size={16} className="text-gray-400" />
+                    )}
+                  </LinkComponent>
+                </li>
+              )
+            })}
+          </ul>
+        </nav>
 
-      <div className="px-4 py-5 border-t border-gray-200">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <AnimatedAvatar
-              name={isHydrated ? user?.name || '' : ''}
-              size="md"
-            />
-            <div className="flex flex-col">
-              <p className="text-sm font-semibold text-blue-900">
-                {isHydrated && user?.name ? user.name.split(' ')[0] : 'Usuário'}
-              </p>
-              <p className="text-xs text-gray-500">
-                {isHydrated && user?.name && user.name.split(' ').length > 1
-                  ? `${user.name.split(' ').slice(1).join(' ')} ${
-                      user?.agency || ''
-                    }`
-                  : user?.agency || ''}
-              </p>
+        <div className="px-4 py-5 border-t border-gray-200">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <AnimatedAvatar
+                name={isHydrated ? user?.name || '' : ''}
+                size="md"
+              />
+              <div className="flex flex-col">
+                <p className="text-sm font-semibold text-blue-900">
+                  {isHydrated && user?.name
+                    ? user.name.split(' ')[0]
+                    : 'Usuário'}
+                </p>
+                <p className="text-xs text-gray-500">
+                  {isHydrated && user?.name && user.name.split(' ').length > 1
+                    ? `${user.name.split(' ').slice(1).join(' ')} ${
+                        user?.agency || ''
+                      }`
+                    : user?.agency || ''}
+                </p>
+              </div>
             </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              icon={<LogOut size={16} />}
+              onClick={handleLogout}
+              className="text-red-600 hover:text-red-700"
+            >
+              <span className="text-sm font-medium">Sair</span>
+            </Button>
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            icon={<LogOut size={16} />}
-            onClick={handleLogout}
-            className="text-red-600 hover:text-red-700"
-          >
-            <span className="text-sm font-medium">Sair</span>
-          </Button>
         </div>
-      </div>
-    </aside>
+      </aside>
+    </>
   )
 })
