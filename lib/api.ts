@@ -897,3 +897,70 @@ export const twoFactorAPI = {
     })
   },
 }
+
+// API de integração - Credenciais e IPs autorizados
+export const integrationAPI = {
+  getCredentials: async (): Promise<{
+    success: boolean
+    data: {
+      client_key: string
+      client_secret: string
+      status: 'active' | 'inactive'
+      created_at: string
+    }
+  }> => {
+    return apiRequest('/integration/credentials')
+  },
+
+  regenerateSecret: async (): Promise<{
+    success: boolean
+    message: string
+    data: {
+      client_key: string
+      client_secret: string
+    }
+  }> => {
+    return apiRequest('/integration/regenerate-secret', {
+      method: 'POST',
+    })
+  },
+
+  getAllowedIPs: async (): Promise<{
+    success: boolean
+    data: {
+      ips: string[]
+      count: number
+    }
+  }> => {
+    return apiRequest('/integration/allowed-ips')
+  },
+
+  addAllowedIP: async (
+    ip: string,
+  ): Promise<{
+    success: boolean
+    message: string
+    data: {
+      ips: string[]
+    }
+  }> => {
+    return apiRequest('/integration/allowed-ips', {
+      method: 'POST',
+      body: JSON.stringify({ ip }),
+    })
+  },
+
+  removeAllowedIP: async (
+    ip: string,
+  ): Promise<{
+    success: boolean
+    message: string
+    data: {
+      ips: string[]
+    }
+  }> => {
+    return apiRequest(`/integration/allowed-ips/${encodeURIComponent(ip)}`, {
+      method: 'DELETE',
+    })
+  },
+}
