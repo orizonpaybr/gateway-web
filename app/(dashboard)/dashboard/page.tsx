@@ -139,7 +139,7 @@ export default function DashboardPage() {
     <div className="space-y-6">
       <NotificationBanner />
       <div className="p-4 md:p-6 space-y-6">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
           {statsDisplay.map((stat) => {
             const Icon = stat.icon
             return (
@@ -171,7 +171,7 @@ export default function DashboardPage() {
           <h2 className="text-lg font-semibold text-gray-900 mb-4">
             Acesso Rápido
           </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
             {quickActions.map((action) => {
               const Icon = action.icon
               return (

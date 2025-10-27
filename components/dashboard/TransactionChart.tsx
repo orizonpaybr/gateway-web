@@ -146,33 +146,34 @@ export function TransactionChart({
           </Button>
         </div>
 
-        <div className="flex justify-end">
-          <div className="flex items-center gap-1">
-            {(
-              Object.keys(periodLabels) as Array<keyof typeof periodLabels>
-            ).map((key) => (
+        <div className="flex flex-wrap justify-end gap-1">
+          {(Object.keys(periodLabels) as Array<keyof typeof periodLabels>).map(
+            (key) => (
               <Button
                 key={key}
                 variant={period === key ? 'primary' : 'outline'}
                 size="sm"
                 onClick={() => handlePeriodChange(key)}
+                className="text-xs sm:text-sm whitespace-nowrap"
               >
                 {periodLabels[key]}
               </Button>
-            ))}
-          </div>
+            ),
+          )}
         </div>
 
-        <div className="flex justify-end items-center gap-4">
-          <div className="flex items-center gap-2 text-sm text-gray-700">
-            <span>Zoom:</span>
+        <div className="flex flex-wrap justify-end items-center gap-2 sm:gap-4">
+          <div className="flex items-center gap-1 sm:gap-2 text-sm text-gray-700">
+            <span className="text-xs sm:text-sm">Zoom:</span>
             <Button
               variant="outline"
               size="sm"
               icon={<Minus size={14} />}
               onClick={handleZoomOut}
             />
-            <span className="font-medium w-12 text-center">{zoom}%</span>
+            <span className="font-medium w-8 sm:w-12 text-center text-xs sm:text-sm">
+              {zoom}%
+            </span>
             <Button
               variant="outline"
               size="sm"
@@ -186,6 +187,7 @@ export function TransactionChart({
             size="sm"
             onClick={handleReset}
             disabled={!needsReset}
+            className="text-xs sm:text-sm"
           >
             Resetar
           </Button>
@@ -248,7 +250,7 @@ export function TransactionChart({
         )}
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-6 border-t border-gray-200">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 pt-6 border-t border-gray-200">
         {isLoading ? (
           <>
             {[1, 2, 3, 4].map((i) => (
