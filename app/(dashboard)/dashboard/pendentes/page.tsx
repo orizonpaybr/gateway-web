@@ -82,8 +82,8 @@ const PendentesPage = memo(function PendentesPage() {
       </div>
 
       <Card className="p-4">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-2 w-full sm:w-auto">
+        <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+          <div className="flex items-center gap-2 w-full xl:w-auto">
             <Input
               placeholder="Buscar..."
               value={search}
@@ -91,16 +91,18 @@ const PendentesPage = memo(function PendentesPage() {
                 setSearch(e.target.value)
                 setPage(1)
               }}
-              className="w-full sm:w-72"
+              className="w-full xl:w-72"
             />
-            <Button variant="outline" icon={<Filter size={16} />}>
+            <Button variant="outline" size="sm" icon={<Filter size={14} />}>
               Avançado
             </Button>
           </div>
 
-          <div className="relative flex items-center gap-2">
+          <div className="relative flex flex-wrap items-center gap-2 w-full xl:w-auto xl:flex-nowrap xl:justify-end">
             <Button
               variant={period === null ? 'primary' : 'outline'}
+              size="sm"
+              className="shrink-0"
               onClick={() => {
                 setPeriod(null)
                 setStartDate('')
@@ -112,6 +114,8 @@ const PendentesPage = memo(function PendentesPage() {
             </Button>
             <Button
               variant={period === 'hoje' ? 'primary' : 'outline'}
+              size="sm"
+              className="shrink-0"
               onClick={() => {
                 setPeriod('hoje')
                 setStartDate('')
@@ -123,6 +127,8 @@ const PendentesPage = memo(function PendentesPage() {
             </Button>
             <Button
               variant={period === '7d' ? 'primary' : 'outline'}
+              size="sm"
+              className="shrink-0"
               onClick={() => {
                 setPeriod('7d')
                 setStartDate('')
@@ -134,6 +140,8 @@ const PendentesPage = memo(function PendentesPage() {
             </Button>
             <Button
               variant={period === '30d' ? 'primary' : 'outline'}
+              size="sm"
+              className="shrink-0"
               onClick={() => {
                 setPeriod('30d')
                 setStartDate('')
@@ -145,12 +153,16 @@ const PendentesPage = memo(function PendentesPage() {
             </Button>
             <Button
               variant={period === 'custom' ? 'primary' : 'outline'}
-              icon={<Calendar size={16} />}
+              size="sm"
+              icon={<Calendar size={14} />}
+              className="shrink-0"
               onClick={() => setShowDatePicker((v) => !v)}
             />
             <Button
               variant="outline"
-              icon={<RotateCcw size={16} />}
+              size="sm"
+              icon={<RotateCcw size={14} />}
+              className="shrink-0"
               onClick={resetDates}
             />
 
@@ -216,23 +228,23 @@ const PendentesPage = memo(function PendentesPage() {
               </p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto -mx-2 xl:mx-0">
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-gray-200">
-                    <th className="text-left py-3 px-4 text-xs font-semibold text-gray-600 uppercase">
+                    <th className="text-left py-3 px-3 text-xs font-semibold text-gray-600 uppercase">
                       Descrição
                     </th>
-                    <th className="text-left py-3 px-4 text-xs font-semibold text-gray-600 uppercase">
+                    <th className="hidden md:table-cell text-left py-3 px-3 text-xs font-semibold text-gray-600 uppercase">
                       Referência
                     </th>
-                    <th className="text-left py-3 px-4 text-xs font-semibold text-gray-600 uppercase">
+                    <th className="text-left py-3 px-3 text-xs font-semibold text-gray-600 uppercase">
                       Data
                     </th>
-                    <th className="text-left py-3 px-4 text-xs font-semibold text-gray-600 uppercase">
+                    <th className="text-left py-3 px-3 text-xs font-semibold text-gray-600 uppercase">
                       Valor
                     </th>
-                    <th className="text-left py-3 px-4 text-xs font-semibold text-gray-600 uppercase">
+                    <th className="text-left py-3 px-3 text-xs font-semibold text-gray-600 uppercase">
                       Ações
                     </th>
                   </tr>
@@ -240,7 +252,7 @@ const PendentesPage = memo(function PendentesPage() {
                 <tbody>
                   {isLoading ? (
                     <tr>
-                      <td colSpan={4} className="p-4">
+                      <td colSpan={5} className="p-4">
                         <div className="space-y-2">
                           <Skeleton className="h-5 w-full" />
                           <Skeleton className="h-5 w-5/6" />
@@ -253,7 +265,7 @@ const PendentesPage = memo(function PendentesPage() {
                         key={t.id}
                         className="border-b border-gray-100 hover:bg-gray-50"
                       >
-                        <td className="py-3 px-4">
+                        <td className="py-3 px-3">
                           <div className="flex items-center gap-3">
                             <div className="p-2 rounded-lg bg-yellow-100 text-yellow-600">
                               <Clock size={16} />
@@ -263,13 +275,13 @@ const PendentesPage = memo(function PendentesPage() {
                             </span>
                           </div>
                         </td>
-                        <td className="py-3 px-4 text-sm text-gray-600">
+                        <td className="hidden md:table-cell py-3 px-3 text-sm text-gray-600">
                           {t.transaction_id}
                         </td>
-                        <td className="py-3 px-4 text-sm text-gray-600">
+                        <td className="py-3 px-3 text-sm text-gray-600">
                           {new Date(t.data).toLocaleDateString('pt-BR')}
                         </td>
-                        <td className="py-3 px-4">
+                        <td className="py-3 px-3">
                           <span className="text-sm font-semibold text-gray-900">
                             {t.tipo === 'deposito' ? '+' : '-'}
                             {t.valor_liquido.toLocaleString('pt-BR', {
@@ -278,7 +290,7 @@ const PendentesPage = memo(function PendentesPage() {
                             })}
                           </span>
                         </td>
-                        <td className="py-3 px-4">
+                        <td className="py-3 px-3">
                           <button
                             onClick={() => {
                               setDetailsId(t.id)
@@ -299,8 +311,8 @@ const PendentesPage = memo(function PendentesPage() {
           )}
         </div>
 
-        <div className="mt-4 flex items-center justify-between">
-          <p className="text-sm text-gray-600">
+        <div className="mt-4 flex flex-col items-center gap-3 xl:flex-row xl:items-center xl:justify-between">
+          <p className="text-sm text-gray-600 text-center xl:text-left">
             Itens por página: <span className="font-medium">{perPage}</span> •
             Total:{' '}
             <span className="font-medium">{processedData.totalItems}</span>
@@ -308,6 +320,7 @@ const PendentesPage = memo(function PendentesPage() {
           <div className="flex items-center gap-2">
             <Button
               variant="outline"
+              size="sm"
               disabled={!canPrev}
               onClick={() => canPrev && setPage((p) => p - 1)}
             >
@@ -315,6 +328,7 @@ const PendentesPage = memo(function PendentesPage() {
             </Button>
             <Button
               variant="outline"
+              size="sm"
               disabled={!canNext}
               onClick={() => canNext && setPage((p) => p + 1)}
             >
