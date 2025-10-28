@@ -130,25 +130,26 @@ const ExtratoPage = memo(function ExtratoPage() {
 
   return (
     <div className="p-4 md:p-6 space-y-4">
-      <div className="flex items-center justify-between">
-        <div>
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex-1">
           <h1 className="text-xl font-semibold text-gray-900">Extrato</h1>
           <p className="text-sm text-gray-600">
             Visualize e exporte seu histórico de transações
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
           <Button
             variant="outline"
-            icon={<Download size={18} />}
+            size="sm"
+            icon={<Download size={16} />}
             onClick={handleExport}
           >
-            Exportar Extrato
+            <span className="hidden sm:inline">Exportar Extrato</span>
           </Button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <Card className="p-4">
           <div className="flex items-center justify-between">
             <div>
@@ -197,8 +198,8 @@ const ExtratoPage = memo(function ExtratoPage() {
       </div>
 
       <Card className="p-4">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-2 w-full sm:w-auto">
+        <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+          <div className="flex items-center gap-2 w-full xl:w-auto">
             <Input
               placeholder="Buscar por descrição, EndToEndID ou valor..."
               value={search}
@@ -206,16 +207,18 @@ const ExtratoPage = memo(function ExtratoPage() {
                 setSearch(e.target.value)
                 setPage(1)
               }}
-              className="w-full sm:w-72"
+              className="w-full xl:w-72"
             />
-            <Button variant="outline" icon={<Filter size={16} />}>
+            <Button variant="outline" size="sm" icon={<Filter size={14} />}>
               Avançado
             </Button>
           </div>
 
-          <div className="relative flex items-center gap-2">
+          <div className="relative flex flex-wrap items-center gap-2 w-full xl:w-auto xl:flex-nowrap xl:justify-end">
             <Button
               variant={period === null ? 'primary' : 'outline'}
+              size="sm"
+              className="shrink-0"
               onClick={() => {
                 setPeriod(null)
                 setStartDate('')
@@ -227,6 +230,8 @@ const ExtratoPage = memo(function ExtratoPage() {
             </Button>
             <Button
               variant={period === 'hoje' ? 'primary' : 'outline'}
+              size="sm"
+              className="shrink-0"
               onClick={() => {
                 setPeriod('hoje')
                 setStartDate('')
@@ -238,6 +243,8 @@ const ExtratoPage = memo(function ExtratoPage() {
             </Button>
             <Button
               variant={period === '7d' ? 'primary' : 'outline'}
+              size="sm"
+              className="shrink-0"
               onClick={() => {
                 setPeriod('7d')
                 setStartDate('')
@@ -249,6 +256,8 @@ const ExtratoPage = memo(function ExtratoPage() {
             </Button>
             <Button
               variant={period === '30d' ? 'primary' : 'outline'}
+              size="sm"
+              className="shrink-0"
               onClick={() => {
                 setPeriod('30d')
                 setStartDate('')
@@ -260,12 +269,16 @@ const ExtratoPage = memo(function ExtratoPage() {
             </Button>
             <Button
               variant={period === 'custom' ? 'primary' : 'outline'}
-              icon={<Calendar size={16} />}
+              size="sm"
+              icon={<Calendar size={14} />}
+              className="shrink-0"
               onClick={() => setShowDatePicker((v) => !v)}
             />
             <Button
               variant="outline"
-              icon={<RotateCcw size={16} />}
+              size="sm"
+              icon={<RotateCcw size={14} />}
+              className="shrink-0"
               onClick={resetDates}
             />
 
@@ -315,9 +328,11 @@ const ExtratoPage = memo(function ExtratoPage() {
           </div>
         </div>
 
-        <div className="mt-4 flex items-center gap-2">
+        <div className="mt-4 flex flex-wrap items-center gap-2">
           <Button
             variant={filterType === 'all' ? 'primary' : 'outline'}
+            size="sm"
+            className="shrink-0"
             onClick={() => {
               setFilterType('all')
               setPage(1)
@@ -327,6 +342,8 @@ const ExtratoPage = memo(function ExtratoPage() {
           </Button>
           <Button
             variant={filterType === 'entrada' ? 'primary' : 'outline'}
+            size="sm"
+            className="shrink-0"
             onClick={() => {
               setFilterType('entrada')
               setPage(1)
@@ -336,6 +353,8 @@ const ExtratoPage = memo(function ExtratoPage() {
           </Button>
           <Button
             variant={filterType === 'saida' ? 'primary' : 'outline'}
+            size="sm"
+            className="shrink-0"
             onClick={() => {
               setFilterType('saida')
               setPage(1)
@@ -360,23 +379,23 @@ const ExtratoPage = memo(function ExtratoPage() {
               </p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto -mx-2 xl:mx-0">
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-gray-200">
-                    <th className="text-left py-3 px-4 text-xs font-semibold text-gray-600 uppercase">
+                    <th className="hidden md:table-cell text-left py-3 px-3 text-xs font-semibold text-gray-600 uppercase">
                       ENDTOENDID
                     </th>
-                    <th className="text-left py-3 px-4 text-xs font-semibold text-gray-600 uppercase">
+                    <th className="text-left py-3 px-3 text-xs font-semibold text-gray-600 uppercase">
                       TIPO
                     </th>
-                    <th className="text-left py-3 px-4 text-xs font-semibold text-gray-600 uppercase">
+                    <th className="text-left py-3 px-3 text-xs font-semibold text-gray-600 uppercase">
                       DESCRIÇÃO
                     </th>
-                    <th className="text-left py-3 px-4 text-xs font-semibold text-gray-600 uppercase">
+                    <th className="text-left py-3 px-3 text-xs font-semibold text-gray-600 uppercase">
                       VALOR
                     </th>
-                    <th className="text-left py-3 px-4 text-xs font-semibold text-gray-600 uppercase">
+                    <th className="text-left py-3 px-3 text-xs font-semibold text-gray-600 uppercase">
                       DATA/HORA
                     </th>
                   </tr>
@@ -397,7 +416,7 @@ const ExtratoPage = memo(function ExtratoPage() {
                         key={transacao.id}
                         className="border-b border-gray-100 hover:bg-gray-50"
                       >
-                        <td className="py-3 px-4 text-sm text-gray-600 font-mono">
+                        <td className="hidden md:table-cell py-3 px-3 text-sm text-gray-600 font-mono">
                           <div
                             className="truncate max-w-[200px] cursor-help"
                             title={transacao.end_to_end || '-'}
@@ -405,7 +424,7 @@ const ExtratoPage = memo(function ExtratoPage() {
                             {transacao.end_to_end || '-'}
                           </div>
                         </td>
-                        <td className="py-3 px-4">
+                        <td className="py-3 px-3">
                           <span
                             className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
                               transacao.tipo === 'entrada'
@@ -416,7 +435,7 @@ const ExtratoPage = memo(function ExtratoPage() {
                             {transacao.tipo === 'entrada' ? 'Entrada' : 'Saída'}
                           </span>
                         </td>
-                        <td className="py-3 px-4">
+                        <td className="py-3 px-3">
                           <div className="flex items-center gap-3">
                             <div
                               className={`p-2 rounded-lg ${
@@ -436,13 +455,13 @@ const ExtratoPage = memo(function ExtratoPage() {
                             </span>
                           </div>
                         </td>
-                        <td className="py-3 px-4">
+                        <td className="py-3 px-3">
                           <span className="text-sm font-semibold text-gray-900">
                             {transacao.tipo === 'entrada' ? '+' : '-'}
                             {formatCurrencyBRL(transacao.valor_liquido)}
                           </span>
                         </td>
-                        <td className="py-3 px-4 text-sm text-gray-600">
+                        <td className="py-3 px-3 text-sm text-gray-600">
                           {new Date(transacao.data).toLocaleDateString('pt-BR')}{' '}
                           {new Date(transacao.data).toLocaleTimeString(
                             'pt-BR',
@@ -458,25 +477,28 @@ const ExtratoPage = memo(function ExtratoPage() {
           )}
         </div>
 
-        <div className="mt-4 flex items-center justify-between">
-          <p className="text-sm text-gray-600">
-            Exibindo {processedData.items.length} de {processedData.totalItems}{' '}
-            transações
+        <div className="mt-4 flex flex-col items-center gap-3 xl:flex-row xl:items-center xl:justify-between">
+          <p className="text-sm text-gray-600 text-center xl:text-left">
+            Itens por página: <span className="font-medium">{perPage}</span> •
+            Total:{' '}
+            <span className="font-medium">{processedData.totalItems}</span>
           </p>
           <div className="flex items-center gap-2">
             <Button
               variant="outline"
+              size="sm"
               disabled={!canPrev}
               onClick={() => canPrev && setPage((p) => p - 1)}
             >
-              Anterior
+              {'<'}
             </Button>
             <Button
               variant="outline"
+              size="sm"
               disabled={!canNext}
               onClick={() => canNext && setPage((p) => p + 1)}
             >
-              Próximo
+              {'>'}
             </Button>
           </div>
         </div>
