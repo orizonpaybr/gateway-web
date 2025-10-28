@@ -157,14 +157,14 @@ export const Sidebar = memo(function Sidebar() {
     <>
       {isMobile && isMobileMenuOpen && (
         <div
-          className="fixed inset-0 bg-black/50 z-40 md:hidden"
+          className="fixed inset-0 bg-black/50 z-30 md:hidden"
           onClick={closeMobileMenu}
         />
       )}
 
       <aside
         className={cn(
-          'fixed left-0 top-0 h-screen bg-gray-50 shadow-sm flex flex-col z-50 transition-transform duration-300 ease-in-out',
+          'fixed left-0 top-0 h-screen bg-gray-50 shadow-sm flex flex-col z-40 transition-transform duration-300 ease-in-out',
           'w-72', // Desktop width
           // Em mobile: esconde se fechado, mostra se aberto
           // Em desktop: sempre visível
