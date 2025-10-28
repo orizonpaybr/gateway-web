@@ -124,7 +124,7 @@ export default function LoginPage() {
             variant="outline"
             fullWidth
             icon={<HelpCircle size={18} />}
-            onClick={() => window.open('tel:+5511981644351', '_self')}
+            onClick={() => window.open('tel:+5549988906647', '_self')}
           >
             Precisa de ajuda?
           </Button>

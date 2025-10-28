@@ -246,7 +246,7 @@ export function TwoFactorVerify() {
             <p className="text-xs text-gray-500 text-center">
               Esqueceu seu PIN?{' '}
               <a
-                href="https://wa.me/5511981644351"
+                href="https://wa.me/5549988906647"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-primary hover:underline"

@@ -82,7 +82,7 @@ const supportAndDocsItems: MenuItem[] = [
   {
     icon: WhatsAppIcon,
     label: 'Suporte',
-    href: 'https://wa.me/5511981644351',
+    href: 'https://wa.me/5549988906647',
     secondaryText: 'Fale conosco no WhatsApp',
     isExternal: true,
   },
