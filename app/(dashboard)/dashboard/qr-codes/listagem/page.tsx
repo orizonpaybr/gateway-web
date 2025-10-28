@@ -129,8 +129,8 @@ const QRCodeListagemPage = memo(function QRCodeListagemPage() {
       </div>
 
       <Card className="p-4">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-2 w-full sm:w-auto">
+        <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+          <div className="flex items-center gap-2 w-full xl:w-auto">
             <Input
               placeholder="Buscar..."
               value={search}
@@ -138,14 +138,16 @@ const QRCodeListagemPage = memo(function QRCodeListagemPage() {
                 setSearch(e.target.value)
                 setPage(1)
               }}
-              className="w-full sm:w-72"
+              className="w-full xl:w-72"
               icon={<Filter size={16} />}
             />
           </div>
 
-          <div className="relative flex items-center gap-2">
+          <div className="relative flex flex-wrap items-center gap-2 w-full xl:w-auto xl:flex-nowrap xl:justify-end">
             <Button
               variant={period === null ? 'primary' : 'outline'}
+              size="sm"
+              className="shrink-0"
               onClick={() => {
                 setPeriod(null)
                 setStartDate('')
@@ -157,6 +159,8 @@ const QRCodeListagemPage = memo(function QRCodeListagemPage() {
             </Button>
             <Button
               variant={period === 'hoje' ? 'primary' : 'outline'}
+              size="sm"
+              className="shrink-0"
               onClick={() => {
                 setPeriod('hoje')
                 setStartDate('')
@@ -168,6 +172,8 @@ const QRCodeListagemPage = memo(function QRCodeListagemPage() {
             </Button>
             <Button
               variant={period === '7d' ? 'primary' : 'outline'}
+              size="sm"
+              className="shrink-0"
               onClick={() => {
                 setPeriod('7d')
                 setStartDate('')
@@ -179,6 +185,8 @@ const QRCodeListagemPage = memo(function QRCodeListagemPage() {
             </Button>
             <Button
               variant={period === '30d' ? 'primary' : 'outline'}
+              size="sm"
+              className="shrink-0"
               onClick={() => {
                 setPeriod('30d')
                 setStartDate('')
@@ -190,12 +198,16 @@ const QRCodeListagemPage = memo(function QRCodeListagemPage() {
             </Button>
             <Button
               variant={period === 'custom' ? 'primary' : 'outline'}
-              icon={<Calendar size={16} />}
+              size="sm"
+              icon={<Calendar size={14} />}
+              className="shrink-0"
               onClick={() => setShowDatePicker((v) => !v)}
             />
             <Button
               variant="outline"
-              icon={<RotateCcw size={16} />}
+              size="sm"
+              icon={<RotateCcw size={14} />}
+              className="shrink-0"
               onClick={resetDates}
             />
 
@@ -245,32 +257,32 @@ const QRCodeListagemPage = memo(function QRCodeListagemPage() {
           </div>
         </div>
 
-        <div className="mt-4 overflow-x-auto">
+        <div className="mt-4 overflow-x-auto -mx-2 xl:mx-0">
           <table className="w-full">
             <thead>
               <tr className="border-b border-gray-200">
-                <th className="text-left py-3 px-4 text-xs font-semibold text-gray-600 uppercase">
+                <th className="hidden md:table-cell text-left py-3 px-3 text-xs font-semibold text-gray-600 uppercase">
                   QR CODE
                 </th>
-                <th className="text-left py-3 px-4 text-xs font-semibold text-gray-600 uppercase">
+                <th className="text-left py-3 px-3 text-xs font-semibold text-gray-600 uppercase">
                   NOME
                 </th>
-                <th className="text-left py-3 px-4 text-xs font-semibold text-gray-600 uppercase">
+                <th className="text-left py-3 px-3 text-xs font-semibold text-gray-600 uppercase">
                   VALOR
                 </th>
-                <th className="text-left py-3 px-4 text-xs font-semibold text-gray-600 uppercase">
+                <th className="text-left py-3 px-3 text-xs font-semibold text-gray-600 uppercase">
                   STATUS
                 </th>
-                <th className="text-left py-3 px-4 text-xs font-semibold text-gray-600 uppercase">
+                <th className="hidden lg:table-cell text-left py-3 px-3 text-xs font-semibold text-gray-600 uppercase">
                   TIPO DA COBRANÇA
                 </th>
-                <th className="text-left py-3 px-4 text-xs font-semibold text-gray-600 uppercase">
+                <th className="hidden lg:table-cell text-left py-3 px-3 text-xs font-semibold text-gray-600 uppercase">
                   DEVEDOR
                 </th>
-                <th className="text-left py-3 px-4 text-xs font-semibold text-gray-600 uppercase">
+                <th className="hidden lg:table-cell text-left py-3 px-3 text-xs font-semibold text-gray-600 uppercase">
                   DOCUMENTO
                 </th>
-                <th className="text-left py-3 px-4 text-xs font-semibold text-gray-600 uppercase">
+                <th className="hidden md:table-cell text-left py-3 px-3 text-xs font-semibold text-gray-600 uppercase">
                   DATA CRIAÇÃO
                 </th>
               </tr>
@@ -279,31 +291,28 @@ const QRCodeListagemPage = memo(function QRCodeListagemPage() {
               {isLoading ? (
                 Array.from({ length: perPage }).map((_, index) => (
                   <tr key={index} className="border-b border-gray-100">
-                    <td className="py-3 px-4">
+                    <td className="hidden md:table-cell py-3 px-3">
                       <Skeleton className="h-8 w-8" />
                     </td>
-                    <td className="py-3 px-4">
+                    <td className="py-3 px-3">
                       <Skeleton className="h-4 w-32" />
                     </td>
-                    <td className="py-3 px-4">
+                    <td className="py-3 px-3">
                       <Skeleton className="h-4 w-20" />
                     </td>
-                    <td className="py-3 px-4">
+                    <td className="py-3 px-3">
                       <Skeleton className="h-6 w-20" />
                     </td>
-                    <td className="py-3 px-4">
+                    <td className="hidden lg:table-cell py-3 px-3">
                       <Skeleton className="h-6 w-20" />
                     </td>
-                    <td className="py-3 px-4">
+                    <td className="hidden lg:table-cell py-3 px-3">
                       <Skeleton className="h-6 w-20" />
                     </td>
-                    <td className="py-3 px-4">
+                    <td className="hidden lg:table-cell py-3 px-3">
                       <Skeleton className="h-4 w-24" />
                     </td>
-                    <td className="py-3 px-4">
-                      <Skeleton className="h-4 w-24" />
-                    </td>
-                    <td className="py-3 px-4">
+                    <td className="hidden md:table-cell py-3 px-3">
                       <Skeleton className="h-4 w-24" />
                     </td>
                   </tr>
@@ -314,12 +323,12 @@ const QRCodeListagemPage = memo(function QRCodeListagemPage() {
                     key={qrCode.id}
                     className="border-b border-gray-100 hover:bg-gray-50"
                   >
-                    <td className="py-3 px-4">
+                    <td className="hidden md:table-cell py-3 px-3">
                       <div className="p-1 rounded bg-gray-100 text-gray-600 w-fit">
                         <QrCode size={16} />
                       </div>
                     </td>
-                    <td className="py-3 px-4">
+                    <td className="py-3 px-3">
                       <div>
                         <div className="text-sm font-medium text-gray-900">
                           {qrCode.nome}
@@ -329,10 +338,10 @@ const QRCodeListagemPage = memo(function QRCodeListagemPage() {
                         </div>
                       </div>
                     </td>
-                    <td className="py-3 px-4 text-sm font-medium text-gray-900">
+                    <td className="py-3 px-3 text-sm font-medium text-gray-900">
                       {formatCurrency(qrCode.valor)}
                     </td>
-                    <td className="py-3 px-4">
+                    <td className="py-3 px-3">
                       <span
                         className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(
                           qrCode.status,
@@ -341,7 +350,7 @@ const QRCodeListagemPage = memo(function QRCodeListagemPage() {
                         {formatStatus(qrCode.status)}
                       </span>
                     </td>
-                    <td className="py-3 px-4">
+                    <td className="hidden lg:table-cell py-3 px-3">
                       <span
                         className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getTipoCobrancaColor(
                           qrCode.tipo || 'pix',
@@ -350,20 +359,20 @@ const QRCodeListagemPage = memo(function QRCodeListagemPage() {
                         {formatTipoCobranca(qrCode.tipo || 'pix')}
                       </span>
                     </td>
-                    <td className="py-3 px-4 text-sm text-gray-600">
+                    <td className="hidden lg:table-cell py-3 px-3 text-sm text-gray-600">
                       {(qrCode as any).devedor || '---'}
                     </td>
-                    <td className="py-3 px-4 text-sm text-gray-600">
+                    <td className="hidden lg:table-cell py-3 px-3 text-sm text-gray-600">
                       {(qrCode as any).documento || '---'}
                     </td>
-                    <td className="py-3 px-4 text-sm text-gray-600">
+                    <td className="hidden md:table-cell py-3 px-3 text-sm text-gray-600">
                       {formatDate(qrCode.data_criacao)}
                     </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan={8} className="py-12 text-center">
+                  <td colSpan={8} className="py-12 text-center px-3">
                     <div className="flex flex-col items-center justify-center space-y-4">
                       <div className="p-4 bg-gray-100 rounded-full">
                         <QrCode size={32} className="text-gray-400" />
@@ -385,8 +394,8 @@ const QRCodeListagemPage = memo(function QRCodeListagemPage() {
           </table>
         </div>
 
-        <div className="mt-4 flex items-center justify-between">
-          <p className="text-sm text-gray-600">
+        <div className="mt-4 flex flex-col items-center gap-3 xl:flex-row xl:items-center xl:justify-between">
+          <p className="text-sm text-gray-600 text-center xl:text-left">
             Itens por página: <span className="font-medium">{perPage}</span> •
             Total:{' '}
             <span className="font-medium">{processedData.totalItems}</span>
@@ -394,6 +403,7 @@ const QRCodeListagemPage = memo(function QRCodeListagemPage() {
           <div className="flex items-center gap-2">
             <Button
               variant="outline"
+              size="sm"
               disabled={!canPrev}
               onClick={() => canPrev && setPage((p) => p - 1)}
             >
@@ -401,6 +411,7 @@ const QRCodeListagemPage = memo(function QRCodeListagemPage() {
             </Button>
             <Button
               variant="outline"
+              size="sm"
               disabled={!canNext}
               onClick={() => canNext && setPage((p) => p + 1)}
             >
