@@ -912,7 +912,9 @@ export const integrationAPI = {
     return apiRequest('/integration/credentials')
   },
 
-  regenerateSecret: async (): Promise<{
+  regenerateSecret: async (
+    pin?: string,
+  ): Promise<{
     success: boolean
     message: string
     data: {
@@ -922,6 +924,7 @@ export const integrationAPI = {
   }> => {
     return apiRequest('/integration/regenerate-secret', {
       method: 'POST',
+      body: JSON.stringify(pin ? { pin } : {}),
     })
   },
 
@@ -937,6 +940,7 @@ export const integrationAPI = {
 
   addAllowedIP: async (
     ip: string,
+    pin?: string,
   ): Promise<{
     success: boolean
     message: string
@@ -946,12 +950,13 @@ export const integrationAPI = {
   }> => {
     return apiRequest('/integration/allowed-ips', {
       method: 'POST',
-      body: JSON.stringify({ ip }),
+      body: JSON.stringify(pin ? { ip, pin } : { ip }),
     })
   },
 
   removeAllowedIP: async (
     ip: string,
+    pin?: string,
   ): Promise<{
     success: boolean
     message: string
@@ -961,6 +966,7 @@ export const integrationAPI = {
   }> => {
     return apiRequest(`/integration/allowed-ips/${encodeURIComponent(ip)}`, {
       method: 'DELETE',
+      body: pin ? JSON.stringify({ pin }) : undefined,
     })
   },
 }
