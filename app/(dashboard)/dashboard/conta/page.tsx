@@ -50,20 +50,22 @@ const ContaPage = memo(function ContaPage() {
             <h2 className="text-sm font-semibold text-gray-700 mb-3 inline-flex items-center gap-2">
               <UserIcon size={16} className="text-gray-500" /> Detalhes
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-              <div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
+              <div className="min-w-0">
                 <p className="text-gray-600">Usuário:</p>
-                <p className="font-medium text-gray-900">{account.username}</p>
+                <p className="font-medium text-gray-900 truncate">
+                  {account.username}
+                </p>
               </div>
-              <div>
+              <div className="min-w-0">
                 <p className="text-gray-600">Email:</p>
-                <p className="font-medium text-gray-900">
+                <p className="font-medium text-gray-900 truncate">
                   {account.email || '—'}
                 </p>
               </div>
-              <div>
+              <div className="min-w-0">
                 <p className="text-gray-600">CPF/CNPJ:</p>
-                <p className="font-medium text-gray-900">
+                <p className="font-medium text-gray-900 truncate">
                   {account.cnpj || '—'}
                 </p>
               </div>
@@ -72,32 +74,32 @@ const ContaPage = memo(function ContaPage() {
             <h3 className="text-sm font-semibold text-gray-700 mb-3 inline-flex items-center gap-2">
               <InfoIcon size={16} className="text-gray-500" /> Informações
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-4 text-sm">
-              <div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 text-sm">
+              <div className="min-w-0">
                 <p className="text-gray-600">Razão Social:</p>
-                <p className="font-medium text-gray-900">
+                <p className="font-medium text-gray-900 break-words">
                   {account.company?.razao_social || '—'}
                 </p>
               </div>
-              <div>
+              <div className="min-w-0">
                 <p className="text-gray-600">Nome Fantasia:</p>
-                <p className="font-medium text-gray-900">
+                <p className="font-medium text-gray-900 break-words">
                   {account.company?.nome_fantasia || '—'}
                 </p>
               </div>
-              <div>
+              <div className="min-w-0">
                 <p className="text-gray-600">Área de Atuação:</p>
-                <p className="font-medium text-gray-900">
+                <p className="font-medium text-gray-900 break-words">
                   {account.company?.area_atuacao || '—'}
                 </p>
               </div>
-              <div>
+              <div className="min-w-0">
                 <p className="text-gray-600">Tipo:</p>
                 <p className="font-medium text-gray-900">
                   {account.company?.tipo_pessoa || '—'}
                 </p>
               </div>
-              <div>
+              <div className="min-w-0">
                 <p className="text-gray-600">Status:</p>
                 <p className="font-medium text-gray-900">
                   {account.company?.status_atual || account.status_text || '—'}
@@ -108,16 +110,16 @@ const ContaPage = memo(function ContaPage() {
             <h3 className="text-sm font-semibold text-gray-700 mb-3 inline-flex items-center gap-2">
               <PhoneIcon size={16} className="text-gray-500" /> Contatos
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-              <div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+              <div className="min-w-0">
                 <p className="text-gray-600">Telefone (Principal):</p>
-                <p className="font-medium text-gray-900">
+                <p className="font-medium text-gray-900 break-words">
                   {account.contacts?.telefone_principal || '—'}
                 </p>
               </div>
-              <div>
+              <div className="min-w-0">
                 <p className="text-gray-600">Email (Principal):</p>
-                <p className="font-medium text-gray-900">
+                <p className="font-medium text-gray-900 break-words">
                   {account.contacts?.email_principal || '—'}
                 </p>
               </div>
@@ -127,7 +129,7 @@ const ContaPage = memo(function ContaPage() {
               <ArrowDownLeft size={16} className="text-green-600" /> Taxas de
               Depósito (Cash In)
             </h3>
-            <div className="grid grid-cols-2 md:grid-cols-2 gap-4 text-sm">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
               <Info
                 label="Taxa Fixa"
                 value={formatCurrencyBRL(taxes?.deposit?.fixed ?? 0)}
@@ -160,12 +162,12 @@ const ContaPage = memo(function ContaPage() {
               <ArrowUpRight size={16} className="text-red-600" /> Taxas de Saque
               (Cash Out)
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <p className="text-xs font-semibold text-gray-600 uppercase inline-flex items-center gap-1">
                   <Home size={12} /> Dashboard
                 </p>
-                <div className="grid grid-cols-2 md:grid-cols-2 gap-4 text-sm">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
                   <Info
                     label="Taxa Fixa"
                     value={formatCurrencyBRL(
@@ -202,7 +204,7 @@ const ContaPage = memo(function ContaPage() {
                 <p className="text-xs font-semibold text-gray-600 uppercase inline-flex items-center gap-1">
                   <Cloud size={12} /> API
                 </p>
-                <div className="grid grid-cols-2 md:grid-cols-2 gap-4 text-sm">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
                   <Info
                     label="Taxa Fixa"
                     value={formatCurrencyBRL(taxes?.withdraw?.api?.fixed ?? 0)}
@@ -237,7 +239,7 @@ const ContaPage = memo(function ContaPage() {
               <BadgePercent size={16} className="text-purple-600" /> Taxas de
               Afiliado
             </h3>
-            <div className="grid grid-cols-2 md:grid-cols-2 gap-4 text-sm">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
               <Info
                 label="Taxa Fixa"
                 value={formatCurrencyBRL(taxes?.affiliate?.fixed ?? 0)}
@@ -256,7 +258,7 @@ const ContaPage = memo(function ContaPage() {
               <BadgePercent size={16} className="text-blue-600" /> Limites e
               Retenção
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-3 text-sm">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-sm">
               <Info
                 label="Depósito Mínimo"
                 value={formatCurrencyBRL(limits?.deposit_min ?? 0)}
@@ -283,7 +285,7 @@ const ContaPage = memo(function ContaPage() {
               <SettingsIcon size={16} className="text-gray-600" /> Configurações
               de Funcionalidades
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 text-sm">
               <Flag
                 label="Saque Automático"
                 enabled={!!features?.saque_automatico}
@@ -318,17 +320,31 @@ function Info({
   color?: 'green' | 'red' | 'indigo' | 'gray'
   size?: 'md' | 'lg'
 }) {
+  const colorClasses = {
+    green: 'bg-green-50',
+    red: 'bg-red-50',
+    indigo: 'bg-indigo-50',
+    gray: 'bg-gray-50',
+  }
+
   return (
     <div
-      className={`rounded-lg ${size === 'lg' ? 'p-4' : 'p-3'} bg-${color}-50`}
+      className={`rounded-lg ${size === 'lg' ? 'p-4' : 'p-3'} ${
+        colorClasses[color]
+      } min-w-0`}
     >
-      <p className={`${size === 'lg' ? 'text-xs' : 'text-xs'} text-gray-600`}>
+      <p
+        className={`${
+          size === 'lg' ? 'text-xs' : 'text-xs'
+        } text-gray-600 break-words`}
+      >
         {label}
       </p>
       <p
         className={`${
           size === 'lg' ? 'text-base' : 'text-sm'
-        } font-semibold text-gray-900`}
+        } font-semibold text-gray-900 break-words truncate`}
+        title={value}
       >
         {value}
       </p>
