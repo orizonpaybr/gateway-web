@@ -71,6 +71,21 @@ export const ConfiguracoesContaTab = memo(() => {
     loadTwoFAStatus()
   }, [])
 
+  // Bloquear scroll do body quando modal de PIN está aberto
+  useEffect(() => {
+    if (showPinModal) {
+      document.body.style.overflow = 'hidden'
+      document.documentElement.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+      document.documentElement.style.overflow = ''
+    }
+    return () => {
+      document.body.style.overflow = ''
+      document.documentElement.style.overflow = ''
+    }
+  }, [showPinModal])
+
   const loadTwoFAStatus = useCallback(async () => {
     try {
       setIsLoadingStatus(true)
@@ -240,11 +255,11 @@ export const ConfiguracoesContaTab = memo(() => {
   return (
     <div className="space-y-6">
       <Card>
-        <div className="flex items-center gap-3 mb-6">
-          <div className="p-3 rounded-lg bg-primary/10 text-primary">
+        <div className="flex items-center gap-3 mb-6 flex-wrap">
+          <div className="p-3 rounded-lg bg-primary/10 text-primary shrink-0">
             <Lock size={24} />
           </div>
-          <div>
+          <div className="min-w-0 flex-1">
             <h2 className="text-lg font-semibold text-gray-900">
               Trocar Senha
             </h2>
@@ -286,24 +301,34 @@ export const ConfiguracoesContaTab = memo(() => {
             type="submit"
             icon={<Lock size={18} />}
             disabled={isSubmitting}
+            className="w-full sm:w-auto"
           >
-            {isSubmitting
-              ? 'Processando...'
-              : twoFAStatus.enabled
-              ? 'Trocar Senha (Confirmar com 2FA)'
-              : 'Trocar Senha'}
+            <span className="hidden sm:inline">
+              {isSubmitting
+                ? 'Processando...'
+                : twoFAStatus.enabled
+                ? 'Trocar Senha (Confirmar com 2FA)'
+                : 'Trocar Senha'}
+            </span>
+            <span className="sm:hidden">
+              {isSubmitting
+                ? 'Processando...'
+                : twoFAStatus.enabled
+                ? 'Trocar Senha'
+                : 'Trocar Senha'}
+            </span>
           </Button>
         </form>
       </Card>
 
       <Card>
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-3">
-            <div className="p-3 rounded-lg bg-green-100 text-green-600">
+        <div className="flex items-center justify-between mb-6 gap-4 flex-wrap">
+          <div className="flex items-center gap-3 min-w-0 flex-1">
+            <div className="p-3 rounded-lg bg-green-100 text-green-600 shrink-0">
               <Shield size={24} />
             </div>
-            <div>
-              <h2 className="text-lg font-semibold text-gray-900">
+            <div className="min-w-0">
+              <h2 className="text-lg font-semibold text-gray-900 break-words">
                 Autenticação de Dois Fatores (2FA)
               </h2>
               <p className="text-sm text-gray-600">
@@ -315,6 +340,7 @@ export const ConfiguracoesContaTab = memo(() => {
             checked={twoFAStatus.enabled}
             onCheckedChange={handleToggle2FA}
             disabled={isLoadingStatus}
+            className="shrink-0"
           />
         </div>
 
@@ -325,17 +351,17 @@ export const ConfiguracoesContaTab = memo(() => {
                 className="text-green-600 flex-shrink-0 mt-0.5"
                 size={20}
               />
-              <div className="text-sm text-green-800">
-                <p className="font-semibold mb-1">
+              <div className="text-sm text-green-800 min-w-0 flex-1">
+                <p className="font-semibold mb-1 break-words">
                   Autenticação de dois fatores ativada ✓
                 </p>
-                <p>
+                <p className="break-words">
                   Sua conta está protegida com uma camada adicional de segurança
                   usando PIN de 6 dígitos. Você precisará do seu PIN para
                   operações de segurança.
                 </p>
                 {twoFAStatus.enabled_at && (
-                  <p className="text-xs mt-2 opacity-75">
+                  <p className="text-xs mt-2 opacity-75 break-words">
                     Ativado em:{' '}
                     {new Date(twoFAStatus.enabled_at).toLocaleDateString(
                       'pt-BR',
@@ -377,8 +403,11 @@ export const ConfiguracoesContaTab = memo(() => {
       </Card>
 
       {showPinModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6">
+        <div
+          className="fixed top-0 left-0 right-0 bottom-0 bg-black/50 flex items-center justify-center z-[1000]"
+          style={{ margin: 0, padding: 0 }}
+        >
+          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-4 sm:p-6 mx-4">
             <div className="text-center mb-6">
               <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Lock className="w-6 h-6 text-blue-600" />
@@ -477,7 +506,7 @@ const PinInputComponent = memo(function PinInputComponent({
 
   return (
     <>
-      <div className="flex gap-2 justify-center mb-6">
+      <div className="flex gap-2 justify-center mb-6 flex-wrap">
         {Array.from({ length: 6 }).map((_, index) => (
           <input
             key={index}
@@ -492,12 +521,12 @@ const PinInputComponent = memo(function PinInputComponent({
             onKeyDown={(e) => handleKeyDown(index, e)}
             onPaste={handlePaste}
             disabled={isVerifying}
-            className="w-12 h-12 text-center text-2xl font-bold border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none transition-colors disabled:opacity-50"
+            className="w-10 h-10 sm:w-12 sm:h-12 text-center text-xl sm:text-2xl font-bold border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none transition-colors disabled:opacity-50"
           />
         ))}
       </div>
 
-      <div className="flex gap-3">
+      <div className="flex flex-col sm:flex-row gap-3">
         <Button
           variant="secondary"
           onClick={onClose}

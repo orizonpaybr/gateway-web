@@ -148,11 +148,11 @@ export const ConfiguracoesIntegracaoTab = memo(() => {
   return (
     <div className="space-y-6">
       <Card>
-        <div className="flex items-center gap-3 mb-6">
-          <div className="p-3 rounded-lg bg-blue-100 text-blue-600">
+        <div className="flex items-center gap-3 mb-6 flex-wrap">
+          <div className="p-3 rounded-lg bg-blue-100 text-blue-600 shrink-0">
             <Key size={24} />
           </div>
-          <div>
+          <div className="min-w-0 flex-1">
             <h2 className="text-lg font-semibold text-gray-900">
               Integração com API
             </h2>
@@ -167,8 +167,8 @@ export const ConfiguracoesIntegracaoTab = memo(() => {
             <label className="text-xs font-semibold text-gray-600 uppercase mb-2 block">
               Client Key
             </label>
-            <div className="flex gap-2">
-              <div className="flex-1 bg-gray-50 px-4 py-3 rounded-lg font-mono text-sm text-gray-900 border border-gray-200 break-all">
+            <div className="flex flex-col sm:flex-row gap-2">
+              <div className="flex-1 bg-gray-50 px-4 py-3 rounded-lg font-mono text-sm text-gray-900 border border-gray-200 break-all min-w-0">
                 {credentials?.client_key}
               </div>
               <Button
@@ -177,6 +177,7 @@ export const ConfiguracoesIntegracaoTab = memo(() => {
                 onClick={() =>
                   copyToClipboard(credentials?.client_key || '', 'Client Key')
                 }
+                className="shrink-0 w-full sm:w-auto"
               >
                 Copiar
               </Button>
@@ -187,8 +188,8 @@ export const ConfiguracoesIntegracaoTab = memo(() => {
             <label className="text-xs font-semibold text-gray-600 uppercase mb-2 block">
               Client Secret
             </label>
-            <div className="flex gap-2">
-              <div className="flex-1 bg-gray-50 px-4 py-3 rounded-lg font-mono text-sm text-gray-900 border border-gray-200 break-all">
+            <div className="flex flex-col sm:flex-row gap-2">
+              <div className="flex-1 bg-gray-50 px-4 py-3 rounded-lg font-mono text-sm text-gray-900 border border-gray-200 break-all min-w-0">
                 {credentials?.client_secret}
               </div>
               <Button
@@ -200,6 +201,7 @@ export const ConfiguracoesIntegracaoTab = memo(() => {
                     'Client Secret',
                   )
                 }
+                className="shrink-0 w-full sm:w-auto"
               >
                 Copiar
               </Button>
@@ -236,15 +238,18 @@ export const ConfiguracoesIntegracaoTab = memo(() => {
               {ips.map((ip) => (
                 <div
                   key={ip}
-                  className="flex items-center justify-between bg-gray-50 px-4 py-3 rounded-lg border border-gray-200"
+                  className="flex items-center justify-between bg-gray-50 px-4 py-3 rounded-lg border border-gray-200 gap-2 flex-wrap"
                 >
-                  <span className="font-mono text-sm text-gray-900">{ip}</span>
+                  <span className="font-mono text-sm text-gray-900 break-all flex-1 min-w-0">
+                    {ip}
+                  </span>
                   <Button
                     variant="ghost"
                     size="sm"
                     icon={<X size={16} />}
                     onClick={() => handleRemoveIP(ip)}
                     disabled={removeIPMutation.isPending}
+                    className="shrink-0"
                   >
                     Remover
                   </Button>
@@ -252,7 +257,7 @@ export const ConfiguracoesIntegracaoTab = memo(() => {
               ))}
 
               {isAddingIP ? (
-                <div className="flex gap-2">
+                <div className="flex flex-col sm:flex-row gap-2">
                   <Input
                     type="text"
                     placeholder="Ex: 192.168.1.1"
@@ -271,6 +276,7 @@ export const ConfiguracoesIntegracaoTab = memo(() => {
                   <Button
                     onClick={handleAddIP}
                     disabled={addIPMutation.isPending}
+                    className="w-full sm:w-auto shrink-0"
                   >
                     {addIPMutation.isPending ? 'Adicionando...' : 'Adicionar'}
                   </Button>
@@ -281,6 +287,7 @@ export const ConfiguracoesIntegracaoTab = memo(() => {
                       setNovoIP('')
                     }}
                     disabled={addIPMutation.isPending}
+                    className="w-full sm:w-auto shrink-0"
                   >
                     Cancelar
                   </Button>
@@ -298,16 +305,17 @@ export const ConfiguracoesIntegracaoTab = memo(() => {
             </div>
           </div>
 
-          {/* Alerta de Segurança */}
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
             <div className="flex gap-3">
               <AlertCircle
                 className="text-blue-600 flex-shrink-0 mt-0.5"
                 size={20}
               />
-              <div className="text-sm text-blue-800">
-                <p className="font-semibold mb-1">Importante - Segurança</p>
-                <ul className="list-disc list-inside space-y-1">
+              <div className="text-sm text-blue-800 min-w-0 flex-1">
+                <p className="font-semibold mb-1 break-words">
+                  Importante - Segurança
+                </p>
+                <ul className="list-disc list-inside space-y-1 break-words">
                   <li>
                     Mantenha suas credenciais em segurança. Não compartilhe com
                     terceiros.

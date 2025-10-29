@@ -1,7 +1,6 @@
 import { memo, useState, useCallback, useMemo } from 'react'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
-import { Input } from '@/components/ui/Input'
 import { Switch } from '@/components/ui/Switch'
 import { PhoneInput } from '@/components/ui/PhoneInput'
 import {
@@ -165,13 +164,12 @@ export const ConfiguracoesNotificacoesTab = memo(() => {
 
   return (
     <div className="space-y-6">
-      {/* Canais de Notificação */}
       <Card>
-        <div className="flex items-center gap-3 mb-6">
-          <div className="p-3 rounded-lg bg-green-100 text-green-600">
+        <div className="flex items-center gap-3 mb-6 flex-wrap">
+          <div className="p-3 rounded-lg bg-green-100 text-green-600 shrink-0">
             <Bell size={24} />
           </div>
-          <div>
+          <div className="min-w-0 flex-1">
             <h2 className="text-lg font-semibold text-gray-900">
               Canais de Notificação
             </h2>
@@ -182,31 +180,34 @@ export const ConfiguracoesNotificacoesTab = memo(() => {
         </div>
 
         <div className="space-y-3">
-          {/* WhatsApp */}
-          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200">
-            <div className="flex items-start gap-3 flex-1">
+          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200 gap-4 flex-wrap">
+            <div className="flex items-start gap-3 flex-1 min-w-0">
               <MessageCircle
                 className="text-green-600 flex-shrink-0 mt-1"
                 size={20}
               />
-              <div className="flex-1">
-                <p className="font-medium text-gray-900">
+              <div className="flex-1 min-w-0">
+                <p className="font-medium text-gray-900 break-words">
                   Notificações via WhatsApp
                 </p>
-                <p className="text-sm text-gray-600 mb-2">
+                <p className="text-sm text-gray-600 mb-2 break-words">
                   Receba atualizações no seu WhatsApp
                 </p>
                 {settings.whatsapp.enabled && (
                   <div className="mt-2">
                     {isEditingPhone ? (
-                      <div className="flex gap-2 items-end">
+                      <div className="flex flex-col sm:flex-row gap-2 items-end">
                         <PhoneInput
                           value={tempPhone}
                           onChange={(value) => setTempPhone(value)}
-                          className="flex-1"
+                          className="flex-1 w-full sm:w-auto"
                           placeholder="(99) 9 9999-9999"
                         />
-                        <Button size="sm" onClick={handleSavePhone}>
+                        <Button
+                          size="sm"
+                          onClick={handleSavePhone}
+                          className="shrink-0 w-full sm:w-auto"
+                        >
                           Salvar
                         </Button>
                         <Button
@@ -216,19 +217,21 @@ export const ConfiguracoesNotificacoesTab = memo(() => {
                             setIsEditingPhone(false)
                             setTempPhone(settings.whatsapp.phone)
                           }}
+                          className="shrink-0 w-full sm:w-auto"
                         >
                           Cancelar
                         </Button>
                       </div>
                     ) : (
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-mono text-gray-700">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-sm font-mono text-gray-700 break-all">
                           {settings.whatsapp.phone}
                         </span>
                         <Button
                           size="sm"
                           variant="ghost"
                           onClick={() => setIsEditingPhone(true)}
+                          className="shrink-0"
                         >
                           Alterar
                         </Button>
@@ -241,16 +244,18 @@ export const ConfiguracoesNotificacoesTab = memo(() => {
             <Switch
               checked={settings.whatsapp.enabled}
               onCheckedChange={handleWhatsAppToggle}
+              className="shrink-0"
             />
           </div>
 
-          {/* Push */}
-          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200">
-            <div className="flex items-center gap-3">
+          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200 gap-4 flex-wrap">
+            <div className="flex items-center gap-3 min-w-0 flex-1">
               <Bell className="text-blue-600 flex-shrink-0" size={20} />
-              <div>
-                <p className="font-medium text-gray-900">Notificações Push</p>
-                <p className="text-sm text-gray-600">
+              <div className="min-w-0">
+                <p className="font-medium text-gray-900 break-words">
+                  Notificações Push
+                </p>
+                <p className="text-sm text-gray-600 break-words">
                   Receba alertas no navegador
                 </p>
               </div>
@@ -258,22 +263,22 @@ export const ConfiguracoesNotificacoesTab = memo(() => {
             <Switch
               checked={settings.push.enabled}
               onCheckedChange={handlePushToggle}
+              className="shrink-0"
             />
           </div>
 
-          {/* Email */}
-          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200">
-            <div className="flex items-center gap-3">
+          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200 gap-4 flex-wrap">
+            <div className="flex items-center gap-3 min-w-0 flex-1">
               <Mail className="text-purple-600 flex-shrink-0" size={20} />
-              <div>
-                <p className="font-medium text-gray-900">
+              <div className="min-w-0">
+                <p className="font-medium text-gray-900 break-words">
                   Notificações por E-mail
                 </p>
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-gray-600 break-words">
                   Resumos e alertas importantes por e-mail
                 </p>
                 {settings.email.enabled && (
-                  <p className="text-sm font-mono text-gray-700 mt-1">
+                  <p className="text-sm font-mono text-gray-700 mt-1 break-all">
                     {settings.email.address}
                   </p>
                 )}
@@ -282,18 +287,18 @@ export const ConfiguracoesNotificacoesTab = memo(() => {
             <Switch
               checked={settings.email.enabled}
               onCheckedChange={handleEmailToggle}
+              className="shrink-0"
             />
           </div>
         </div>
       </Card>
 
-      {/* Preferências de Notificação */}
       <Card>
-        <div className="flex items-center gap-3 mb-6">
-          <div className="p-3 rounded-lg bg-purple-100 text-purple-600">
+        <div className="flex items-center gap-3 mb-6 flex-wrap">
+          <div className="p-3 rounded-lg bg-purple-100 text-purple-600 shrink-0">
             <Smartphone size={24} />
           </div>
-          <div>
+          <div className="min-w-0 flex-1">
             <h2 className="text-lg font-semibold text-gray-900">
               Preferências de Notificação
             </h2>
@@ -309,18 +314,23 @@ export const ConfiguracoesNotificacoesTab = memo(() => {
             return (
               <div
                 key={type.key}
-                className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200"
+                className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200 gap-4 flex-wrap"
               >
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 min-w-0 flex-1">
                   <Icon className="text-gray-600 flex-shrink-0" size={20} />
-                  <div>
-                    <p className="font-medium text-gray-900">{type.title}</p>
-                    <p className="text-sm text-gray-600">{type.description}</p>
+                  <div className="min-w-0">
+                    <p className="font-medium text-gray-900 break-words">
+                      {type.title}
+                    </p>
+                    <p className="text-sm text-gray-600 break-words">
+                      {type.description}
+                    </p>
                   </div>
                 </div>
                 <Switch
                   checked={preferences[type.key]}
                   onCheckedChange={() => handlePreferenceToggle(type.key)}
+                  className="shrink-0"
                 />
               </div>
             )
@@ -328,7 +338,6 @@ export const ConfiguracoesNotificacoesTab = memo(() => {
         </div>
       </Card>
 
-      {/* Informações */}
       <Card>
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
           <div className="flex gap-3">
@@ -336,9 +345,11 @@ export const ConfiguracoesNotificacoesTab = memo(() => {
               className="text-blue-600 flex-shrink-0 mt-0.5"
               size={20}
             />
-            <div className="text-sm text-blue-800">
-              <p className="font-semibold mb-1">Sobre as Notificações</p>
-              <ul className="list-disc list-inside space-y-1">
+            <div className="text-sm text-blue-800 min-w-0 flex-1">
+              <p className="font-semibold mb-1 break-words">
+                Sobre as Notificações
+              </p>
+              <ul className="list-disc list-inside space-y-1 break-words">
                 <li>
                   Você pode ativar múltiplos canais de notificação
                   simultaneamente.

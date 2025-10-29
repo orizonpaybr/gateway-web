@@ -17,11 +17,13 @@ const ConfiguracoesPage = memo(() => {
   return (
     <div className="p-4 md:p-6 space-y-6">
       <div>
-        <div className="flex items-center gap-3 mb-2">
-          <div className="p-2 rounded-lg bg-primary/10 text-primary">
+        <div className="flex items-center gap-3 mb-2 flex-wrap">
+          <div className="p-2 rounded-lg bg-primary/10 text-primary shrink-0">
             <Settings size={24} />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">Configurações</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
+            Configurações
+          </h1>
         </div>
         <p className="text-gray-600 text-sm">
           Gerencie suas preferências e configurações de segurança
@@ -33,7 +35,7 @@ const ConfiguracoesPage = memo(() => {
         onValueChange={handleTabChange}
         defaultValue="conta"
       >
-        <TabsList className="w-full md:w-auto">
+        <TabsList className="w-full sm:w-auto">
           <TabsTrigger value="conta">CONTA</TabsTrigger>
           <TabsTrigger value="integracao">INTEGRAÇÃO</TabsTrigger>
           <TabsTrigger value="notificacoes">NOTIFICAÇÕES</TabsTrigger>
