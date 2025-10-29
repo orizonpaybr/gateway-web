@@ -138,9 +138,6 @@ export function TwoFactorModal({
 
       // Se for change-password, retorna o PIN sem chamar API
       if (mode === 'change-password') {
-        toast.success('PIN confirmado!', {
-          description: 'Processando mudança de senha...',
-        })
         setPin('')
         onSuccess(pin) // Retorna PIN para componente pai
         onClose()
@@ -363,7 +360,9 @@ export function TwoFactorModal({
           </div>
         )}
 
-        {(mode === 'enable' || mode === 'disable') && (
+        {(mode === 'enable' ||
+          mode === 'disable' ||
+          mode === 'change-password') && (
           <div className="space-y-4 sm:space-y-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-3 sm:mb-4 text-center">
@@ -396,6 +395,8 @@ export function TwoFactorModal({
               >
                 {isLoading
                   ? 'Processando...'
+                  : mode === 'change-password'
+                  ? 'Confirmar'
                   : mode === 'enable'
                   ? 'Ativar 2FA'
                   : 'Desativar 2FA'}
