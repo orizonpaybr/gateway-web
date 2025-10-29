@@ -1,11 +1,15 @@
-import { memo, useState, useCallback } from 'react'
+import { memo, useState, useCallback, useRef } from 'react'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
-import { Key, Copy, Plus, X, AlertCircle, RefreshCw } from 'lucide-react'
+import { Key, Copy, Plus, Trash2, AlertCircle, RefreshCw } from 'lucide-react'
 import { integrationAPI } from '@/lib/api'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
+import { Dialog } from '@/components/ui/Dialog'
+import { TwoFactorModal } from '@/components/modals/TwoFactorModal'
+import { twoFactorAPI } from '@/lib/api'
+import { toast } from 'sonner'
 
 export const ConfiguracoesIntegracaoTab = memo(() => {
   const [novoIP, setNovoIP] = useState('')
@@ -35,53 +39,77 @@ export const ConfiguracoesIntegracaoTab = memo(() => {
     staleTime: 2 * 60 * 1000, // 2 minutos
   })
 
+  // Verificar status 2FA
+  const { data: twoFAStatus } = useQuery({
+    queryKey: ['twofa-status'],
+    queryFn: twoFactorAPI.getStatus,
+    staleTime: 60_000,
+  })
+
   // Mutation para regenerar secret
   const regenerateSecretMutation = useMutation({
-    mutationFn: integrationAPI.regenerateSecret,
+    mutationFn: (pin?: string) => integrationAPI.regenerateSecret(pin),
     onSuccess: (data) => {
       queryClient.invalidateQueries({
         queryKey: ['integration', 'credentials'],
       })
-      alert(data.message || 'Client Secret regenerado com sucesso!')
+      toast.success('Client Secret regenerado', {
+        description:
+          'Suas credenciais foram atualizadas com sucesso. Atualize suas integrações.',
+      })
     },
     onError: (error: Error) => {
-      alert(`Erro ao regenerar secret: ${error.message}`)
+      toast.error('Erro ao regenerar secret', {
+        description: error.message,
+      })
     },
   })
 
   // Mutation para adicionar IP
   const addIPMutation = useMutation({
-    mutationFn: integrationAPI.addAllowedIP,
+    mutationFn: ({ ip, pin }: { ip: string; pin?: string }) =>
+      integrationAPI.addAllowedIP(ip, pin),
     onSuccess: (data) => {
       queryClient.invalidateQueries({
         queryKey: ['integration', 'allowed-ips'],
       })
       setNovoIP('')
       setIsAddingIP(false)
-      alert(data.message || 'IP adicionado com sucesso!')
+      toast.success('IP autorizado adicionado', {
+        description: `O IP ${
+          data.data?.ips?.[data.data.ips.length - 1] || 'adicionado'
+        } foi autorizado com sucesso.`,
+      })
     },
     onError: (error: Error) => {
-      alert(`Erro ao adicionar IP: ${error.message}`)
+      toast.error('Erro ao adicionar IP', {
+        description: error.message,
+      })
     },
   })
 
   // Mutation para remover IP
   const removeIPMutation = useMutation({
-    mutationFn: integrationAPI.removeAllowedIP,
-    onSuccess: (data) => {
+    mutationFn: ({ ip, pin }: { ip: string; pin?: string }) =>
+      integrationAPI.removeAllowedIP(ip, pin),
+    onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ['integration', 'allowed-ips'],
       })
-      alert(data.message || 'IP removido com sucesso!')
+      toast.success('IP autorizado removido', {
+        description: 'O IP foi removido da lista de autorizados com sucesso.',
+      })
     },
     onError: (error: Error) => {
-      alert(`Erro ao remover IP: ${error.message}`)
+      toast.error('Erro ao remover IP', {
+        description: error.message,
+      })
     },
   })
 
   const copyToClipboard = useCallback((text: string, label: string) => {
     navigator.clipboard.writeText(text)
-    alert(`${label} copiado para a área de transferência!`)
+    toast.success(`${label} copiado para a área de transferência!`)
   }, [])
 
   const handleAddIP = useCallback(() => {
@@ -90,37 +118,123 @@ export const ConfiguracoesIntegracaoTab = memo(() => {
     // Validação básica de IP
     const ipRegex = /^(\d{1,3}\.){3}\d{1,3}$/
     if (!ipRegex.test(novoIP)) {
-      alert('Por favor, digite um IP válido (ex: 192.168.1.1)')
+      toast.error('Por favor, digite um IP válido (ex: 192.168.1.1)')
       return
     }
 
     // Verificar se já existe
     if (ipsData?.data.ips.includes(novoIP)) {
-      alert('Este IP já está autorizado')
+      toast.error('Este IP já está autorizado')
       return
     }
 
-    addIPMutation.mutate(novoIP)
-  }, [novoIP, ipsData, addIPMutation])
+    // Se 2FA estiver ativo, pedir PIN
+    if (twoFAStatus?.enabled) {
+      setPendingAddIP(novoIP)
+      setShow2FAModal(true)
+    } else {
+      addIPMutation.mutate({ ip: novoIP })
+    }
+  }, [novoIP, ipsData, twoFAStatus?.enabled, addIPMutation])
 
   const handleRemoveIP = useCallback(
     (ip: string) => {
-      if (confirm('Tem certeza que deseja remover este IP?')) {
-        removeIPMutation.mutate(ip)
+      // Se 2FA estiver ativo, pedir PIN
+      if (twoFAStatus?.enabled) {
+        setPendingRemoveIP(ip)
+        pendingRemoveIPRef.current = ip // Guardar também no ref
+        setShow2FAModal(true)
+      } else {
+        if (confirm('Tem certeza que deseja remover este IP?')) {
+          removeIPMutation.mutate({ ip })
+        }
       }
     },
-    [removeIPMutation],
+    [twoFAStatus?.enabled, removeIPMutation],
   )
 
+  // ==== 2FA e Dialogs ====
+  const [showConfirm, setShowConfirm] = useState(false)
+  const [showConfirmRemoveIP, setShowConfirmRemoveIP] = useState(false)
+  const [show2FAModal, setShow2FAModal] = useState(false)
+  const [pendingRegenerate, setPendingRegenerate] = useState(false)
+  const [pendingAddIP, setPendingAddIP] = useState<string | null>(null)
+  const [pendingRemoveIP, setPendingRemoveIP] = useState<string | null>(null)
+  const [pendingRemoveIPPin, setPendingRemoveIPPin] = useState<
+    string | undefined
+  >(undefined)
+
+  // Refs para manter valores durante o fluxo (evita problemas de closure)
+  const pendingRemoveIPRef = useRef<string | null>(null)
+  const pendingRemoveIPPinRef = useRef<string | undefined>(undefined)
+
   const handleRegenerateSecret = useCallback(() => {
-    if (
-      confirm(
-        'ATENÇÃO: Ao regenerar o Client Secret, todas as integrações existentes serão desconectadas. Tem certeza que deseja continuar?',
-      )
-    ) {
-      regenerateSecretMutation.mutate()
+    setShowConfirm(true)
+  }, [])
+
+  const handleConfirmRegenerate = useCallback(() => {
+    setShowConfirm(false)
+    const enabled = twoFAStatus?.enabled
+    if (enabled) {
+      setShow2FAModal(true)
+      setPendingRegenerate(true)
+    } else {
+      regenerateSecretMutation.mutate(undefined)
     }
-  }, [regenerateSecretMutation])
+  }, [twoFAStatus?.enabled, regenerateSecretMutation])
+
+  const handleTwoFASuccess = useCallback(
+    (pin?: string) => {
+      setShow2FAModal(false)
+      if (pendingRegenerate) {
+        regenerateSecretMutation.mutate(pin)
+        setPendingRegenerate(false)
+      } else if (pendingAddIP) {
+        addIPMutation.mutate({ ip: pendingAddIP, pin })
+        setPendingAddIP(null)
+      } else if (pendingRemoveIP) {
+        // Guardar PIN e mostrar dialog de confirmação
+        // Usar refs para garantir que os valores sejam preservados
+        pendingRemoveIPRef.current = pendingRemoveIP
+        pendingRemoveIPPinRef.current = pin
+        setPendingRemoveIPPin(pin)
+        setShowConfirmRemoveIP(true)
+      }
+    },
+    [
+      pendingRegenerate,
+      pendingAddIP,
+      pendingRemoveIP,
+      regenerateSecretMutation,
+      addIPMutation,
+    ],
+  )
+
+  const handleConfirmRemoveIP = useCallback(() => {
+    // Usar refs para garantir que temos os valores corretos
+    const ipToRemove = pendingRemoveIPRef.current
+    const pinToUse = pendingRemoveIPPinRef.current
+
+    if (ipToRemove && pinToUse !== undefined) {
+      setShowConfirmRemoveIP(false)
+      removeIPMutation.mutate(
+        { ip: ipToRemove, pin: pinToUse },
+        {
+          onSuccess: () => {
+            setPendingRemoveIP(null)
+            setPendingRemoveIPPin(undefined)
+            pendingRemoveIPRef.current = null
+            pendingRemoveIPPinRef.current = undefined
+          },
+          onError: () => {
+            // Em caso de erro, manter os estados para tentar novamente
+          },
+        },
+      )
+    } else {
+      setShowConfirmRemoveIP(false)
+    }
+  }, [removeIPMutation])
 
   // Loading state
   if (isLoadingCredentials || isLoadingIPs) {
@@ -168,7 +282,11 @@ export const ConfiguracoesIntegracaoTab = memo(() => {
               Client Key
             </label>
             <div className="flex flex-col sm:flex-row gap-2">
-              <div className="flex-1 bg-gray-50 px-4 py-3 rounded-lg font-mono text-sm text-gray-900 border border-gray-200 break-all min-w-0">
+              <div
+                className="flex-1 bg-gray-50 px-4 py-3 rounded-lg font-mono text-sm text-gray-900 border border-gray-200 break-all min-w-0"
+                data-cy="client-key"
+                title={credentials?.client_key}
+              >
                 {credentials?.client_key}
               </div>
               <Button
@@ -178,6 +296,7 @@ export const ConfiguracoesIntegracaoTab = memo(() => {
                   copyToClipboard(credentials?.client_key || '', 'Client Key')
                 }
                 className="shrink-0 w-full sm:w-auto"
+                data-cy="copy-client-key"
               >
                 Copiar
               </Button>
@@ -189,7 +308,11 @@ export const ConfiguracoesIntegracaoTab = memo(() => {
               Client Secret
             </label>
             <div className="flex flex-col sm:flex-row gap-2">
-              <div className="flex-1 bg-gray-50 px-4 py-3 rounded-lg font-mono text-sm text-gray-900 border border-gray-200 break-all min-w-0">
+              <div
+                className="flex-1 bg-gray-50 px-4 py-3 rounded-lg font-mono text-sm text-gray-900 border border-gray-200 break-all min-w-0"
+                data-cy="client-secret"
+                title={credentials?.client_secret}
+              >
                 {credentials?.client_secret}
               </div>
               <Button
@@ -202,6 +325,7 @@ export const ConfiguracoesIntegracaoTab = memo(() => {
                   )
                 }
                 className="shrink-0 w-full sm:w-auto"
+                data-cy="copy-client-secret"
               >
                 Copiar
               </Button>
@@ -213,6 +337,7 @@ export const ConfiguracoesIntegracaoTab = memo(() => {
                 icon={<RefreshCw size={16} />}
                 onClick={handleRegenerateSecret}
                 disabled={regenerateSecretMutation.isPending}
+                data-cy="regenerate-secret"
               >
                 {regenerateSecretMutation.isPending
                   ? 'Regenerando...'
@@ -240,18 +365,25 @@ export const ConfiguracoesIntegracaoTab = memo(() => {
                   key={ip}
                   className="flex items-center justify-between bg-gray-50 px-4 py-3 rounded-lg border border-gray-200 gap-2 flex-wrap"
                 >
-                  <span className="font-mono text-sm text-gray-900 break-all flex-1 min-w-0">
+                  <span
+                    className="font-mono text-sm text-gray-900 break-all flex-1 min-w-0"
+                    data-cy={`allowed-ip-${ip}`}
+                  >
                     {ip}
                   </span>
                   <Button
                     variant="ghost"
                     size="sm"
-                    icon={<X size={16} />}
+                    type="button"
                     onClick={() => handleRemoveIP(ip)}
                     disabled={removeIPMutation.isPending}
-                    className="shrink-0"
+                    className="shrink-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                    data-cy={`remove-ip-${ip}`}
                   >
-                    Remover
+                    <span className="inline-flex items-center gap-2">
+                      <span>Remover</span>
+                      <Trash2 size={16} />
+                    </span>
                   </Button>
                 </div>
               ))}
@@ -272,11 +404,13 @@ export const ConfiguracoesIntegracaoTab = memo(() => {
                       }
                     }}
                     autoFocus
+                    data-cy="new-ip-input"
                   />
                   <Button
                     onClick={handleAddIP}
                     disabled={addIPMutation.isPending}
                     className="w-full sm:w-auto shrink-0"
+                    data-cy="add-ip"
                   >
                     {addIPMutation.isPending ? 'Adicionando...' : 'Adicionar'}
                   </Button>
@@ -288,6 +422,7 @@ export const ConfiguracoesIntegracaoTab = memo(() => {
                     }}
                     disabled={addIPMutation.isPending}
                     className="w-full sm:w-auto shrink-0"
+                    data-cy="cancel-add-ip"
                   >
                     Cancelar
                   </Button>
@@ -298,6 +433,7 @@ export const ConfiguracoesIntegracaoTab = memo(() => {
                   size="sm"
                   icon={<Plus size={16} />}
                   onClick={() => setIsAddingIP(true)}
+                  data-cy="start-add-ip"
                 >
                   Adicionar IP
                 </Button>
@@ -338,6 +474,93 @@ export const ConfiguracoesIntegracaoTab = memo(() => {
           </div>
         </div>
       </Card>
+
+      <Dialog
+        open={showConfirm}
+        onClose={() => setShowConfirm(false)}
+        size="sm"
+      >
+        <div className="p-4">
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+            Regenerar Client Secret
+          </h3>
+          <p className="text-sm text-gray-700">
+            ATENÇÃO: Ao regenerar o Client Secret, todas as integrações
+            existentes serão desconectadas.
+          </p>
+
+          <div className="mt-4 flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setShowConfirm(false)}>
+              Cancelar
+            </Button>
+            <Button
+              type="button"
+              onClick={handleConfirmRegenerate}
+              disabled={regenerateSecretMutation.isPending}
+            >
+              {regenerateSecretMutation.isPending
+                ? 'Processando...'
+                : 'Confirmar'}
+            </Button>
+          </div>
+        </div>
+      </Dialog>
+
+      <TwoFactorModal
+        isOpen={show2FAModal}
+        onClose={() => {
+          setShow2FAModal(false)
+          setPendingAddIP(null)
+          setPendingRemoveIP(null)
+        }}
+        onSuccess={handleTwoFASuccess}
+        mode="change-password"
+      />
+
+      <Dialog
+        open={showConfirmRemoveIP}
+        onClose={() => {
+          setShowConfirmRemoveIP(false)
+          setPendingRemoveIP(null)
+          setPendingRemoveIPPin(undefined)
+          pendingRemoveIPRef.current = null
+          pendingRemoveIPPinRef.current = undefined
+        }}
+        size="sm"
+      >
+        <div className="p-4">
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+            Remover IP Autorizado
+          </h3>
+          <p className="text-sm text-gray-700 mb-4">
+            Tem certeza que deseja remover o IP{' '}
+            <span className="font-mono font-semibold">{pendingRemoveIP}</span>?
+          </p>
+          <div className="mt-4 flex justify-end gap-2">
+            <Button
+              variant="outline"
+              type="button"
+              onClick={() => {
+                setShowConfirmRemoveIP(false)
+                setPendingRemoveIP(null)
+                setPendingRemoveIPPin(undefined)
+                pendingRemoveIPRef.current = null
+                pendingRemoveIPPinRef.current = undefined
+              }}
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="button"
+              onClick={handleConfirmRemoveIP}
+              disabled={removeIPMutation.isPending}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              {removeIPMutation.isPending ? 'Removendo...' : 'Remover'}
+            </Button>
+          </div>
+        </div>
+      </Dialog>
     </div>
   )
 })

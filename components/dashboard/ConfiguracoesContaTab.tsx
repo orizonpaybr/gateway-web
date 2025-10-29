@@ -303,20 +303,7 @@ export const ConfiguracoesContaTab = memo(() => {
             disabled={isSubmitting}
             className="w-full sm:w-auto"
           >
-            <span className="hidden sm:inline">
-              {isSubmitting
-                ? 'Processando...'
-                : twoFAStatus.enabled
-                ? 'Trocar Senha (Confirmar com 2FA)'
-                : 'Trocar Senha'}
-            </span>
-            <span className="sm:hidden">
-              {isSubmitting
-                ? 'Processando...'
-                : twoFAStatus.enabled
-                ? 'Trocar Senha'
-                : 'Trocar Senha'}
-            </span>
+            {isSubmitting ? 'Processando...' : 'Trocar Senha'}
           </Button>
         </form>
       </Card>
