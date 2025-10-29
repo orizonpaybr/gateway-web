@@ -98,8 +98,8 @@ const PixChavePage = memo(function PixChavePage() {
   return (
     <div className="p-4 md:p-6 space-y-4">
       <div className="flex justify-center">
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-2">
+        <div className="flex items-center justify-center gap-3 sm:gap-4 flex-wrap">
+          <div className="flex items-center gap-2 shrink-0">
             <div
               className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold transition-colors ${
                 step === 'form'
@@ -118,7 +118,7 @@ const PixChavePage = memo(function PixChavePage() {
             </span>
           </div>
 
-          <div className="w-8 h-0.5 bg-gray-300">
+          <div className="w-6 sm:w-8 h-0.5 bg-gray-300">
             <div
               className={`h-full bg-gray-900 transition-all duration-300 ${
                 step === 'confirm' ? 'w-full' : 'w-0'
@@ -126,7 +126,7 @@ const PixChavePage = memo(function PixChavePage() {
             />
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 shrink-0">
             <div
               className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold transition-colors ${
                 step === 'confirm'
@@ -145,7 +145,7 @@ const PixChavePage = memo(function PixChavePage() {
             </span>
           </div>
 
-          <div className="w-8 h-0.5 bg-gray-300">
+          <div className="w-6 sm:w-8 h-0.5 bg-gray-300">
             <div
               className={`h-full bg-gray-900 transition-all duration-300 ${
                 step === 'confirm' ? 'w-full' : 'w-0'
@@ -153,7 +153,7 @@ const PixChavePage = memo(function PixChavePage() {
             />
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 shrink-0">
             <div
               className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold transition-colors ${
                 step === 'confirm'
@@ -189,7 +189,7 @@ const PixChavePage = memo(function PixChavePage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   TIPO DE CHAVE
@@ -253,7 +253,7 @@ const PixChavePage = memo(function PixChavePage() {
                 <h3 className="text-sm font-semibold text-gray-700 mb-3">
                   Chaves Salvas
                 </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                   {savedKeysData.data.map((key) => (
                     <button
                       key={key.id}
@@ -285,19 +285,19 @@ const PixChavePage = memo(function PixChavePage() {
         {step === 'confirm' && (
           <div className="space-y-6">
             <div className="space-y-3">
-              <div className="flex justify-between py-2 border-b">
+              <div className="flex justify-between py-2 border-b flex-wrap gap-2">
                 <span className="text-sm text-gray-600">Tipo de Chave</span>
-                <span className="text-sm font-medium text-gray-900">
+                <span className="text-sm font-medium text-gray-900 break-all text-right">
                   {selectedKeyInfo?.label}
                 </span>
               </div>
-              <div className="flex justify-between py-2 border-b">
+              <div className="flex justify-between py-2 border-b flex-wrap gap-2">
                 <span className="text-sm text-gray-600">Chave PIX</span>
-                <span className="text-sm font-medium text-gray-900">
+                <span className="text-sm font-medium text-gray-900 break-all text-right">
                   {keyValue}
                 </span>
               </div>
-              <div className="flex justify-between py-2 border-b">
+              <div className="flex justify-between py-2 border-b flex-wrap gap-2">
                 <span className="text-sm text-gray-600">Valor</span>
                 <span className="text-lg font-bold text-gray-900">
                   R$ {formattedNumericAmount}
