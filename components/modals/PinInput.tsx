@@ -63,7 +63,7 @@ export function PinInput({
   }
 
   return (
-    <div className="flex gap-2 justify-center">
+    <div className="flex gap-1.5 sm:gap-2 justify-center flex-wrap">
       {Array.from({ length: 6 }).map((_, index) => (
         <input
           key={index}
@@ -78,7 +78,7 @@ export function PinInput({
           onKeyDown={(e) => handleKeyDown(index, e)}
           onPaste={handlePaste}
           onFocus={() => setFocusedIndex(index)}
-          className="w-12 h-14 text-center text-2xl font-bold border-2 border-gray-300 rounded-lg focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all bg-white"
+          className="w-10 h-12 sm:w-12 sm:h-14 text-center text-xl sm:text-2xl font-bold border-2 border-gray-300 rounded-lg focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all bg-white shrink-0"
           maxLength={1}
         />
       ))}

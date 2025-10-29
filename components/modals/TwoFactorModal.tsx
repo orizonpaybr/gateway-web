@@ -42,6 +42,21 @@ export function TwoFactorModal({
     }
   }, [isOpen, mode])
 
+  // Bloquear scroll do body quando modal está aberto
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden'
+      document.documentElement.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+      document.documentElement.style.overflow = ''
+    }
+    return () => {
+      document.body.style.overflow = ''
+      document.documentElement.style.overflow = ''
+    }
+  }, [isOpen])
+
   // Handler para setup inicial (2 etapas)
   const handleInitialSetup = async () => {
     if (pin.length !== 6) {
@@ -219,16 +234,19 @@ export function TwoFactorModal({
   const headerContent = getHeaderContent()
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 relative">
-        <div className="mb-6">
-          <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4 mx-auto">
-            <Shield className="w-6 h-6 text-primary" />
+    <div
+      className="fixed top-0 left-0 right-0 bottom-0 bg-black/50 flex items-center justify-center z-[1000]"
+      style={{ margin: 0, padding: 0 }}
+    >
+      <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-4 sm:p-6 relative max-h-[90vh] overflow-y-auto mx-4">
+        <div className="mb-4 sm:mb-6">
+          <div className="w-10 h-10 sm:w-12 sm:h-12 bg-primary/10 rounded-full flex items-center justify-center mb-3 sm:mb-4 mx-auto">
+            <Shield className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
           </div>
-          <h2 className="text-2xl font-bold text-gray-900 text-center">
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 text-center break-words">
             {headerContent.title}
           </h2>
-          <p className="text-gray-600 mt-2 text-center">
+          <p className="text-gray-600 mt-2 text-center text-sm sm:text-base break-words">
             {headerContent.description}
           </p>
           {headerContent.showWarning && (
@@ -346,9 +364,9 @@ export function TwoFactorModal({
         )}
 
         {(mode === 'enable' || mode === 'disable') && (
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-4 text-center">
+              <label className="block text-sm font-medium text-gray-700 mb-3 sm:mb-4 text-center">
                 PIN de 6 dígitos
               </label>
               <PinInput
@@ -369,11 +387,11 @@ export function TwoFactorModal({
               </div>
             )}
 
-            <div className="flex gap-3">
+            <div className="flex flex-col sm:flex-row gap-3">
               <Button
                 onClick={handleSimpleAction}
                 disabled={isLoading || pin.length !== 6}
-                className="flex-1"
+                className="flex-1 w-full sm:w-auto order-2 sm:order-1"
                 icon={<Shield size={18} />}
               >
                 {isLoading
@@ -386,7 +404,7 @@ export function TwoFactorModal({
                 variant="outline"
                 onClick={handleClose}
                 disabled={isLoading}
-                className="flex-1"
+                className="flex-1 w-full sm:w-auto order-1 sm:order-2"
               >
                 Cancelar
               </Button>
