@@ -1,302 +1,184 @@
-import { memo, useState, useCallback, useMemo } from 'react'
+'use client'
+
+import { memo, useMemo } from 'react'
 import { Card } from '@/components/ui/Card'
-import { Button } from '@/components/ui/Button'
 import { Switch } from '@/components/ui/Switch'
-import { PhoneInput } from '@/components/ui/PhoneInput'
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
+import { useNotificationSettings } from '@/hooks/useNotificationSettings'
 import {
   Bell,
   Smartphone,
-  MessageCircle,
-  Mail,
   Check,
   AlertCircle,
+  DollarSign,
+  Shield,
+  Info,
 } from 'lucide-react'
 
-interface NotificationSettings {
-  whatsapp: {
-    enabled: boolean
-    phone: string
-  }
-  push: {
-    enabled: boolean
-  }
-  email: {
-    enabled: boolean
-    address: string
-  }
-}
-
-interface NotificationPreferences {
-  transactions: boolean
-  deposits: boolean
-  withdrawals: boolean
-  security: boolean
-  marketing: boolean
-}
-
 export const ConfiguracoesNotificacoesTab = memo(() => {
-  const [settings, setSettings] = useState<NotificationSettings>({
-    whatsapp: {
-      enabled: true,
-      phone: '(99) 9 9999-9999',
-    },
-    push: {
-      enabled: false,
-    },
-    email: {
-      enabled: true,
-      address: 'usuario@exemplo.com',
-    },
-  })
-
-  const [preferences, setPreferences] = useState<NotificationPreferences>({
-    transactions: true,
-    deposits: true,
-    withdrawals: true,
-    security: true,
-    marketing: false,
-  })
-
-  const [isEditingPhone, setIsEditingPhone] = useState(false)
-  const [tempPhone, setTempPhone] = useState(settings.whatsapp.phone)
-
-  const handleWhatsAppToggle = useCallback((enabled: boolean) => {
-    setSettings((prev) => ({
-      ...prev,
-      whatsapp: { ...prev.whatsapp, enabled },
-    }))
-    // TODO: Integrar com API
-  }, [])
-
-  const handlePushToggle = useCallback((enabled: boolean) => {
-    if (enabled) {
-      // Solicitar permissão do navegador
-      if ('Notification' in window) {
-        Notification.requestPermission().then((permission) => {
-          if (permission === 'granted') {
-            setSettings((prev) => ({
-              ...prev,
-              push: { enabled: true },
-            }))
-            // TODO: Integrar com API
-            alert('Notificações push ativadas com sucesso!')
-          } else {
-            alert('Você precisa permitir notificações no seu navegador.')
-          }
-        })
-      } else {
-        alert('Seu navegador não suporta notificações push.')
-      }
-    } else {
-      setSettings((prev) => ({
-        ...prev,
-        push: { enabled: false },
-      }))
-      // TODO: Integrar com API
-    }
-  }, [])
-
-  const handleEmailToggle = useCallback((enabled: boolean) => {
-    setSettings((prev) => ({
-      ...prev,
-      email: { ...prev.email, enabled },
-    }))
-    // TODO: Integrar com API
-  }, [])
-
-  const handlePreferenceToggle = useCallback(
-    (key: keyof NotificationPreferences) => {
-      setPreferences((prev) => ({
-        ...prev,
-        [key]: !prev[key],
-      }))
-      // TODO: Integrar com API
-    },
-    [],
-  )
-
-  const handleSavePhone = useCallback(() => {
-    setSettings((prev) => ({
-      ...prev,
-      whatsapp: { ...prev.whatsapp, phone: tempPhone },
-    }))
-    setIsEditingPhone(false)
-    // TODO: Integrar com API
-    alert('Telefone atualizado com sucesso!')
-  }, [tempPhone])
+  const {
+    preferences,
+    isLoading,
+    isError,
+    togglePreference,
+    isUpdating,
+    hasCredentials,
+  } = useNotificationSettings()
 
   const notificationTypes = useMemo(
     () => [
       {
-        key: 'transactions' as const,
+        key: 'notify_transactions' as const,
         title: 'Transações',
         description: 'Receba notificações sobre todas as transações realizadas',
         icon: Bell,
       },
       {
-        key: 'deposits' as const,
+        key: 'notify_deposits' as const,
         title: 'Depósitos',
         description: 'Seja notificado quando receber depósitos',
-        icon: Check,
+        icon: DollarSign,
       },
       {
-        key: 'withdrawals' as const,
+        key: 'notify_withdrawals' as const,
         title: 'Saques',
         description: 'Receba alertas sobre saques realizados',
         icon: AlertCircle,
       },
       {
-        key: 'security' as const,
+        key: 'notify_security' as const,
         title: 'Segurança',
         description:
           'Alertas de login, alterações de senha e atividades suspeitas',
-        icon: Bell,
+        icon: Shield,
       },
       {
-        key: 'marketing' as const,
-        title: 'Marketing',
-        description: 'Novidades, promoções e atualizações do sistema',
-        icon: Mail,
+        key: 'notify_system' as const,
+        title: 'Sistema',
+        description: 'Notificações do sistema, atualizações e manutenções',
+        icon: Info,
       },
     ],
     [],
   )
 
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <LoadingSpinner size="lg" />
+        <span className="ml-3 text-gray-600">Carregando preferências...</span>
+      </div>
+    )
+  }
+
+  // Error state
+  if (isError) {
+    return (
+      <Card>
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <div className="flex gap-3">
+            <AlertCircle
+              className="text-red-600 flex-shrink-0 mt-0.5"
+              size={20}
+            />
+            <div className="text-sm text-red-800">
+              <p className="font-semibold mb-1">
+                Erro ao carregar preferências
+              </p>
+              <p>
+                Não foi possível carregar suas preferências de notificação.
+                Tente novamente mais tarde.
+              </p>
+            </div>
+          </div>
+        </div>
+      </Card>
+    )
+  }
+
   return (
     <div className="space-y-6">
       <Card>
         <div className="flex items-center gap-3 mb-6 flex-wrap">
-          <div className="p-3 rounded-lg bg-green-100 text-green-600 shrink-0">
+          <div className="p-3 rounded-lg bg-blue-100 text-blue-600 shrink-0">
             <Bell size={24} />
           </div>
           <div className="min-w-0 flex-1">
             <h2 className="text-lg font-semibold text-gray-900">
-              Canais de Notificação
+              Notificações Push
             </h2>
             <p className="text-sm text-gray-600">
-              Escolha como deseja receber notificações
+              Controle principal das notificações no seu dispositivo
             </p>
           </div>
         </div>
 
-        <div className="space-y-3">
-          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200 gap-4 flex-wrap">
-            <div className="flex items-start gap-3 flex-1 min-w-0">
-              <MessageCircle
-                className="text-green-600 flex-shrink-0 mt-1"
+        <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200 gap-4 flex-wrap">
+          <div className="flex items-center gap-3 min-w-0 flex-1">
+            <Smartphone className="text-blue-600 flex-shrink-0" size={20} />
+            <div className="min-w-0">
+              <p className="font-medium text-gray-900 break-words">
+                Habilitar Notificações Push
+              </p>
+              <p className="text-sm text-gray-600 break-words">
+                {preferences?.push_enabled
+                  ? 'Você receberá notificações no seu dispositivo'
+                  : 'Notificações desabilitadas - você não receberá alertas'}
+              </p>
+            </div>
+          </div>
+          <Switch
+            checked={preferences?.push_enabled ?? false}
+            onCheckedChange={() => togglePreference('push_enabled')}
+            disabled={isUpdating || !hasCredentials}
+            className="shrink-0"
+          />
+        </div>
+
+        {!hasCredentials && (
+          <div className="mt-4 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+            <div className="flex gap-3">
+              <AlertCircle
+                className="text-yellow-600 flex-shrink-0 mt-0.5"
                 size={20}
               />
-              <div className="flex-1 min-w-0">
-                <p className="font-medium text-gray-900 break-words">
-                  Notificações via WhatsApp
+              <div className="text-sm text-yellow-800">
+                <p className="font-semibold mb-1">Credenciais ausentes</p>
+                <p>
+                  Faça login e garanta que o backend retorne{' '}
+                  <span className="font-mono">api_token</span> e{' '}
+                  <span className="font-mono">api_secret</span> para habilitar
+                  as notificações.
                 </p>
-                <p className="text-sm text-gray-600 mb-2 break-words">
-                  Receba atualizações no seu WhatsApp
-                </p>
-                {settings.whatsapp.enabled && (
-                  <div className="mt-2">
-                    {isEditingPhone ? (
-                      <div className="flex flex-col sm:flex-row gap-2 items-end">
-                        <PhoneInput
-                          value={tempPhone}
-                          onChange={(value) => setTempPhone(value)}
-                          className="flex-1 w-full sm:w-auto"
-                          placeholder="(99) 9 9999-9999"
-                        />
-                        <Button
-                          size="sm"
-                          onClick={handleSavePhone}
-                          className="shrink-0 w-full sm:w-auto"
-                        >
-                          Salvar
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => {
-                            setIsEditingPhone(false)
-                            setTempPhone(settings.whatsapp.phone)
-                          }}
-                          className="shrink-0 w-full sm:w-auto"
-                        >
-                          Cancelar
-                        </Button>
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-sm font-mono text-gray-700 break-all">
-                          {settings.whatsapp.phone}
-                        </span>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => setIsEditingPhone(true)}
-                          className="shrink-0"
-                        >
-                          Alterar
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                )}
               </div>
             </div>
-            <Switch
-              checked={settings.whatsapp.enabled}
-              onCheckedChange={handleWhatsAppToggle}
-              className="shrink-0"
-            />
           </div>
+        )}
 
-          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200 gap-4 flex-wrap">
-            <div className="flex items-center gap-3 min-w-0 flex-1">
-              <Bell className="text-blue-600 flex-shrink-0" size={20} />
-              <div className="min-w-0">
-                <p className="font-medium text-gray-900 break-words">
-                  Notificações Push
-                </p>
-                <p className="text-sm text-gray-600 break-words">
-                  Receba alertas no navegador
+        {hasCredentials && !preferences?.push_enabled && (
+          <div className="mt-4 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+            <div className="flex gap-3">
+              <AlertCircle
+                className="text-yellow-600 flex-shrink-0 mt-0.5"
+                size={20}
+              />
+              <div className="text-sm text-yellow-800">
+                <p className="font-semibold mb-1">Notificações Desabilitadas</p>
+                <p>
+                  Você não receberá nenhuma notificação push enquanto esta opção
+                  estiver desabilitada.
                 </p>
               </div>
             </div>
-            <Switch
-              checked={settings.push.enabled}
-              onCheckedChange={handlePushToggle}
-              className="shrink-0"
-            />
           </div>
-
-          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200 gap-4 flex-wrap">
-            <div className="flex items-center gap-3 min-w-0 flex-1">
-              <Mail className="text-purple-600 flex-shrink-0" size={20} />
-              <div className="min-w-0">
-                <p className="font-medium text-gray-900 break-words">
-                  Notificações por E-mail
-                </p>
-                <p className="text-sm text-gray-600 break-words">
-                  Resumos e alertas importantes por e-mail
-                </p>
-                {settings.email.enabled && (
-                  <p className="text-sm font-mono text-gray-700 mt-1 break-all">
-                    {settings.email.address}
-                  </p>
-                )}
-              </div>
-            </div>
-            <Switch
-              checked={settings.email.enabled}
-              onCheckedChange={handleEmailToggle}
-              className="shrink-0"
-            />
-          </div>
-        </div>
+        )}
       </Card>
 
       <Card>
         <div className="flex items-center gap-3 mb-6 flex-wrap">
           <div className="p-3 rounded-lg bg-purple-100 text-purple-600 shrink-0">
-            <Smartphone size={24} />
+            <Check size={24} />
           </div>
           <div className="min-w-0 flex-1">
             <h2 className="text-lg font-semibold text-gray-900">
@@ -311,10 +193,16 @@ export const ConfiguracoesNotificacoesTab = memo(() => {
         <div className="space-y-3">
           {notificationTypes.map((type) => {
             const Icon = type.icon
+            const isEnabled = preferences?.[type.key] ?? true
+            const isDisabled =
+              !preferences?.push_enabled || isUpdating || !hasCredentials
+
             return (
               <div
                 key={type.key}
-                className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200 gap-4 flex-wrap"
+                className={`flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200 gap-4 flex-wrap transition-opacity ${
+                  isDisabled ? 'opacity-50' : ''
+                }`}
               >
                 <div className="flex items-center gap-3 min-w-0 flex-1">
                   <Icon className="text-gray-600 flex-shrink-0" size={20} />
@@ -328,8 +216,9 @@ export const ConfiguracoesNotificacoesTab = memo(() => {
                   </div>
                 </div>
                 <Switch
-                  checked={preferences[type.key]}
-                  onCheckedChange={() => handlePreferenceToggle(type.key)}
+                  checked={isEnabled}
+                  onCheckedChange={() => togglePreference(type.key)}
+                  disabled={isDisabled}
                   className="shrink-0"
                 />
               </div>
@@ -341,26 +230,27 @@ export const ConfiguracoesNotificacoesTab = memo(() => {
       <Card>
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
           <div className="flex gap-3">
-            <AlertCircle
-              className="text-blue-600 flex-shrink-0 mt-0.5"
-              size={20}
-            />
+            <Info className="text-blue-600 flex-shrink-0 mt-0.5" size={20} />
             <div className="text-sm text-blue-800 min-w-0 flex-1">
               <p className="font-semibold mb-1 break-words">
-                Sobre as Notificações
+                Sobre as Notificações Push
               </p>
               <ul className="list-disc list-inside space-y-1 break-words">
                 <li>
-                  Você pode ativar múltiplos canais de notificação
-                  simultaneamente.
+                  As notificações são enviadas instantaneamente quando eventos
+                  importantes acontecem.
+                </li>
+                <li>
+                  Você pode personalizar quais tipos de eventos deseja
+                  acompanhar.
                 </li>
                 <li>
                   Notificações de segurança são altamente recomendadas para
                   proteção da conta.
                 </li>
                 <li>
-                  As notificações push requerem permissão do navegador para
-                  funcionar.
+                  As preferências são sincronizadas em todos os seus
+                  dispositivos.
                 </li>
                 <li>Você pode alterar suas preferências a qualquer momento.</li>
               </ul>

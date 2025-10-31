@@ -35,10 +35,26 @@ export async function apiRequest<T>(
     headers,
   })
 
-  // Guard clause para resposta não OK
+  // Tratamento centralizado de erros
   if (!response.ok) {
-    const error = await response.json().catch(() => ({}))
-    throw new Error(error.message || 'Erro na requisição')
+    // 401: limpar credenciais e emitir evento global para UI reagir (logout/redirect)
+    if (response.status === 401) {
+      try {
+        clearAuthData()
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new Event('auth-unauthorized'))
+        }
+      } catch {}
+    }
+
+    const errorPayload = await response.json().catch(() => ({}))
+    const message =
+      errorPayload?.message ||
+      (response.status === 401
+        ? 'Não autorizado. Faça login novamente.'
+        : 'Erro na requisição')
+
+    throw new Error(message)
   }
 
   return response.json()
@@ -69,6 +85,14 @@ export interface RegisterData {
 const storeAuthData = (data: AuthData): void => {
   localStorage.setItem('token', data.token)
   localStorage.setItem('user', JSON.stringify(data.user))
+
+  // Armazenar também credenciais do middleware check.token.secret, quando fornecidas
+  if (data.api_token) {
+    localStorage.setItem('api_token', data.api_token)
+  }
+  if (data.api_secret) {
+    localStorage.setItem('api_secret', data.api_secret)
+  }
 
   // Disparar evento customizado para notificar componentes que o token foi armazenado
   if (typeof window !== 'undefined') {
@@ -969,4 +993,182 @@ export const integrationAPI = {
       body: pin ? JSON.stringify({ pin }) : undefined,
     })
   },
+}
+
+// ========================================
+// Notificações (listar, marcar como lida, stats)
+// ========================================
+
+export interface NotificationItem {
+  id: number
+  user_id: string
+  type: string
+  title: string
+  body: string
+  data?: Record<string, any>
+  read_at?: string | null
+  created_at: string
+}
+
+export interface NotificationsResponse {
+  success: boolean
+  data: {
+    notifications: NotificationItem[]
+    current_page: number
+    last_page: number
+    per_page: number
+    total: number
+    unread_count: number
+  }
+}
+
+export async function listNotifications(params: {
+  page?: number
+  limit?: number
+  unread_only?: boolean
+  token: string
+  secret: string
+}): Promise<NotificationsResponse> {
+  const { token, secret, page = 1, limit = 20, unread_only = false } = params
+  const qs = new URLSearchParams({
+    page: String(page),
+    limit: String(limit),
+    unread_only: unread_only ? '1' : '0',
+    token,
+    secret,
+  }).toString()
+  return apiRequest(`/notifications?${qs}`, { method: 'GET' })
+}
+
+export async function markNotificationRead(
+  id: number,
+  token: string,
+  secret: string,
+): Promise<{ success: boolean; message: string }> {
+  return apiRequest(`/notifications/${id}/read`, {
+    method: 'POST',
+    body: JSON.stringify({ token, secret }),
+  })
+}
+
+export async function markAllNotificationsRead(
+  token: string,
+  secret: string,
+): Promise<{ success: boolean; message: string }> {
+  return apiRequest('/notifications/mark-all-read', {
+    method: 'POST',
+    body: JSON.stringify({ token, secret }),
+  })
+}
+
+export async function getNotificationsStats(
+  token: string,
+  secret: string,
+): Promise<{
+  success: boolean
+  data: { total: number; sent: number; unread: number; today: number }
+}> {
+  const qs = new URLSearchParams({ token, secret }).toString()
+  return apiRequest(`/notifications/stats?${qs}`, { method: 'GET' })
+}
+
+// ========================================
+// Notificações e Preferências
+// ========================================
+
+export interface NotificationPreferences {
+  id?: number
+  user_id: string
+  push_enabled: boolean
+  notify_transactions: boolean
+  notify_deposits: boolean
+  notify_withdrawals: boolean
+  notify_security: boolean
+  notify_system: boolean
+  created_at?: string
+  updated_at?: string
+}
+
+export interface NotificationPreferencesResponse {
+  success: boolean
+  message?: string
+  data: NotificationPreferences
+}
+
+/**
+ * Obter preferências de notificação do usuário
+ */
+export async function getNotificationPreferences(
+  token: string,
+  secret: string,
+): Promise<NotificationPreferencesResponse> {
+  return apiRequest('/notification-preferences', {
+    method: 'POST',
+    body: JSON.stringify({ token, secret }),
+  })
+}
+
+/**
+ * Atualizar preferências de notificação
+ */
+export async function updateNotificationPreferences(
+  token: string,
+  secret: string,
+  preferences: Partial<
+    Omit<
+      NotificationPreferences,
+      'id' | 'user_id' | 'created_at' | 'updated_at'
+    >
+  >,
+): Promise<NotificationPreferencesResponse> {
+  return apiRequest('/notification-preferences', {
+    method: 'PUT',
+    body: JSON.stringify({ token, secret, ...preferences }),
+  })
+}
+
+/**
+ * Alternar uma preferência específica
+ */
+export async function toggleNotificationPreference(
+  token: string,
+  secret: string,
+  type:
+    | 'push_enabled'
+    | 'notify_transactions'
+    | 'notify_deposits'
+    | 'notify_withdrawals'
+    | 'notify_security'
+    | 'notify_system',
+): Promise<NotificationPreferencesResponse> {
+  return apiRequest(`/notification-preferences/toggle/${type}`, {
+    method: 'POST',
+    body: JSON.stringify({ token, secret }),
+  })
+}
+
+/**
+ * Desabilitar todas as notificações
+ */
+export async function disableAllNotifications(
+  token: string,
+  secret: string,
+): Promise<NotificationPreferencesResponse> {
+  return apiRequest('/notification-preferences/disable-all', {
+    method: 'POST',
+    body: JSON.stringify({ token, secret }),
+  })
+}
+
+/**
+ * Habilitar todas as notificações
+ */
+export async function enableAllNotifications(
+  token: string,
+  secret: string,
+): Promise<NotificationPreferencesResponse> {
+  return apiRequest('/notification-preferences/enable-all', {
+    method: 'POST',
+    body: JSON.stringify({ token, secret }),
+  })
 }
