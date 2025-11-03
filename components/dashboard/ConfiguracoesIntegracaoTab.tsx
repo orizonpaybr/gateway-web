@@ -10,8 +10,10 @@ import { Dialog } from '@/components/ui/Dialog'
 import { TwoFactorModal } from '@/components/modals/TwoFactorModal'
 import { twoFactorAPI } from '@/lib/api'
 import { toast } from 'sonner'
+import { useAuth } from '@/contexts/AuthContext'
 
 export const ConfiguracoesIntegracaoTab = memo(() => {
+  const { authReady } = useAuth()
   const [novoIP, setNovoIP] = useState('')
   const [isAddingIP, setIsAddingIP] = useState(false)
   const queryClient = useQueryClient()
@@ -24,6 +26,7 @@ export const ConfiguracoesIntegracaoTab = memo(() => {
   } = useQuery({
     queryKey: ['integration', 'credentials'],
     queryFn: integrationAPI.getCredentials,
+    enabled: authReady,
     staleTime: 5 * 60 * 1000, // 5 minutos
     refetchOnWindowFocus: false,
   })
@@ -36,6 +39,7 @@ export const ConfiguracoesIntegracaoTab = memo(() => {
   } = useQuery({
     queryKey: ['integration', 'allowed-ips'],
     queryFn: integrationAPI.getAllowedIPs,
+    enabled: authReady,
     staleTime: 2 * 60 * 1000, // 2 minutos
   })
 
@@ -43,6 +47,7 @@ export const ConfiguracoesIntegracaoTab = memo(() => {
   const { data: twoFAStatus } = useQuery({
     queryKey: ['twofa-status'],
     queryFn: twoFactorAPI.getStatus,
+    enabled: authReady,
     staleTime: 60_000,
   })
 

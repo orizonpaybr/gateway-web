@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { utmifyAPI } from '@/lib/api'
 import { toast } from 'sonner'
 import { useState, useCallback } from 'react'
+import { useAuth } from '@/contexts/AuthContext'
 
 /**
  * Hook otimizado para gerenciar integração com Utmify
@@ -19,6 +20,7 @@ import { useState, useCallback } from 'react'
  * ```
  */
 export function useUtmify() {
+  const { authReady } = useAuth()
   const queryClient = useQueryClient()
   const [isPending2FA, setIsPending2FA] = useState(false)
   const [pendingAction, setPendingAction] = useState<{
@@ -35,6 +37,7 @@ export function useUtmify() {
   } = useQuery({
     queryKey: ['utmify', 'config'],
     queryFn: utmifyAPI.getConfig,
+    enabled: authReady,
     staleTime: 5 * 60 * 1000, // 5 minutos
     gcTime: 10 * 60 * 1000, // 10 minutos
     refetchOnWindowFocus: false,

@@ -9,6 +9,7 @@ import { TwoFactorModal } from '@/components/modals/TwoFactorModal'
 import { useQuery } from '@tanstack/react-query'
 import { twoFactorAPI } from '@/lib/api'
 import { toast } from 'sonner'
+import { useAuth } from '@/contexts/AuthContext'
 
 interface UtmifyModalProps {
   isOpen: boolean
@@ -19,6 +20,7 @@ export const UtmifyModal = memo(function UtmifyModal({
   isOpen,
   onClose,
 }: UtmifyModalProps) {
+  const { authReady } = useAuth()
   const [utmifyApiKey, setUtmifyApiKey] = useState('')
   const [isEditingUtmify, setIsEditingUtmify] = useState(false)
   const [showUtmifyConfirm, setShowUtmifyConfirm] = useState(false)
@@ -31,6 +33,7 @@ export const UtmifyModal = memo(function UtmifyModal({
   const { data: twoFAStatus, refetch: refetchTwoFA } = useQuery({
     queryKey: ['twofa-status'],
     queryFn: twoFactorAPI.getStatus,
+    enabled: authReady,
     staleTime: 0,
     refetchOnMount: 'always',
     refetchOnWindowFocus: false,

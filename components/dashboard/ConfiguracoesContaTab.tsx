@@ -34,7 +34,7 @@ interface TwoFAStatus {
 
 export const ConfiguracoesContaTab = memo(() => {
   const router = useRouter()
-  const { logout } = useAuth()
+  const { logout, authReady } = useAuth()
 
   // Estado de senha
   const {
@@ -66,10 +66,12 @@ export const ConfiguracoesContaTab = memo(() => {
     'enable',
   )
 
-  // Carregar status de 2FA ao montar
+  // Carregar status de 2FA ao montar (só quando authReady)
   useEffect(() => {
-    loadTwoFAStatus()
-  }, [])
+    if (authReady) {
+      loadTwoFAStatus()
+    }
+  }, [authReady])
 
   // Bloquear scroll do body quando modal de PIN está aberto
   useEffect(() => {
@@ -87,6 +89,7 @@ export const ConfiguracoesContaTab = memo(() => {
   }, [showPinModal])
 
   const loadTwoFAStatus = useCallback(async () => {
+    if (!authReady) return
     try {
       setIsLoadingStatus(true)
       const response = await twoFactorAPI.getStatus()
@@ -103,7 +106,7 @@ export const ConfiguracoesContaTab = memo(() => {
     } finally {
       setIsLoadingStatus(false)
     }
-  }, [])
+  }, [authReady])
 
   const onSubmitPassword = useCallback(
     async (data: PasswordFormData) => {
