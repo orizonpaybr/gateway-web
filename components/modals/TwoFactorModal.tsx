@@ -232,7 +232,7 @@ export function TwoFactorModal({
 
   return (
     <div
-      className="fixed top-0 left-0 right-0 bottom-0 bg-black/50 flex items-center justify-center z-[1000]"
+      className="fixed top-0 left-0 right-0 bottom-0 bg-black/50 flex items-center justify-center z-[10000]"
       style={{ margin: 0, padding: 0 }}
     >
       <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-4 sm:p-6 relative max-h-[90vh] overflow-y-auto mx-4">

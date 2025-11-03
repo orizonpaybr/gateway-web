@@ -996,6 +996,72 @@ export const integrationAPI = {
 }
 
 // ========================================
+// API Utmify - Rastreamento e Conversões
+// ========================================
+
+export const utmifyAPI = {
+  getConfig: async (): Promise<{
+    success: boolean
+    data: {
+      api_key: string | null
+      enabled: boolean
+      updated_at: string
+    }
+  }> => {
+    return apiRequest('/utmify/config')
+  },
+
+  saveConfig: async (
+    apiKey: string,
+    pin?: string,
+  ): Promise<{
+    success: boolean
+    message: string
+    data: {
+      api_key: string
+      enabled: boolean
+      updated_at: string
+    }
+  }> => {
+    return apiRequest('/utmify/config', {
+      method: 'POST',
+      body: JSON.stringify(
+        pin ? { api_key: apiKey, pin } : { api_key: apiKey },
+      ),
+    })
+  },
+
+  deleteConfig: async (
+    pin?: string,
+  ): Promise<{
+    success: boolean
+    message: string
+    data: {
+      api_key: null
+      enabled: boolean
+    }
+  }> => {
+    return apiRequest('/utmify/config', {
+      method: 'DELETE',
+      body: pin ? JSON.stringify({ pin }) : undefined,
+    })
+  },
+
+  testConnection: async (): Promise<{
+    success: boolean
+    message: string
+    data: {
+      api_url: string
+      status: string
+    }
+  }> => {
+    return apiRequest('/utmify/test', {
+      method: 'POST',
+    })
+  },
+}
+
+// ========================================
 // Notificações (listar, marcar como lida, stats)
 // ========================================
 

@@ -15,6 +15,7 @@ interface DialogProps {
   size?: DialogSize
   footer?: React.ReactNode
   className?: string
+  showCloseButton?: boolean
 }
 
 const sizeToMaxWidth: Record<DialogSize, string> = {
@@ -31,6 +32,7 @@ export function Dialog({
   size = 'md',
   footer,
   className,
+  showCloseButton = true,
 }: DialogProps) {
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
@@ -47,18 +49,20 @@ export function Dialog({
       <div className="absolute inset-0 bg-black/40" onClick={onClose} />
       <div
         className={cn(
-          'relative bg-white rounded-xl shadow-xl w-full mx-4 p-5',
+          'relative bg-white rounded-xl shadow-xl w-full mx-4 p-5 my-6 sm:my-0 max-h-[92vh] overflow-y-auto',
           sizeToMaxWidth[size],
           className,
         )}
       >
-        <button
-          className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
-          onClick={onClose}
-          aria-label="Fechar"
-        >
-          <X size={18} />
-        </button>
+        {showCloseButton && (
+          <button
+            className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+            onClick={onClose}
+            aria-label="Fechar"
+          >
+            <X size={18} />
+          </button>
+        )}
 
         {title && (
           <h3 className="text-base font-semibold text-gray-900 mb-4">

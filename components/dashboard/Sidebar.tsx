@@ -17,6 +17,7 @@ import {
   ChevronUp,
   ExternalLink,
   X,
+  Activity,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/contexts/AuthContext'
@@ -27,6 +28,7 @@ import { Button } from '@/components/ui/Button'
 import { AnimatedAvatar } from '@/components/ui/AnimatedAvatar'
 import { useSidebarGamification } from '@/hooks/useSidebarGamification'
 import { useMobileMenu } from '@/contexts/MobileMenuContext'
+import { UtmifyModal } from '@/components/modals/UtmifyModal'
 
 // Lazy loading do componente de progresso
 const SidebarProgress = lazy(
@@ -102,6 +104,7 @@ export const Sidebar = memo(function Sidebar() {
   const [isHydrated, setIsHydrated] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
   const { isMobileMenuOpen, closeMobileMenu } = useMobileMenu()
+  const [isUtmifyModalOpen, setIsUtmifyModalOpen] = useState(false)
 
   // Hook otimizado para gamificação da Sidebar
   const {
@@ -313,6 +316,26 @@ export const Sidebar = memo(function Sidebar() {
                 </li>
               )
             })}
+
+            <li>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setIsUtmifyModalOpen(true)
+                  if (isMobile) closeMobileMenu()
+                }}
+                className={cn(
+                  'flex items-center justify-between w-full px-4 py-3 rounded-lg text-sm font-medium',
+                  'text-gray-700 hover:bg-gray-100',
+                )}
+              >
+                <div className="flex items-center gap-3">
+                  <Activity size={18} className="text-purple-600" />
+                  <span>Integração Utmify</span>
+                </div>
+              </Button>
+            </li>
           </ul>
 
           <div className="my-6 border-t border-gray-200" />
@@ -390,6 +413,11 @@ export const Sidebar = memo(function Sidebar() {
           </div>
         </div>
       </aside>
+
+      <UtmifyModal
+        isOpen={isUtmifyModalOpen}
+        onClose={() => setIsUtmifyModalOpen(false)}
+      />
     </>
   )
 })
