@@ -64,7 +64,7 @@ export const CurrencyInput = memo(
       return (
         <div className="space-y-2">
           {!hideLabel && label && (
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-xs font-semibold text-gray-900 uppercase tracking-wider">
               {label}
             </label>
           )}

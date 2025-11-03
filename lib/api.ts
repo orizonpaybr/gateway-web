@@ -439,6 +439,26 @@ export interface PixWithdrawData {
   description?: string
 }
 
+export interface PixDepositData {
+  amount: number
+  description?: string
+}
+
+export interface PixDepositResponse {
+  success: boolean
+  data: {
+    idTransaction?: string
+    transaction_id?: string
+    qrcode?: string // PIX Copia e Cola
+    qr_code?: string // PIX Copia e Cola (formato alternativo)
+    qrCodeImage?: string // Base64 da imagem do QR Code
+    qr_code_image_url?: string // Base64 da imagem (formato alternativo)
+    amount: number
+    status?: string
+    externalReference?: string
+  }
+}
+
 export const pixAPI = {
   transfer: async (data: any) => {
     // return apiRequest('/pix/transfer', {
@@ -446,6 +466,26 @@ export const pixAPI = {
     //   body: JSON.stringify(data),
     // })
     throw new Error('API não implementada')
+  },
+
+  // Gerar QR Code para depósito
+  generateDeposit: async (
+    data: PixDepositData,
+  ): Promise<PixDepositResponse> => {
+    return apiRequest('/pix/generate-qr', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })
+  },
+
+  // Verificar status do depósito
+  checkDepositStatus: async (
+    idTransaction: string,
+  ): Promise<{
+    success: boolean
+    status: string
+  }> => {
+    return apiRequest(`/transactions/${idTransaction}`)
   },
 
   // ===== GERENCIAMENTO DE CHAVES PIX =====

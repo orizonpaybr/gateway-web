@@ -54,10 +54,10 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
             type={inputType}
             data-show-password={showPasswordToggle ? showPassword : undefined}
             className={cn(
-              'w-full px-4 py-3.5 border border-gray-500 rounded-lg text-sm bg-white text-gray-900 transition-all duration-200',
+              'w-full px-4 py-3.5 border border-gray-300 rounded-lg text-sm bg-white text-gray-900 transition-all duration-200',
               'placeholder:text-gray-500 placeholder:opacity-80',
               'focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10',
-              'hover:border-gray-600',
+              'hover:border-gray-400',
               icon && 'pl-11',
               showPasswordToggle && 'pr-11',
               error && 'border-red-500',
