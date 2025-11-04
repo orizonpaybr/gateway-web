@@ -26,6 +26,7 @@ interface User {
   cnpj?: string
   twofa_enabled?: boolean
   twofa_configured?: boolean
+  permission?: number // 3 = admin, 2 = gerente, 1 = usuario
 }
 
 interface AuthContextType {
@@ -121,6 +122,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               balance: profileResult.data.balance,
               phone: profileResult.data.phone,
               cnpj: profileResult.data.cnpj,
+              permission: profileResult.data.permission,
             })
           } else {
             // Usar dados do localStorage se API falhar
@@ -131,6 +133,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               email: userData.email,
               username: userData.username,
               agency: userData.agency,
+              permission: userData.permission,
             })
           }
         } catch (profileError) {
@@ -143,6 +146,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             email: userData.email,
             username: userData.username,
             agency: userData.agency,
+            permission: userData.permission,
           })
         }
       } else {
@@ -169,6 +173,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     username: userData.username,
     status: userData.status,
     status_text: userData.status_text,
+    permission: userData.permission,
   })
 
   const login = async (username: string, password: string) => {
