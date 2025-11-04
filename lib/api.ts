@@ -1278,3 +1278,161 @@ export async function enableAllNotifications(
     body: JSON.stringify({ token, secret }),
   })
 }
+
+// ============================================
+// API do Dashboard Administrativo
+// ============================================
+
+export interface AdminDashboardStats {
+  periodo: {
+    inicio: string
+    fim: string
+  }
+  financeiro: {
+    saldo_carteiras: number
+    lucro_liquido: number
+    lucro_depositos: number
+    lucro_saques: number
+    taxas_adquirentes: {
+      entradas: number
+      saidas: number
+      total: number
+    }
+  }
+  transacoes: {
+    depositos: {
+      quantidade: number
+      valor_total: number
+    }
+    saques: {
+      quantidade: number
+      valor_total: number
+    }
+    total: {
+      quantidade: number
+      valor_total: number
+    }
+  }
+  usuarios: {
+    cadastrados: number
+    pendentes: number
+    aprovados: number
+  }
+  saques_pendentes: {
+    quantidade: number
+    valor_total: number
+  }
+}
+
+export interface AdminUser {
+  id: number
+  user_id: string
+  name: string
+  email: string
+  username: string
+  cpf_cnpj: string
+  status: number
+  saldo: number
+  created_at: string
+  total_transacoes: number
+  transacoes_aproved: number
+  transacoes_recused: number
+}
+
+export interface AdminTransaction {
+  id: number
+  type: 'deposit' | 'withdraw'
+  user: {
+    id: number
+    name: string
+    username: string
+  } | null
+  amount: number
+  taxa: number
+  status: string
+  date: string
+  created_at: string
+}
+
+/**
+ * API para Dashboard Administrativo
+ * Apenas usuários com permission === 3 podem acessar
+ */
+export const adminDashboardAPI = {
+  /**
+   * Obter estatísticas do dashboard administrativo
+   *
+   * @param periodo - 'hoje', 'ontem', '7dias', '30dias', 'mes_atual', 'mes_anterior', 'tudo' ou 'YYYY-MM-DD:YYYY-MM-DD'
+   */
+  async getStats(periodo: string = 'hoje'): Promise<{
+    success: boolean
+    data: AdminDashboardStats
+  }> {
+    return apiRequest(`/admin/dashboard/stats?periodo=${periodo}`)
+  },
+
+  /**
+   * Obter lista de usuários com filtros e paginação
+   *
+   * @param params - Parâmetros de filtro e paginação
+   */
+  async getUsers(params?: {
+    status?: number
+    search?: string
+    per_page?: number
+    page?: number
+    order_by?: string
+    order_direction?: 'asc' | 'desc'
+  }): Promise<{
+    success: boolean
+    data: AdminUser[]
+    pagination: {
+      current_page: number
+      per_page: number
+      total: number
+      last_page: number
+    }
+  }> {
+    const queryParams = new URLSearchParams()
+
+    if (params?.status !== undefined)
+      queryParams.append('status', params.status.toString())
+    if (params?.search) queryParams.append('search', params.search)
+    if (params?.per_page)
+      queryParams.append('per_page', params.per_page.toString())
+    if (params?.page) queryParams.append('page', params.page.toString())
+    if (params?.order_by) queryParams.append('order_by', params.order_by)
+    if (params?.order_direction)
+      queryParams.append('order_direction', params.order_direction)
+
+    const query = queryParams.toString()
+    return apiRequest(`/admin/dashboard/users${query ? '?' + query : ''}`)
+  },
+
+  /**
+   * Obter transações recentes
+   *
+   * @param params - Parâmetros de filtro
+   */
+  async getTransactions(params?: {
+    type?: 'deposit' | 'withdraw'
+    status?: string
+    limit?: number
+  }): Promise<{
+    success: boolean
+    data: {
+      transactions: AdminTransaction[]
+    }
+  }> {
+    const queryParams = new URLSearchParams()
+
+    if (params?.type) queryParams.append('type', params.type)
+    if (params?.status) queryParams.append('status', params.status)
+    if (params?.limit) queryParams.append('limit', params.limit.toString())
+
+    const query = queryParams.toString()
+    return apiRequest(
+      `/admin/dashboard/transactions${query ? '?' + query : ''}`,
+    )
+  },
+}
