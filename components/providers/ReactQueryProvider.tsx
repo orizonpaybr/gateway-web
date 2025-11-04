@@ -3,6 +3,7 @@
 import React from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
+import { useAuth } from '@/contexts/AuthContext'
 
 // Configuração do QueryClient
 const queryClient = new QueryClient({
@@ -25,9 +26,15 @@ interface ReactQueryProviderProps {
 }
 
 export function ReactQueryProvider({ children }: ReactQueryProviderProps) {
+  const { authReady } = useAuth()
   return (
     <QueryClientProvider client={queryClient}>
-      {children}
+      {/*
+        Gate de hidratação/autenticação:
+        - Evita que hooks com useQuery/mutations disparem antes do token estar disponível
+        - Mantém o QueryClient montado para não quebrar hooks, mas só renderiza a árvore quando authReady
+      */}
+      {authReady ? children : null}
       {process.env.NODE_ENV === 'development' && (
         <ReactQueryDevtools initialIsOpen={false} />
       )}
