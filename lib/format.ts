@@ -66,3 +66,49 @@ export function parseCurrencyInput(value: string): number {
 export function centsToBRL(cents: number): number {
   return cents / 100
 }
+
+/**
+ * Formata número com decimais fixos
+ * Útil para formatação de valores numéricos em inputs
+ */
+export function formatNumber(
+  value: number | undefined | null,
+  decimals: number = 2,
+): string {
+  if (value === undefined || value === null || Number.isNaN(value)) {
+    return decimals > 0 ? '0' + '.' + '0'.repeat(decimals) : '0'
+  }
+  return Number(value).toFixed(decimals)
+}
+
+/**
+ * Formata telefone brasileiro (11) 99999-9999 ou (11) 9999-9999
+ */
+export function formatPhoneBR(phone: string): string {
+  const digits = phone.replace(/\D/g, '')
+  if (digits.length <= 10) {
+    return digits.replace(/(\d{2})(\d{4})(\d{0,4})/, '($1) $2-$3').trim()
+  }
+  return digits.replace(/(\d{2})(\d{5})(\d{0,4})/, '($1) $2-$3').trim()
+}
+
+/**
+ * Formata CPF/CNPJ para exibição
+ * Retorna CPF formatado (000.000.000-00) ou CNPJ (00.000.000/0000-00)
+ */
+export function formatCpfCnpjBR(value: string): string {
+  const digits = value.replace(/\D/g, '')
+  if (digits.length <= 11) {
+    // CPF: 000.000.000-00
+    return digits
+      .replace(/(\d{3})(\d)/, '$1.$2')
+      .replace(/(\d{3})(\d)/, '$1.$2')
+      .replace(/(\d{3})(\d{1,2})$/, '$1-$2')
+  }
+  // CNPJ: 00.000.000/0000-00
+  return digits
+    .replace(/(\d{2})(\d)/, '$1.$2')
+    .replace(/(\d{3})(\d)/, '$1.$2')
+    .replace(/(\d{3})(\d)/, '$1/$2')
+    .replace(/(\d{4})(\d{1,2})$/, '$1-$2')
+}
