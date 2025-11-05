@@ -1330,13 +1330,148 @@ export interface AdminUser {
   name: string
   email: string
   username: string
-  cpf_cnpj: string
+  cpf_cnpj?: string
+  cpf?: string
+  telefone?: string
   status: number
   saldo: number
   created_at: string
   total_transacoes: number
   transacoes_aproved: number
   transacoes_recused: number
+  permission?: number // 1=cliente, 2=gerente, 3=admin
+  data_nascimento?: string
+  nome_fantasia?: string
+  razao_social?: string
+  cep?: string
+  rua?: string
+  estado?: string
+  cidade?: string
+  bairro?: string
+  numero_residencia?: string
+  complemento?: string
+  media_faturamento?: number
+  gerente_id?: number
+  banido?: boolean
+  // Taxas personalizadas
+  taxas_personalizadas_ativas?: boolean
+  taxa_percentual_deposito?: number
+  taxa_fixa_deposito?: number
+  valor_minimo_deposito?: number
+  taxa_percentual_pix?: number
+  taxa_minima_pix?: number
+  taxa_fixa_pix?: number
+  valor_minimo_saque?: number
+  limite_mensal_pf?: number
+  // Afiliados
+  is_affiliate?: boolean
+  affiliate_percentage?: number
+  affiliate_code?: string
+  affiliate_link?: string
+  // Campos adicionais para tabela
+  permission_text?: string
+  adquirente?: string
+  vendas_7d?: number
+  doc_status?: string
+  // Campos adicionais do showUser
+  status_text?: string
+  token?: string
+  secret?: string
+  documents?: {
+    rg_frente?: string
+    rg_verso?: string
+    selfie_rg?: string
+  }
+  // Campos de adquirente
+  preferred_adquirente?: string
+  adquirente_override?: boolean
+  preferred_adquirente_card_billet?: string
+  adquirente_card_billet_override?: boolean
+  // Campos de taxas adicionais
+  taxa_saque_api?: number
+  taxa_saque_crypto?: number
+  sistema_flexivel_ativo?: boolean
+  valor_minimo_flexivel?: number
+  taxa_fixa_baixos?: number
+  taxa_percentual_altos?: number
+}
+
+export interface CreateUserData {
+  username: string
+  name: string
+  email: string
+  password: string
+  telefone?: string
+  cpf_cnpj?: string
+  cpf?: string
+  data_nascimento?: string
+  saldo?: number
+  status?: number
+  permission?: number
+  nome_fantasia?: string
+  razao_social?: string
+  cep?: string
+  rua?: string
+  estado?: string
+  cidade?: string
+  bairro?: string
+  numero_residencia?: string
+  complemento?: string
+  media_faturamento?: number
+  indicador_ref?: string
+  gerente_id?: number
+}
+
+export interface UpdateUserData {
+  name?: string
+  email?: string
+  password?: string
+  telefone?: string
+  cpf_cnpj?: string
+  cpf?: string
+  data_nascimento?: string
+  saldo?: number
+  status?: number
+  permission?: number
+  nome_fantasia?: string
+  razao_social?: string
+  cep?: string
+  rua?: string
+  estado?: string
+  cidade?: string
+  bairro?: string
+  numero_residencia?: string
+  complemento?: string
+  media_faturamento?: number
+  gerente_id?: number
+  // Taxas personalizadas
+  taxas_personalizadas_ativas?: boolean
+  taxa_percentual_deposito?: number
+  taxa_fixa_deposito?: number
+  valor_minimo_deposito?: number
+  taxa_percentual_pix?: number
+  taxa_minima_pix?: number
+  taxa_fixa_pix?: number
+  valor_minimo_saque?: number
+  limite_mensal_pf?: number
+  // Campos de adquirente
+  preferred_adquirente?: string
+  adquirente_override?: boolean
+  preferred_adquirente_card_billet?: string
+  adquirente_card_billet_override?: boolean
+  // Campos de taxas adicionais
+  taxa_saque_api?: number
+  taxa_saque_crypto?: number
+  sistema_flexivel_ativo?: boolean
+  valor_minimo_flexivel?: number
+  taxa_fixa_baixos?: number
+  taxa_percentual_altos?: number
+}
+
+export interface AdjustBalanceData {
+  amount: number
+  type: 'add' | 'subtract'
+  reason?: string
 }
 
 export interface AdminTransaction {
@@ -1359,6 +1494,20 @@ export interface AdminTransaction {
  * Apenas usuários com permission === 3 podem acessar
  */
 export const adminDashboardAPI = {
+  /**
+   * Obter estatísticas de usuários para os cards
+   */
+  async getUserStats(): Promise<{
+    success: boolean
+    data: {
+      total_registrations: number
+      month_registrations: number
+      pending_registrations: number
+      banned_users: number
+    }
+  }> {
+    return apiRequest('/admin/dashboard/users-stats')
+  },
   /**
    * Obter estatísticas do dashboard administrativo
    *
@@ -1434,5 +1583,190 @@ export const adminDashboardAPI = {
     return apiRequest(
       `/admin/dashboard/transactions${query ? '?' + query : ''}`,
     )
+  },
+}
+
+/**
+ * API para CRUD de Usuários (Admin)
+ * Apenas usuários com permission === 3 podem acessar
+ */
+export const adminUsersAPI = {
+  /**
+   * Obter detalhes de um usuário específico
+   *
+   * @param userId - ID do usuário
+   */
+  async getUser(userId: number): Promise<{
+    success: boolean
+    data: {
+      user: AdminUser
+    }
+  }> {
+    return apiRequest(`/admin/users/${userId}`)
+  },
+
+  /**
+   * Criar novo usuário
+   *
+   * @param data - Dados do usuário
+   */
+  async createUser(data: CreateUserData): Promise<{
+    success: boolean
+    data: {
+      message: string
+      user: AdminUser
+    }
+  }> {
+    return apiRequest('/admin/users', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })
+  },
+
+  /**
+   * Atualizar usuário existente
+   *
+   * @param userId - ID do usuário
+   * @param data - Dados a atualizar
+   */
+  async updateUser(
+    userId: number,
+    data: UpdateUserData,
+  ): Promise<{
+    success: boolean
+    data: {
+      message: string
+      user: AdminUser
+    }
+  }> {
+    return apiRequest(`/admin/users/${userId}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    })
+  },
+
+  /**
+   * Deletar usuário
+   *
+   * @param userId - ID do usuário
+   */
+  async deleteUser(userId: number): Promise<{
+    success: boolean
+    data: {
+      message: string
+    }
+  }> {
+    return apiRequest(`/admin/users/${userId}`, {
+      method: 'DELETE',
+    })
+  },
+
+  /**
+   * Aprovar usuário pendente
+   *
+   * @param userId - ID do usuário
+   */
+  async approveUser(userId: number): Promise<{
+    success: boolean
+    data: {
+      message: string
+      user: AdminUser
+    }
+  }> {
+    return apiRequest(`/admin/users/${userId}/approve`, {
+      method: 'POST',
+    })
+  },
+
+  /**
+   * Bloquear/desbloquear usuário
+   *
+   * @param userId - ID do usuário
+   * @param block - true para bloquear, false para desbloquear
+   */
+  async toggleBlockUser(
+    userId: number,
+    block: boolean = true,
+  ): Promise<{
+    success: boolean
+    data: {
+      message: string
+      user: AdminUser
+    }
+  }> {
+    return apiRequest(`/admin/users/${userId}/toggle-block`, {
+      method: 'POST',
+      body: JSON.stringify({ block }),
+    })
+  },
+
+  /**
+   * Ajustar saldo do usuário
+   *
+   * @param userId - ID do usuário
+   * @param data - Dados do ajuste (amount, type, reason)
+   */
+  async adjustBalance(
+    userId: number,
+    data: AdjustBalanceData,
+  ): Promise<{
+    success: boolean
+    data: {
+      message: string
+      user: AdminUser
+    }
+  }> {
+    return apiRequest(`/admin/users/${userId}/adjust-balance`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })
+  },
+  /**
+   * Listar gerentes (permission === 2)
+   */
+  async getManagers(): Promise<{
+    success: boolean
+    data: {
+      managers: { id: number; name: string; username: string; email: string }[]
+    }
+  }> {
+    return apiRequest('/admin/users-managers')
+  },
+
+  /**
+   * Listar adquirentes ativos de PIX
+   */
+  async getPixAcquirers(): Promise<{
+    success: boolean
+    data: { acquirers: { name: string; referencia: string }[] }
+  }> {
+    return apiRequest('/admin/pix-acquirers')
+  },
+
+  /**
+   * Salvar configurações de afiliados
+   *
+   * @param userId - ID do usuário
+   * @param data - Dados de afiliado
+   */
+  async saveAffiliateSettings(
+    userId: number,
+    data: { is_affiliate: boolean; affiliate_percentage: number },
+  ): Promise<{
+    success: boolean
+    data: {
+      message: string
+      user: {
+        is_affiliate: boolean
+        affiliate_percentage: number
+        affiliate_code?: string
+        affiliate_link?: string
+      }
+    }
+  }> {
+    return apiRequest(`/admin/users/${userId}/affiliate-settings`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })
   },
 }

@@ -19,6 +19,7 @@ import {
   X,
   Activity,
   LayoutDashboard,
+  Users,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/contexts/AuthContext'
@@ -340,7 +341,7 @@ export const Sidebar = memo(function Sidebar() {
             </li>
 
             {/* Seção Administração (apenas para admins) */}
-            {authReady && user?.permission === 3 && (
+            {authReady && Number(user?.permission) === 3 && (
               <>
                 <li aria-hidden className="my-3">
                   <div className="border-t border-gray-200" />
@@ -363,6 +364,21 @@ export const Sidebar = memo(function Sidebar() {
                   >
                     <LayoutDashboard size={18} />
                     <span>Dashboard</span>
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/dashboard/admin/usuarios"
+                    onClick={() => isMobile && closeMobileMenu()}
+                    className={cn(
+                      'flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors',
+                      pathname === '/dashboard/admin/usuarios'
+                        ? 'bg-blue-600 text-white shadow-md'
+                        : 'text-gray-700 hover:bg-blue-50 hover:text-blue-700',
+                    )}
+                  >
+                    <Users size={18} />
+                    <span>Usuários</span>
                   </Link>
                 </li>
               </>

@@ -1,11 +1,11 @@
 'use client'
 
-import React, { useEffect } from 'react'
+import React, { useEffect, useCallback, memo } from 'react'
 import { createPortal } from 'react-dom'
 import { X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
-type DialogSize = 'sm' | 'md' | 'lg'
+type DialogSize = 'sm' | 'md' | 'lg' | 'xl'
 
 interface DialogProps {
   open: boolean
@@ -22,9 +22,10 @@ const sizeToMaxWidth: Record<DialogSize, string> = {
   sm: 'max-w-sm',
   md: 'max-w-md',
   lg: 'max-w-lg',
+  xl: 'max-w-4xl',
 }
 
-export function Dialog({
+export const Dialog = memo(function Dialog({
   open,
   onClose,
   title,
@@ -34,13 +35,17 @@ export function Dialog({
   className,
   showCloseButton = true,
 }: DialogProps) {
-  useEffect(() => {
-    const handleEsc = (e: KeyboardEvent) => {
+  const handleEsc = useCallback(
+    (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose()
-    }
+    },
+    [onClose],
+  )
+
+  useEffect(() => {
     if (open) document.addEventListener('keydown', handleEsc)
     return () => document.removeEventListener('keydown', handleEsc)
-  }, [open, onClose])
+  }, [open, handleEsc])
 
   if (!open) return null
 
@@ -79,4 +84,4 @@ export function Dialog({
 
   // Renderizar o modal usando portal diretamente no body
   return createPortal(modalContent, document.body)
-}
+})

@@ -77,9 +77,9 @@ export const Select = memo(
       )
 
       return (
-        <div className="flex flex-col gap-2 w-full" ref={ref}>
+        <div className="flex flex-col gap-1.5 w-full" ref={ref}>
           {label && (
-            <label className="text-xs font-semibold text-gray-900 uppercase tracking-wider">
+            <label className="text-xs font-semibold text-gray-900 uppercase tracking-wider leading-tight h-4">
               {label}
             </label>
           )}
