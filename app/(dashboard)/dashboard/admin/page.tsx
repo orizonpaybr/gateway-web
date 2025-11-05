@@ -24,32 +24,38 @@ import { toast } from 'sonner'
 
 export default function AdminDashboardPage() {
   const router = useRouter()
-  const { user, isLoading: authLoading } = useAuth()
+  const { user, isLoading: authLoading, authReady } = useAuth()
   const [periodo, setPeriodo] = useState('hoje')
 
   // Verificar se usuário é admin
   useEffect(() => {
-    if (!authLoading && (!user || user.permission !== 3)) {
+    if (authReady && (!user || user.permission !== 3)) {
       toast.error('Acesso negado', {
         description: 'Você não tem permissão para acessar esta página',
       })
       router.push('/dashboard')
     }
-  }, [user, authLoading, router])
+  }, [user, authReady, router])
 
   // Buscar dados do dashboard
   const {
     data: stats,
     isLoading: statsLoading,
     error: statsError,
-  } = useAdminDashboardStats(periodo, !!user && user.permission === 3)
+  } = useAdminDashboardStats(
+    periodo,
+    authReady && !!user && Number(user.permission) === 3,
+  )
 
   // Buscar transações recentes
   const {
     data: transactions,
     isLoading: transactionsLoading,
     error: transactionsError,
-  } = useAdminTransactions({ limit: 10 }, !!user && user.permission === 3)
+  } = useAdminTransactions(
+    { limit: 10 },
+    authReady && !!user && Number(user.permission) === 3,
+  )
 
   // Exibir erros
   useEffect(() => {
