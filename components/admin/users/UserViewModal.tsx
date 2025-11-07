@@ -1,9 +1,10 @@
-import React, { memo, useCallback, useMemo } from 'react'
+import React, { memo, useMemo } from 'react'
 import Image from 'next/image'
 import { Dialog } from '@/components/ui/Dialog'
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import { AdminUser } from '@/lib/api'
-import { USER_STATUS_LABELS } from '@/lib/constants'
-import { formatDateBR } from '@/lib/format'
+import { getStatusLabel } from '@/lib/helpers/userStatus'
+import { useFormatDate } from '@/lib/helpers/formatting'
 
 interface UserViewModalProps {
   open: boolean
@@ -16,25 +17,21 @@ export const UserViewModal = memo(function UserViewModal({
   onClose,
   user,
 }: UserViewModalProps) {
-  const getStatusLabel = useCallback((status?: number) => {
-    if (status === undefined || status === null) return 'INATIVO'
-    return USER_STATUS_LABELS[status] || 'INATIVO'
-  }, [])
+  // Usar hooks de formatação
+  const formatDate = useFormatDate()
 
-  const formatDate = useCallback((dateStr?: string) => {
-    if (!dateStr) return '-'
-    return formatDateBR(dateStr)
-  }, [])
-
-  // Memorizar status text
+  // Memorizar status text usando helper
   const statusText = useMemo(() => {
-    return user?.status_text || getStatusLabel(user?.status) || '-'
-  }, [user?.status_text, user?.status, getStatusLabel])
+    if (!user) return '-'
+    return getStatusLabel(user)
+  }, [user])
 
   return (
     <Dialog open={open} onClose={onClose} title="Visualizar usuário" size="lg">
       {!user ? (
-        <p className="text-sm text-gray-600">Carregando...</p>
+        <div className="flex items-center justify-center py-12">
+          <LoadingSpinner size="lg" />
+        </div>
       ) : (
         <div className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
@@ -96,8 +93,8 @@ export const UserViewModal = memo(function UserViewModal({
                 Documentação
               </p>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {user.documents.rg_frente && (
-                  <div className="relative w-full h-48 rounded-lg border overflow-hidden">
+                {user.documents.rg_frente ? (
+                  <div className="relative w-full h-48 rounded-lg border overflow-hidden bg-gray-100">
                     <Image
                       src={user.documents.rg_frente}
                       alt="RG Frente"
@@ -105,10 +102,19 @@ export const UserViewModal = memo(function UserViewModal({
                       className="object-cover"
                       unoptimized
                     />
+                    <div className="absolute bottom-2 left-2 bg-black/50 text-white text-xs px-2 py-1 rounded z-10">
+                      RG Frente
+                    </div>
+                  </div>
+                ) : (
+                  <div className="w-full h-48 rounded-lg border border-dashed border-gray-300 flex items-center justify-center bg-gray-50">
+                    <p className="text-gray-400 text-sm">
+                      RG Frente não disponível
+                    </p>
                   </div>
                 )}
-                {user.documents.rg_verso && (
-                  <div className="relative w-full h-48 rounded-lg border overflow-hidden">
+                {user.documents.rg_verso ? (
+                  <div className="relative w-full h-48 rounded-lg border overflow-hidden bg-gray-100">
                     <Image
                       src={user.documents.rg_verso}
                       alt="RG Verso"
@@ -116,10 +122,19 @@ export const UserViewModal = memo(function UserViewModal({
                       className="object-cover"
                       unoptimized
                     />
+                    <div className="absolute bottom-2 left-2 bg-black/50 text-white text-xs px-2 py-1 rounded z-10">
+                      RG Verso
+                    </div>
+                  </div>
+                ) : (
+                  <div className="w-full h-48 rounded-lg border border-dashed border-gray-300 flex items-center justify-center bg-gray-50">
+                    <p className="text-gray-400 text-sm">
+                      RG Verso não disponível
+                    </p>
                   </div>
                 )}
-                {user.documents.selfie_rg && (
-                  <div className="relative w-full h-48 rounded-lg border overflow-hidden">
+                {user.documents.selfie_rg ? (
+                  <div className="relative w-full h-48 rounded-lg border overflow-hidden bg-gray-100">
                     <Image
                       src={user.documents.selfie_rg}
                       alt="Selfie"
@@ -127,6 +142,15 @@ export const UserViewModal = memo(function UserViewModal({
                       className="object-cover"
                       unoptimized
                     />
+                    <div className="absolute bottom-2 left-2 bg-black/50 text-white text-xs px-2 py-1 rounded z-10">
+                      Selfie
+                    </div>
+                  </div>
+                ) : (
+                  <div className="w-full h-48 rounded-lg border border-dashed border-gray-300 flex items-center justify-center bg-gray-50">
+                    <p className="text-gray-400 text-sm">
+                      Selfie não disponível
+                    </p>
                   </div>
                 )}
               </div>
