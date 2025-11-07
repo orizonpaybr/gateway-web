@@ -3,6 +3,7 @@ import { Dialog } from '@/components/ui/Dialog'
 import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
 import { Button } from '@/components/ui/Button'
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import { AdminUser, UpdateUserData } from '@/lib/api'
 import { useManagers, usePixAcquirers } from '@/hooks/useAdminUsers'
 import { formatCpfCnpjBR, formatPhoneBR } from '@/lib/format'
@@ -32,6 +33,29 @@ export const UserEditModal = memo(function UserEditModal({
   const { data: managers } = useManagers(open)
   const { data: pixAcquirers } = usePixAcquirers(open)
 
+  // Função auxiliar para formatar data para input type="date" (YYYY-MM-DD)
+  const formatDateForInput = useCallback((dateStr?: string | null): string => {
+    if (!dateStr) return ''
+
+    // Se já está no formato YYYY-MM-DD, retorna direto
+    if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+      return dateStr
+    }
+
+    // Tenta converter de outros formatos
+    try {
+      const date = new Date(dateStr)
+      if (isNaN(date.getTime())) return ''
+
+      const year = date.getFullYear()
+      const month = String(date.getMonth() + 1).padStart(2, '0')
+      const day = String(date.getDate()).padStart(2, '0')
+      return `${year}-${month}-${day}`
+    } catch {
+      return ''
+    }
+  }, [])
+
   useEffect(() => {
     if (!user) return
     setForm({
@@ -39,13 +63,13 @@ export const UserEditModal = memo(function UserEditModal({
       email: user.email || '',
       telefone: user.telefone || '',
       cpf_cnpj: user.cpf_cnpj || user.cpf || '',
-      data_nascimento: user.data_nascimento || '',
+      data_nascimento: formatDateForInput(user.data_nascimento),
       permission: user.permission || 1,
       preferred_adquirente: user.preferred_adquirente,
       adquirente_override: user.adquirente_override,
       gerente_id: user.gerente_id || undefined,
     })
-  }, [user])
+  }, [user, formatDateForInput])
 
   const handleChange = useCallback((key: keyof UpdateUserData, value: any) => {
     setForm((prev) => ({ ...prev, [key]: value }))
@@ -105,7 +129,23 @@ export const UserEditModal = memo(function UserEditModal({
 
   const handleSave = useCallback(async () => {
     if (!user?.id) return
-    await onSubmit(user.id, form)
+
+    // Preparar dados para envio: converter strings vazias em null para campos opcionais
+    // Usar null explicitamente para que o backend atualize os campos (undefined seria omitido no JSON)
+    const dataToSend: UpdateUserData = {
+      ...form,
+      // Converter strings vazias para null para campos nullable
+      telefone:
+        form.telefone && form.telefone.trim() !== '' ? form.telefone : null,
+      data_nascimento:
+        form.data_nascimento && form.data_nascimento.trim() !== ''
+          ? form.data_nascimento
+          : null,
+      cpf_cnpj:
+        form.cpf_cnpj && form.cpf_cnpj.trim() !== '' ? form.cpf_cnpj : null,
+    }
+
+    await onSubmit(user.id, dataToSend)
   }, [user, form, onSubmit])
 
   return (
@@ -124,7 +164,9 @@ export const UserEditModal = memo(function UserEditModal({
       }
     >
       {!isReady ? (
-        <p className="text-sm text-gray-600">Carregando...</p>
+        <div className="flex items-center justify-center py-12">
+          <LoadingSpinner size="lg" />
+        </div>
       ) : (
         <div className="space-y-5">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
