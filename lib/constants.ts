@@ -29,6 +29,9 @@ export const USER_STATUS_LABELS: Record<number, string> = {
   [USER_STATUS.PENDING]: 'Pendente',
 }
 
+// Status adicional para bloqueado
+export const USER_STATUS_BLOCKED = 'Bloqueado'
+
 // Labels para permissões
 export const USER_PERMISSION_LABELS: Record<number, string> = {
   [USER_PERMISSION.CLIENT]: 'Cliente',

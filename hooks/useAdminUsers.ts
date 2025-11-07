@@ -192,10 +192,11 @@ export function useUpdateUser(): UseMutationResult<
       return { previousUser }
     },
     onSuccess: (user, variables) => {
-      // Atualizar cache individual
+      // Atualizar cache individual com os dados completos retornados
       queryClient.setQueryData(['admin-user', user.id], user)
 
-      // Invalidar lista para recarregar
+      // Invalidar e refetch para garantir dados atualizados
+      queryClient.invalidateQueries({ queryKey: ['admin-user', user.id] })
       queryClient.invalidateQueries({ queryKey: ['admin-users-list'] })
 
       toast.success('Usuário atualizado com sucesso!', {
@@ -297,7 +298,7 @@ export function useApproveUser(): UseMutationResult<
 export function useToggleBlockUser(): UseMutationResult<
   AdminUser,
   Error,
-  { userId: number; block: boolean },
+  { userId: number; block: boolean; approve?: boolean },
   unknown
 > {
   const queryClient = useQueryClient()
@@ -306,11 +307,17 @@ export function useToggleBlockUser(): UseMutationResult<
     mutationFn: async ({
       userId,
       block,
+      approve = false,
     }: {
       userId: number
       block: boolean
+      approve?: boolean
     }) => {
-      const response = await adminUsersAPI.toggleBlockUser(userId, block)
+      const response = await adminUsersAPI.toggleBlockUser(
+        userId,
+        block,
+        approve,
+      )
       if (!response.success) {
         throw new Error(
           response.data.message || 'Erro ao alterar bloqueio do usuário',
@@ -325,7 +332,10 @@ export function useToggleBlockUser(): UseMutationResult<
       // Invalidar lista para recarregar
       queryClient.invalidateQueries({ queryKey: ['admin-users-list'] })
 
-      const action = variables.block ? 'bloqueado' : 'desbloqueado'
+      let action = variables.block ? 'bloqueado' : 'desbloqueado'
+      if (!variables.block && variables.approve) {
+        action = 'desbloqueado e aprovado'
+      }
       toast.success(`Usuário ${action} com sucesso!`, {
         description: `${user.name} foi ${action}`,
       })

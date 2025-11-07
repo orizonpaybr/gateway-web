@@ -1,4 +1,4 @@
-import React, { useCallback, memo } from 'react'
+import React, { memo } from 'react'
 import { AdminUser } from '@/lib/api'
 import { Button } from '@/components/ui/Button'
 import {
@@ -7,19 +7,21 @@ import {
   Users,
   CheckCircle2,
   Ban,
+  Unlock,
   Pencil,
   Trash2,
   User,
 } from 'lucide-react'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { TablePagination } from './TablePagination'
-import { formatDateBR, formatCurrencyBRL } from '@/lib/format'
+import { USER_STATUS } from '@/lib/constants'
 import {
-  USER_STATUS,
-  USER_PERMISSION,
-  USER_STATUS_LABELS,
-  USER_PERMISSION_LABELS,
-} from '@/lib/constants'
+  getStatusLabel,
+  getStatusColor,
+  getPermissionLabel,
+  getPermissionColor,
+} from '@/lib/helpers/userStatus'
+import { useFormatDate, useFormatCurrency } from '@/lib/helpers/formatting'
 
 interface UsersTableProps {
   users: AdminUser[]
@@ -52,44 +54,9 @@ export const UsersTable = memo(function UsersTable({
   onDelete,
   pagination,
 }: UsersTableProps) {
-  const formatDate = useCallback((dateStr?: string) => {
-    if (!dateStr) return '-'
-    return formatDateBR(dateStr)
-  }, [])
-
-  const formatCurrency = useCallback((value: number | undefined | null) => {
-    return formatCurrencyBRL(value || 0)
-  }, [])
-
-  // Função para obter label de status memorizada
-  const getStatusLabel = useCallback((status: number) => {
-    return USER_STATUS_LABELS[status] || 'INATIVO'
-  }, [])
-
-  // Função para obter label de permissão memorizada
-  const getPermissionLabel = useCallback((permission?: number) => {
-    if (permission === undefined || permission === null) return 'CLIENTE'
-    return USER_PERMISSION_LABELS[permission] || 'CLIENTE'
-  }, [])
-
-  // Função para obter cor de status memorizada
-  const getStatusColor = useCallback((status?: number) => {
-    if (status === undefined || status === null)
-      return 'bg-gray-100 text-gray-600'
-    if (status === USER_STATUS.ACTIVE) return 'bg-green-50 text-green-700'
-    if (status === USER_STATUS.PENDING) return 'bg-yellow-50 text-yellow-700'
-    return 'bg-gray-100 text-gray-600'
-  }, [])
-
-  // Função para obter cor de permissão memorizada
-  const getPermissionColor = useCallback((permission?: number) => {
-    if (permission === undefined || permission === null)
-      return 'bg-gray-100 text-gray-600'
-    if (permission === USER_PERMISSION.ADMIN) return 'bg-red-50 text-red-700'
-    if (permission === USER_PERMISSION.MANAGER)
-      return 'bg-blue-50 text-blue-700'
-    return 'bg-gray-100 text-gray-600'
-  }, [])
+  // Usar hooks de formatação
+  const formatDate = useFormatDate()
+  const formatCurrency = useFormatCurrency()
 
   if (isLoading) {
     return (
@@ -166,10 +133,10 @@ export const UsersTable = memo(function UsersTable({
                 <td className="px-4 py-3">
                   <span
                     className={`px-2 py-1 rounded text-xs font-medium ${getStatusColor(
-                      u.status,
+                      u,
                     )}`}
                   >
-                    {getStatusLabel(u.status)}
+                    {getStatusLabel(u)}
                   </span>
                 </td>
                 <td className="px-4 py-3 text-gray-600 whitespace-nowrap">
@@ -177,20 +144,37 @@ export const UsersTable = memo(function UsersTable({
                 </td>
                 <td className="px-4 py-3">
                   <div className="flex flex-wrap justify-end gap-1 sm:gap-2">
-                    {u.status === USER_STATUS.PENDING ? (
+                    {u.status === USER_STATUS.PENDING && !u.banido && (
                       <Button
                         size="sm"
                         onClick={() => onApprove?.(u)}
                         className="px-2 sm:px-3"
+                        title="Aprovar"
                       >
                         <CheckCircle2 size={16} />
+                      </Button>
+                    )}
+                    {u.banido ? (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => onToggleBlock?.(u)}
+                        className="px-2 sm:px-3 border-green-600 text-green-600 hover:bg-green-50 hover:text-green-700"
+                        title={
+                          u.aprovado_alguma_vez
+                            ? 'Desbloquear'
+                            : 'Desbloquear e Aprovar'
+                        }
+                      >
+                        <Unlock size={16} />
                       </Button>
                     ) : (
                       <Button
                         size="sm"
                         variant="outline"
                         onClick={() => onToggleBlock?.(u)}
-                        className="px-2 sm:px-3"
+                        className="px-2 sm:px-3 border-red-600 text-red-600 hover:bg-red-50 hover:text-red-700"
+                        title="Bloquear"
                       >
                         <Ban size={16} />
                       </Button>

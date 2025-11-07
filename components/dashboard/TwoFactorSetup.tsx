@@ -50,17 +50,19 @@ export function TwoFactorSetup() {
           const response = await twoFactorAPI.getStatus()
 
           // LÓGICA CORRIGIDA:
-          // 1. Se 2FA nunca foi configurado (enabled=false E configured=false) → FORÇAR configuração
+          // 1. Se 2FA nunca foi configurado (enabled=false E configured=false) → Mostrar modal (não bloquear)
           // 2. Se 2FA está desativado mas já foi configurado (enabled=false E configured=true) → Permitir acesso
           // 3. Se 2FA está ativado (enabled=true) → Permitir acesso (já configurado)
+          // Usuários pendentes podem configurar 2FA mas não são bloqueados
 
           if (response.success) {
             const isFirstAccess = !response.enabled && !response.configured
 
             if (isFirstAccess) {
-              // Primeiro acesso - FORÇAR configuração obrigatória
+              // Primeiro acesso - Mostrar modal mas NÃO bloquear (usuários pendentes podem acessar)
+              // O modal aparecerá mas não bloqueará a tela completamente
               setShowModal(true)
-              setIsBlocking(true) // BLOQUEAR acesso até configurar
+              setIsBlocking(false) // NÃO bloquear - permitir acesso mesmo sem 2FA configurado
             } else {
               // 2FA já foi configurado (ativado ou desativado pelo usuário)
               sessionStorage.setItem('2fa_setup_checked', 'true')
