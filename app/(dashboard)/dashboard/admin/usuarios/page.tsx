@@ -21,7 +21,7 @@ import { UserFeesModal } from '@/components/admin/users/UserFeesModal'
 import { UserAffiliateModal } from '@/components/admin/users/UserAffiliateModal'
 import { UserSummaryCards } from '@/components/admin/users/UserSummaryCards'
 import { useUserStats } from '@/hooks/useAdminUsers'
-import { AdminUser } from '@/lib/api'
+import { AdminUser, UpdateUserData } from '@/lib/api'
 import { USER_PERMISSION } from '@/lib/constants'
 
 export default function AdminUsersPage() {
@@ -105,10 +105,26 @@ export default function AdminUsersPage() {
   const handleToggleBlock = useCallback(
     async (u: AdminUser) => {
       try {
-        await toggleBlockMutation.mutateAsync({
-          userId: u.id,
-          block: u.status !== 0,
-        })
+        const isBlocked = u.banido ?? false
+
+        if (isBlocked) {
+          // Se está bloqueado, desbloquear
+          // Se nunca foi aprovado, desbloquear e aprovar
+          const shouldApprove = !(u.aprovado_alguma_vez ?? false)
+
+          await toggleBlockMutation.mutateAsync({
+            userId: u.id,
+            block: false,
+            approve: shouldApprove,
+          })
+        } else {
+          // Se não está bloqueado, bloquear
+          await toggleBlockMutation.mutateAsync({
+            userId: u.id,
+            block: true,
+            approve: false,
+          })
+        }
         setCurrentPage(1)
       } catch {
         // Error já é tratado pelo hook
@@ -118,13 +134,29 @@ export default function AdminUsersPage() {
   )
 
   const handleUpdate = useCallback(
-    async (userId: number, data: any) => {
+    async (userId: number, data: UpdateUserData) => {
       try {
         await updateMutation.mutateAsync({ userId, data })
         setIsFormOpen(false)
         setEditUser(null)
+        setViewUserId(null) // Limpar viewUserId após atualização
       } catch {
         // Error já é tratado pelo hook
+      }
+    },
+    [updateMutation],
+  )
+
+  // Handler específico para atualização de taxas
+  const handleUpdateFees = useCallback(
+    async (userId: number, data: UpdateUserData) => {
+      try {
+        await updateMutation.mutateAsync({ userId, data })
+        // Fechar modal de taxas após sucesso
+        setIsFeesOpen(false)
+        setViewUserId(null) // Limpar viewUserId após atualização
+      } catch {
+        // Error já é tratado pelo hook (toast será exibido)
       }
     },
     [updateMutation],
@@ -173,6 +205,8 @@ export default function AdminUsersPage() {
   }, [])
 
   const handleEdit = useCallback((u: AdminUser) => {
+    // Definir viewUserId para buscar dados completos do usuário (incluindo telefone e data_nascimento)
+    setViewUserId(u.id)
     setEditUser(u)
     setIsFormOpen(true)
   }, [])
@@ -211,8 +245,13 @@ export default function AdminUsersPage() {
 
       <UserEditModal
         open={isFormOpen}
-        onClose={() => setIsFormOpen(false)}
-        user={viewUserData || editUser}
+        onClose={() => {
+          setIsFormOpen(false)
+          setViewUserId(null) // Limpar viewUserId ao fechar
+          setEditUser(null)
+        }}
+        // Priorizar viewUserData quando disponível (tem dados completos), senão usar editUser
+        user={viewUserData ?? editUser}
         onSubmit={handleUpdate}
       />
 
@@ -252,9 +291,13 @@ export default function AdminUsersPage() {
 
       <UserFeesModal
         open={isFeesOpen}
-        onClose={() => setIsFeesOpen(false)}
+        onClose={() => {
+          setIsFeesOpen(false)
+          setViewUserId(null) // Limpar viewUserId ao fechar
+        }}
         user={viewUserData}
-        onSubmit={handleUpdate}
+        onSubmit={handleUpdateFees}
+        isSaving={updateMutation.isPending}
       />
 
       <UserAffiliateModal

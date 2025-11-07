@@ -1334,12 +1334,14 @@ export interface AdminUser {
   cpf?: string
   telefone?: string
   status: number
+  status_text?: string
   saldo: number
   created_at: string
   total_transacoes: number
   transacoes_aproved: number
   transacoes_recused: number
   permission?: number // 1=cliente, 2=gerente, 3=admin
+  aprovado_alguma_vez?: boolean
   data_nascimento?: string
   nome_fantasia?: string
   razao_social?: string
@@ -1374,7 +1376,6 @@ export interface AdminUser {
   vendas_7d?: number
   doc_status?: string
   // Campos adicionais do showUser
-  status_text?: string
   token?: string
   secret?: string
   documents?: {
@@ -1394,6 +1395,7 @@ export interface AdminUser {
   valor_minimo_flexivel?: number
   taxa_fixa_baixos?: number
   taxa_percentual_altos?: number
+  observacoes_taxas?: string | null
 }
 
 export interface CreateUserData {
@@ -1426,22 +1428,22 @@ export interface UpdateUserData {
   name?: string
   email?: string
   password?: string
-  telefone?: string
-  cpf_cnpj?: string
-  cpf?: string
-  data_nascimento?: string
+  telefone?: string | null
+  cpf_cnpj?: string | null
+  cpf?: string | null
+  data_nascimento?: string | null
   saldo?: number
   status?: number
   permission?: number
   nome_fantasia?: string
   razao_social?: string
-  cep?: string
-  rua?: string
-  estado?: string
-  cidade?: string
-  bairro?: string
-  numero_residencia?: string
-  complemento?: string
+  cep?: string | null
+  rua?: string | null
+  estado?: string | null
+  cidade?: string | null
+  bairro?: string | null
+  numero_residencia?: string | null
+  complemento?: string | null
   media_faturamento?: number
   gerente_id?: number
   // Taxas personalizadas
@@ -1466,6 +1468,7 @@ export interface UpdateUserData {
   valor_minimo_flexivel?: number
   taxa_fixa_baixos?: number
   taxa_percentual_altos?: number
+  observacoes_taxas?: string | null
 }
 
 export interface AdjustBalanceData {
@@ -1687,6 +1690,7 @@ export const adminUsersAPI = {
   async toggleBlockUser(
     userId: number,
     block: boolean = true,
+    approve: boolean = false,
   ): Promise<{
     success: boolean
     data: {
@@ -1696,7 +1700,7 @@ export const adminUsersAPI = {
   }> {
     return apiRequest(`/admin/users/${userId}/toggle-block`, {
       method: 'POST',
-      body: JSON.stringify({ block }),
+      body: JSON.stringify({ block, approve }),
     })
   },
 
@@ -1768,5 +1772,32 @@ export const adminUsersAPI = {
       method: 'POST',
       body: JSON.stringify(data),
     })
+  },
+
+  /**
+   * Obter taxas padrão do sistema
+   */
+  async getDefaultFees(): Promise<{
+    success: boolean
+    data: {
+      fees: {
+        taxa_percentual_deposito: number
+        taxa_fixa_deposito: number
+        valor_minimo_deposito: number
+        taxa_percentual_pix: number
+        taxa_minima_pix: number
+        taxa_fixa_pix: number
+        valor_minimo_saque: number
+        limite_mensal_pf: number
+        taxa_saque_api: number
+        taxa_saque_crypto: number
+        sistema_flexivel_ativo: boolean
+        valor_minimo_flexivel: number
+        taxa_fixa_baixos: number
+        taxa_percentual_altos: number
+      }
+    }
+  }> {
+    return apiRequest('/admin/default-fees')
   },
 }
