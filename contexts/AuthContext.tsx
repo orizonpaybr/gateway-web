@@ -67,11 +67,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Verificar se há um token salvo no localStorage
     // Aguardar um pouco para garantir que o localStorage está disponível
     const timer = setTimeout(() => {
-      // Só executar checkAuth se houver token no localStorage E não estivermos na página de login
+      // Só executar checkAuth se houver token no localStorage E não estivermos na página de login ou cadastro
       if (
         typeof window !== 'undefined' &&
         localStorage.getItem('token') &&
-        !window.location.pathname.includes('/login')
+        !window.location.pathname.includes('/login') &&
+        !window.location.pathname.includes('/cadastro')
       ) {
         checkAuth()
       } else {
@@ -268,8 +269,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     },
   ) => {
     const response = await authAPI.register(data, documents)
-    response.data?.user && setUser(extractUserData(response.data.user))
-    // ✅ Limpar tempToken ao registrar novo usuário
+    if (response.data?.user) {
+      setUser(extractUserData(response.data.user))
+      // Usuários pendentes podem acessar o dashboard normalmente
+      // Eles podem fazer requisições, configurar 2FA, etc.
+      setAuthReady(true)
+    }
+    // Limpar tempToken ao registrar novo usuário
     // Evita que TwoFactorVerify mostre modal quando não deve
     setTempToken(null)
     return response
