@@ -3,6 +3,7 @@ import { Dialog } from '@/components/ui/Dialog'
 import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
 import { Switch } from '@/components/ui/Switch'
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import { Users } from 'lucide-react'
 import {
   useSaveAffiliateSettings,
@@ -68,7 +69,9 @@ export const UserAffiliateModal = memo(function UserAffiliateModal({
       }
     >
       {!user ? (
-        <p className="text-sm text-gray-600">Carregando...</p>
+        <div className="flex items-center justify-center py-12">
+          <LoadingSpinner size="lg" />
+        </div>
       ) : (
         <div className="space-y-6">
           <div className="flex items-center gap-3 mb-4">
