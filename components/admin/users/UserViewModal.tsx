@@ -1,8 +1,8 @@
-import React, { memo, useMemo } from 'react'
+import React, { memo, useMemo, useState, useEffect, useCallback } from 'react'
 import Image from 'next/image'
 import { Dialog } from '@/components/ui/Dialog'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
-import { AdminUser } from '@/lib/api'
+import { AdminUser, BASE_URL } from '@/lib/api'
 import { getStatusLabel } from '@/lib/helpers/userStatus'
 import { useFormatDate } from '@/lib/helpers/formatting'
 
@@ -12,19 +12,293 @@ interface UserViewModalProps {
   user?: AdminUser | null
 }
 
+interface DocumentImage {
+  url: string
+  title: string
+  type: 'rg_frente' | 'rg_verso' | 'selfie_rg'
+}
+
+// Constantes para evitar strings mágicas
+const DOCUMENT_TYPES = {
+  RG_FRENTE: {
+    type: 'rg_frente' as const,
+    title: 'RG Frente',
+    field: 'rg_frente' as const,
+  },
+  RG_VERSO: {
+    type: 'rg_verso' as const,
+    title: 'RG Verso',
+    field: 'rg_verso' as const,
+  },
+  SELFIE_RG: {
+    type: 'selfie_rg' as const,
+    title: 'Selfie com RG',
+    field: 'selfie_rg' as const,
+  },
+} as const
+
+// Helper para construir URL completa da imagem
+const buildImageUrl = (
+  path: string | null | undefined,
+  baseUrl: string,
+): string | null => {
+  if (!path) return null
+  // Se já é uma URL completa, retornar como está
+  if (path.startsWith('http://') || path.startsWith('https://')) {
+    return path
+  }
+  // Se é um caminho relativo, concatenar com a URL do backend
+  return `${baseUrl}${path.startsWith('/') ? path : '/' + path}`
+}
+
 export const UserViewModal = memo(function UserViewModal({
   open,
   onClose,
   user,
 }: UserViewModalProps) {
-  // Usar hooks de formatação
+  // Estado para modal de ampliação de imagem com carrossel
+  const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(
+    null,
+  )
+
+  // Hooks de formatação
   const formatDate = useFormatDate()
+
+  // Memorizar URL base do backend
+  const backendBaseUrl = useMemo(
+    () => BASE_URL?.replace('/api', '') || 'http://localhost:8000',
+    [],
+  )
+
+  // Função memorizada para construir URL completa da imagem
+  const getImageUrl = useCallback(
+    (path: string | null | undefined): string | null => {
+      return buildImageUrl(path, backendBaseUrl)
+    },
+    [backendBaseUrl],
+  )
+
+  // Lista de todas as imagens disponíveis
+  const availableImages = useMemo((): DocumentImage[] => {
+    if (!user?.documents) return []
+
+    const images: DocumentImage[] = []
+
+    // Processar cada tipo de documento de forma dinâmica
+    Object.values(DOCUMENT_TYPES).forEach((docType) => {
+      const path = user.documents?.[docType.field]
+      const url = getImageUrl(path)
+      if (url) {
+        images.push({
+          url,
+          title: docType.title,
+          type: docType.type,
+        })
+      }
+    })
+
+    return images
+  }, [user?.documents, getImageUrl])
+
+  // Imagem atual selecionada
+  const selectedImage = useMemo(
+    () =>
+      selectedImageIndex !== null && availableImages[selectedImageIndex]
+        ? availableImages[selectedImageIndex]
+        : null,
+    [selectedImageIndex, availableImages],
+  )
 
   // Memorizar status text usando helper
   const statusText = useMemo(() => {
     if (!user) return '-'
     return getStatusLabel(user)
   }, [user])
+
+  // Função para abrir imagem em tamanho grande
+  const openImageModal = useCallback(
+    (url: string) => {
+      const index = availableImages.findIndex((img) => img.url === url)
+      setSelectedImageIndex(index >= 0 ? index : 0)
+    },
+    [availableImages],
+  )
+
+  // Navegação do carrossel
+  const goToPrevious = useCallback(() => {
+    if (selectedImageIndex !== null && availableImages.length > 0) {
+      const prevIndex =
+        selectedImageIndex > 0
+          ? selectedImageIndex - 1
+          : availableImages.length - 1
+      setSelectedImageIndex(prevIndex)
+    }
+  }, [selectedImageIndex, availableImages.length])
+
+  const goToNext = useCallback(() => {
+    if (selectedImageIndex !== null && availableImages.length > 0) {
+      const nextIndex =
+        selectedImageIndex < availableImages.length - 1
+          ? selectedImageIndex + 1
+          : 0
+      setSelectedImageIndex(nextIndex)
+    }
+  }, [selectedImageIndex, availableImages.length])
+
+  // Navegação com teclado
+  useEffect(() => {
+    if (selectedImageIndex === null || availableImages.length === 0) return
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowLeft') {
+        goToPrevious()
+      } else if (e.key === 'ArrowRight') {
+        goToNext()
+      } else if (e.key === 'Escape') {
+        setSelectedImageIndex(null)
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [selectedImageIndex, availableImages.length, goToPrevious, goToNext])
+
+  // Componente reutilizável para exibir documento
+  const DocumentThumbnail = memo(
+    ({
+      docType,
+      imageUrl,
+      onImageClick,
+    }: {
+      docType: (typeof DOCUMENT_TYPES)[keyof typeof DOCUMENT_TYPES]
+      imageUrl: string | null
+      onImageClick: (url: string) => void
+    }) => {
+      if (imageUrl) {
+        return (
+          <div className="space-y-2">
+            <div
+              className="relative w-full h-64 rounded-lg border-2 border-gray-300 overflow-hidden cursor-pointer hover:border-blue-500 transition-colors group"
+              onClick={() => onImageClick(imageUrl)}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault()
+                  onImageClick(imageUrl)
+                }
+              }}
+              aria-label={`Ampliar ${docType.title}`}
+            >
+              <Image
+                src={imageUrl}
+                alt={docType.title}
+                fill
+                className="object-cover"
+                unoptimized
+                sizes="(max-width: 768px) 100vw, 33vw"
+              />
+              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+                <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-black/80 text-white text-sm px-4 py-2 rounded-lg shadow-lg text-center">
+                  Clique para ampliar
+                </div>
+              </div>
+            </div>
+            <p className="text-xs text-gray-600 text-center font-medium">
+              {docType.title}
+            </p>
+          </div>
+        )
+      }
+
+      return (
+        <div className="space-y-2">
+          <div className="w-full h-64 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center bg-gray-50">
+            <p className="text-gray-400 text-sm text-center">
+              {docType.title} não disponível
+            </p>
+          </div>
+          <p className="text-xs text-gray-600 text-center font-medium">
+            {docType.title}
+          </p>
+        </div>
+      )
+    },
+  )
+
+  DocumentThumbnail.displayName = 'DocumentThumbnail'
+
+  // Componente reutilizável para botão de navegação
+  const NavigationButton = memo(
+    ({
+      direction,
+      onClick,
+      ariaLabel,
+    }: {
+      direction: 'prev' | 'next'
+      onClick: () => void
+      ariaLabel: string
+    }) => {
+      const isPrev = direction === 'prev'
+      const positionClass = isPrev ? 'left-4' : 'right-4'
+      return (
+        <button
+          onClick={onClick}
+          className={`absolute ${positionClass} top-1/2 -translate-y-1/2 z-10 bg-black/70 hover:bg-black/90 text-white p-3 rounded-full transition-colors`}
+          aria-label={ariaLabel}
+          type="button"
+        >
+          <svg
+            className="w-6 h-6"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d={isPrev ? 'M15 19l-7-7 7-7' : 'M9 5l7 7-7 7'}
+            />
+          </svg>
+        </button>
+      )
+    },
+  )
+
+  NavigationButton.displayName = 'NavigationButton'
+
+  // Componente para indicadores de posição
+  const ImageIndicators = memo(
+    ({
+      total,
+      current,
+      onSelect,
+    }: {
+      total: number
+      current: number
+      onSelect: (index: number) => void
+    }) => (
+      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 flex gap-2">
+        {Array.from({ length: total }).map((_, index) => (
+          <button
+            key={index}
+            onClick={() => onSelect(index)}
+            className={`w-2 h-2 rounded-full transition-all ${
+              index === current
+                ? 'bg-white w-8'
+                : 'bg-white/50 hover:bg-white/75'
+            }`}
+            aria-label={`Ir para imagem ${index + 1}`}
+            type="button"
+          />
+        ))}
+      </div>
+    ),
+  )
+
+  ImageIndicators.displayName = 'ImageIndicators'
 
   return (
     <Dialog open={open} onClose={onClose} title="Visualizar usuário" size="lg">
@@ -89,72 +363,73 @@ export const UserViewModal = memo(function UserViewModal({
 
           {user.documents && (
             <div>
-              <p className="text-sm font-semibold text-gray-900 mb-2">
+              <p className="text-sm font-semibold text-gray-900 mb-4">
                 Documentação
               </p>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {user.documents.rg_frente ? (
-                  <div className="relative w-full h-48 rounded-lg border overflow-hidden bg-gray-100">
-                    <Image
-                      src={user.documents.rg_frente}
-                      alt="RG Frente"
-                      fill
-                      className="object-cover"
-                      unoptimized
-                    />
-                    <div className="absolute bottom-2 left-2 bg-black/50 text-white text-xs px-2 py-1 rounded z-10">
-                      RG Frente
-                    </div>
-                  </div>
-                ) : (
-                  <div className="w-full h-48 rounded-lg border border-dashed border-gray-300 flex items-center justify-center bg-gray-50">
-                    <p className="text-gray-400 text-sm">
-                      RG Frente não disponível
-                    </p>
-                  </div>
-                )}
-                {user.documents.rg_verso ? (
-                  <div className="relative w-full h-48 rounded-lg border overflow-hidden bg-gray-100">
-                    <Image
-                      src={user.documents.rg_verso}
-                      alt="RG Verso"
-                      fill
-                      className="object-cover"
-                      unoptimized
-                    />
-                    <div className="absolute bottom-2 left-2 bg-black/50 text-white text-xs px-2 py-1 rounded z-10">
-                      RG Verso
-                    </div>
-                  </div>
-                ) : (
-                  <div className="w-full h-48 rounded-lg border border-dashed border-gray-300 flex items-center justify-center bg-gray-50">
-                    <p className="text-gray-400 text-sm">
-                      RG Verso não disponível
-                    </p>
-                  </div>
-                )}
-                {user.documents.selfie_rg ? (
-                  <div className="relative w-full h-48 rounded-lg border overflow-hidden bg-gray-100">
-                    <Image
-                      src={user.documents.selfie_rg}
-                      alt="Selfie"
-                      fill
-                      className="object-cover"
-                      unoptimized
-                    />
-                    <div className="absolute bottom-2 left-2 bg-black/50 text-white text-xs px-2 py-1 rounded z-10">
-                      Selfie
-                    </div>
-                  </div>
-                ) : (
-                  <div className="w-full h-48 rounded-lg border border-dashed border-gray-300 flex items-center justify-center bg-gray-50">
-                    <p className="text-gray-400 text-sm">
-                      Selfie não disponível
-                    </p>
-                  </div>
-                )}
+                <DocumentThumbnail
+                  docType={DOCUMENT_TYPES.RG_FRENTE}
+                  imageUrl={getImageUrl(user.documents.rg_frente)}
+                  onImageClick={openImageModal}
+                />
+                <DocumentThumbnail
+                  docType={DOCUMENT_TYPES.RG_VERSO}
+                  imageUrl={getImageUrl(user.documents.rg_verso)}
+                  onImageClick={openImageModal}
+                />
+                <DocumentThumbnail
+                  docType={DOCUMENT_TYPES.SELFIE_RG}
+                  imageUrl={getImageUrl(user.documents.selfie_rg)}
+                  onImageClick={openImageModal}
+                />
               </div>
             </div>
+          )}
+
+          {selectedImage && availableImages.length > 0 && (
+            <Dialog
+              open={selectedImageIndex !== null}
+              onClose={() => setSelectedImageIndex(null)}
+              title={selectedImage.title}
+              size="xl"
+            >
+              <div className="relative w-full max-h-[80vh] flex items-center justify-center bg-gray-900 rounded-lg overflow-hidden">
+                {availableImages.length > 1 && (
+                  <NavigationButton
+                    direction="prev"
+                    onClick={goToPrevious}
+                    ariaLabel="Imagem anterior"
+                  />
+                )}
+
+                <Image
+                  src={selectedImage.url}
+                  alt={selectedImage.title}
+                  width={1200}
+                  height={800}
+                  className="max-w-full max-h-[80vh] object-contain"
+                  unoptimized
+                  priority
+                  sizes="(max-width: 1200px) 100vw, 1200px"
+                />
+
+                {availableImages.length > 1 && (
+                  <NavigationButton
+                    direction="next"
+                    onClick={goToNext}
+                    ariaLabel="Próxima imagem"
+                  />
+                )}
+
+                {availableImages.length > 1 && (
+                  <ImageIndicators
+                    total={availableImages.length}
+                    current={selectedImageIndex ?? 0}
+                    onSelect={setSelectedImageIndex}
+                  />
+                )}
+              </div>
+            </Dialog>
           )}
         </div>
       )}
