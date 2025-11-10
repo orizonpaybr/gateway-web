@@ -11,8 +11,11 @@ import {
   Pencil,
   Trash2,
   User,
+  Lock,
+  CreditCard,
 } from 'lucide-react'
 import { Skeleton } from '@/components/ui/Skeleton'
+import { Tooltip } from '@/components/ui/Tooltip'
 import { TablePagination } from './TablePagination'
 import { USER_STATUS } from '@/lib/constants'
 import {
@@ -31,6 +34,7 @@ interface UsersTableProps {
   onAffiliate?: (user: AdminUser) => void
   onApprove?: (user: AdminUser) => void
   onToggleBlock?: (user: AdminUser) => void
+  onToggleWithdrawBlock?: (user: AdminUser) => void
   onEdit?: (user: AdminUser) => void
   onDelete?: (user: AdminUser) => void
   pagination?: {
@@ -50,6 +54,7 @@ export const UsersTable = memo(function UsersTable({
   onAffiliate,
   onApprove,
   onToggleBlock,
+  onToggleWithdrawBlock,
   onEdit,
   onDelete,
   pagination,
@@ -143,82 +148,120 @@ export const UsersTable = memo(function UsersTable({
                   {formatDate(u.created_at)}
                 </td>
                 <td className="px-4 py-3">
-                  <div className="flex flex-wrap justify-end gap-1 sm:gap-2">
+                  <div className="flex flex-wrap gap-1 sm:gap-1.5 justify-end max-w-full sm:max-w-[280px] ml-auto">
                     {u.status === USER_STATUS.PENDING && !u.banido && (
-                      <Button
-                        size="sm"
-                        onClick={() => onApprove?.(u)}
-                        className="px-2 sm:px-3"
-                        title="Aprovar"
-                      >
-                        <CheckCircle2 size={16} />
-                      </Button>
+                      <Tooltip content="Aprovar">
+                        <Button
+                          size="sm"
+                          onClick={() => onApprove?.(u)}
+                          className="px-1.5 sm:px-2 md:px-3"
+                        >
+                          <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                        </Button>
+                      </Tooltip>
                     )}
                     {u.banido ? (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => onToggleBlock?.(u)}
-                        className="px-2 sm:px-3 border-green-600 text-green-600 hover:bg-green-50 hover:text-green-700"
-                        title={
+                      <Tooltip
+                        content={
                           u.aprovado_alguma_vez
                             ? 'Desbloquear'
                             : 'Desbloquear e Aprovar'
                         }
                       >
-                        <Unlock size={16} />
-                      </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => onToggleBlock?.(u)}
+                          className="px-1.5 sm:px-2 md:px-3 border-blue-600 text-blue-600 hover:bg-blue-50 hover:text-blue-700"
+                        >
+                          <Unlock className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                        </Button>
+                      </Tooltip>
                     ) : (
+                      <Tooltip content="Bloquear">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => onToggleBlock?.(u)}
+                          className="px-1.5 sm:px-2 md:px-3 border-red-600 text-red-600 hover:bg-red-50 hover:text-red-700"
+                        >
+                          <Ban className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                        </Button>
+                      </Tooltip>
+                    )}
+                    {u.saque_bloqueado ? (
+                      <Tooltip content="Desbloquear saque">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => onToggleWithdrawBlock?.(u)}
+                          className="px-1.5 sm:px-2 md:px-3 border-blue-600 text-blue-600 hover:bg-blue-50 hover:text-blue-700"
+                        >
+                          <CreditCard className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                        </Button>
+                      </Tooltip>
+                    ) : (
+                      <Tooltip content="Bloquear saque">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => onToggleWithdrawBlock?.(u)}
+                          className="px-1.5 sm:px-2 md:px-3 border-orange-600 text-orange-600 hover:bg-orange-50 hover:text-orange-700"
+                        >
+                          <Lock className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                        </Button>
+                      </Tooltip>
+                    )}
+                    <Tooltip content="Visualizar">
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => onToggleBlock?.(u)}
-                        className="px-2 sm:px-3 border-red-600 text-red-600 hover:bg-red-50 hover:text-red-700"
-                        title="Bloquear"
+                        onClick={() => onView?.(u)}
+                        className="px-1.5 sm:px-2 md:px-3"
                       >
-                        <Ban size={16} />
+                        <Eye className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                       </Button>
-                    )}
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => onView?.(u)}
-                      className="px-2 sm:px-3"
-                    >
-                      <Eye size={16} />
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => onEdit?.(u)}
-                      className="px-2 sm:px-3"
-                    >
-                      <Pencil size={16} />
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => onFees?.(u)}
-                      className="px-2 sm:px-3"
-                    >
-                      <DollarSign size={16} />
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => onAffiliate?.(u)}
-                      className="px-2 sm:px-3"
-                    >
-                      <Users size={16} />
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="border-red-600 text-red-600 hover:bg-red-50 hover:text-red-700 px-2 sm:px-3"
-                      onClick={() => onDelete?.(u)}
-                    >
-                      <Trash2 size={16} />
-                    </Button>
+                    </Tooltip>
+                    <Tooltip content="Editar">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => onEdit?.(u)}
+                        className="px-1.5 sm:px-2 md:px-3"
+                      >
+                        <Pencil className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                      </Button>
+                    </Tooltip>
+                    <Tooltip content="Taxas">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => onFees?.(u)}
+                        className="px-1.5 sm:px-2 md:px-3"
+                      >
+                        <DollarSign className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                      </Button>
+                    </Tooltip>
+                    <Tooltip content="Afiliados">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => onAffiliate?.(u)}
+                        className="px-1.5 sm:px-2 md:px-3"
+                      >
+                        <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                      </Button>
+                    </Tooltip>
+                    <Tooltip content="Excluir">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="border-red-600 text-red-600 hover:bg-red-50 hover:text-red-700 px-1.5 sm:px-2 md:px-3"
+                        onClick={() => onDelete?.(u)}
+                      >
+                        <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                      </Button>
+                    </Tooltip>
                   </div>
                 </td>
               </tr>

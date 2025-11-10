@@ -349,6 +349,56 @@ export function useToggleBlockUser(): UseMutationResult<
 }
 
 /**
+ * Hook para bloquear/desbloquear saque do usuário
+ */
+export function useToggleWithdrawBlockUser(): UseMutationResult<
+  AdminUser,
+  Error,
+  { userId: number; block: boolean },
+  unknown
+> {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({
+      userId,
+      block,
+    }: {
+      userId: number
+      block: boolean
+    }) => {
+      const response = await adminUsersAPI.toggleWithdrawBlockUser(
+        userId,
+        block,
+      )
+      if (!response.success) {
+        throw new Error(
+          response.data.message || 'Erro ao alterar bloqueio de saque',
+        )
+      }
+      return response.data.user
+    },
+    onSuccess: (user, variables) => {
+      // Atualizar cache do usuário específico
+      queryClient.setQueryData(['admin-user', user.id], user)
+
+      // Invalidar lista para recarregar
+      queryClient.invalidateQueries({ queryKey: ['admin-users-list'] })
+
+      const action = variables.block ? 'bloqueado' : 'desbloqueado'
+      toast.success(`Saque ${action} com sucesso!`, {
+        description: `Saque de ${user.name} foi ${action}`,
+      })
+    },
+    onError: (error) => {
+      toast.error('Erro ao alterar bloqueio de saque', {
+        description: error.message || 'Tente novamente mais tarde',
+      })
+    },
+  })
+}
+
+/**
  * Hook para ajustar saldo do usuário
  */
 export function useAdjustBalance(): UseMutationResult<

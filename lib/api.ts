@@ -1355,6 +1355,7 @@ export interface AdminUser {
   media_faturamento?: number
   gerente_id?: number
   banido?: boolean
+  saque_bloqueado?: boolean
   // Taxas personalizadas
   taxas_personalizadas_ativas?: boolean
   taxa_percentual_deposito?: number
@@ -1701,6 +1702,28 @@ export const adminUsersAPI = {
     return apiRequest(`/admin/users/${userId}/toggle-block`, {
       method: 'POST',
       body: JSON.stringify({ block, approve }),
+    })
+  },
+
+  /**
+   * Bloquear/desbloquear saque do usuário
+   *
+   * @param userId - ID do usuário
+   * @param block - true para bloquear, false para desbloquear
+   */
+  async toggleWithdrawBlockUser(
+    userId: number,
+    block: boolean = true,
+  ): Promise<{
+    success: boolean
+    data: {
+      message: string
+      user: AdminUser
+    }
+  }> {
+    return apiRequest(`/admin/users/${userId}/toggle-withdraw-block`, {
+      method: 'POST',
+      body: JSON.stringify({ block }),
     })
   },
 

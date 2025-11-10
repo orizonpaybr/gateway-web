@@ -14,6 +14,7 @@ import {
   useDeleteUser,
   useApproveUser,
   useToggleBlockUser,
+  useToggleWithdrawBlockUser,
   useAdminUser,
 } from '@/hooks/useAdminUsers'
 import { UserViewModal } from '@/components/admin/users/UserViewModal'
@@ -60,7 +61,7 @@ export default function AdminUsersPage() {
 
   const approveMutation = useApproveUser()
   const toggleBlockMutation = useToggleBlockUser()
-  const createMutation = useCreateUser()
+  const toggleWithdrawBlockMutation = useToggleWithdrawBlockUser()
   const updateMutation = useUpdateUser()
   const deleteMutation = useDeleteUser()
   const { data: viewUserData } = useAdminUser(
@@ -131,6 +132,23 @@ export default function AdminUsersPage() {
       }
     },
     [toggleBlockMutation],
+  )
+
+  const handleToggleWithdrawBlock = useCallback(
+    async (u: AdminUser) => {
+      try {
+        const isWithdrawBlocked = u.saque_bloqueado ?? false
+
+        await toggleWithdrawBlockMutation.mutateAsync({
+          userId: u.id,
+          block: !isWithdrawBlocked,
+        })
+        setCurrentPage(1)
+      } catch {
+        // Error já é tratado pelo hook
+      }
+    },
+    [toggleWithdrawBlockMutation],
   )
 
   const handleUpdate = useCallback(
@@ -238,6 +256,7 @@ export default function AdminUsersPage() {
         onAffiliate={handleAffiliate}
         onApprove={handleApprove}
         onToggleBlock={handleToggleBlock}
+        onToggleWithdrawBlock={handleToggleWithdrawBlock}
         onEdit={handleEdit}
         onDelete={handleDeleteRequest}
         pagination={pagination}
