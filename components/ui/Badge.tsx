@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { memo } from 'react'
 import { cn } from '@/lib/utils'
 
 interface BadgeProps {
@@ -7,11 +7,11 @@ interface BadgeProps {
   className?: string
 }
 
-export const Badge: React.FC<BadgeProps> = ({
+export const Badge = memo<BadgeProps>(function Badge({
   children,
   variant = 'default',
   className = '',
-}) => {
+}) {
   const variants = {
     default: 'bg-gray-100 text-gray-700',
     success: 'bg-green-100 text-green-700',
@@ -31,4 +31,4 @@ export const Badge: React.FC<BadgeProps> = ({
       {children}
     </span>
   )
-}
+})

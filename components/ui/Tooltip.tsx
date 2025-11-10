@@ -1,4 +1,11 @@
-import React, { useState, useRef, useEffect } from 'react'
+import React, {
+  useState,
+  useRef,
+  useEffect,
+  useCallback,
+  memo,
+  useMemo,
+} from 'react'
 import { cn } from '@/lib/utils'
 
 interface TooltipProps {
@@ -7,7 +14,11 @@ interface TooltipProps {
   className?: string
 }
 
-export function Tooltip({ children, content, className }: TooltipProps) {
+export const Tooltip = memo(function Tooltip({
+  children,
+  content,
+  className,
+}: TooltipProps) {
   const [isVisible, setIsVisible] = useState(false)
   const [position, setPosition] = useState<'top' | 'bottom'>('top')
   const [alignment, setAlignment] = useState<'center' | 'left' | 'right'>(
@@ -16,6 +27,9 @@ export function Tooltip({ children, content, className }: TooltipProps) {
   const [isPositioned, setIsPositioned] = useState(false)
   const tooltipRef = useRef<HTMLDivElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
+
+  const handleMouseEnter = useCallback(() => setIsVisible(true), [])
+  const handleMouseLeave = useCallback(() => setIsVisible(false), [])
 
   useEffect(() => {
     if (!isVisible) {
@@ -80,7 +94,7 @@ export function Tooltip({ children, content, className }: TooltipProps) {
 
   if (!content) return <>{children}</>
 
-  const getPositionClasses = () => {
+  const getPositionClasses = useMemo(() => {
     const baseClasses =
       'absolute z-50 px-2 py-1 text-xs text-white bg-gray-900 rounded-md shadow-lg whitespace-nowrap max-w-[calc(100vw-16px)]'
 
@@ -114,21 +128,21 @@ export function Tooltip({ children, content, className }: TooltipProps) {
         return `${baseClasses} ${verticalClasses} right-0 ${arrowClasses} before:right-4`
       }
     }
-  }
+  }, [isPositioned, position, alignment])
 
   return (
     <div
       ref={containerRef}
-      className="relative block w-full min-w-0"
-      onMouseEnter={() => setIsVisible(true)}
-      onMouseLeave={() => setIsVisible(false)}
+      className="relative inline-block"
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
     >
       {children}
       {isVisible && (
         <div
           ref={tooltipRef}
           className={cn(
-            getPositionClasses(),
+            getPositionClasses,
             isPositioned && 'opacity-100 transition-opacity duration-100',
             className,
           )}
@@ -139,4 +153,4 @@ export function Tooltip({ children, content, className }: TooltipProps) {
       )}
     </div>
   )
-}
+})

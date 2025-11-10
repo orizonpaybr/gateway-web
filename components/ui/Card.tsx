@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { memo } from 'react'
 import { cn } from '@/lib/utils'
 
 interface CardProps {
@@ -8,12 +8,12 @@ interface CardProps {
   hover?: boolean
 }
 
-export const Card: React.FC<CardProps> = ({
+export const Card = memo<CardProps>(function Card({
   children,
   className = '',
   padding = 'md',
   hover = false,
-}) => {
+}) {
   const paddings = {
     sm: 'p-3',
     md: 'p-5',
@@ -32,4 +32,4 @@ export const Card: React.FC<CardProps> = ({
       {children}
     </div>
   )
-}
+})

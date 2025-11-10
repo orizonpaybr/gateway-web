@@ -15,7 +15,7 @@ export default function DepositarPage() {
   const [selectedDescription, setSelectedDescription] = useState('')
 
   // Valores sugeridos para depósito rápido
-  const quickAmounts = useMemo(() => [50, 100, 200, 500, 1000], [])
+  const quickAmounts = useMemo(() => [50, 100, 200, 500, 1000, 2000], [])
 
   const handleQuickAmount = (amount: number) => {
     // Converter valor para centavos (formato esperado pelo CurrencyInput)
