@@ -8,6 +8,7 @@ import {
   Home,
   Search,
   List,
+  Wallet,
   QrCode,
   Clock,
   User,
@@ -379,6 +380,21 @@ export const Sidebar = memo(function Sidebar() {
                   >
                     <Users size={18} />
                     <span>Usuários</span>
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/dashboard/admin/aprovar-saques"
+                    onClick={() => isMobile && closeMobileMenu()}
+                    className={cn(
+                      'flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors',
+                      pathname === '/dashboard/admin/aprovar-saques'
+                        ? 'bg-blue-600 text-white shadow-md'
+                        : 'text-gray-700 hover:bg-blue-50 hover:text-blue-700',
+                    )}
+                  >
+                    <Wallet size={18} />
+                    <span>Aprovar Saques</span>
                   </Link>
                 </li>
               </>

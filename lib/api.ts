@@ -962,6 +962,170 @@ export const twoFactorAPI = {
   },
 }
 
+// Tipos para Saques/Withdrawals
+export interface Withdrawal {
+  id: number
+  transaction_id: string
+  user_id: string
+  username: string
+  email: string
+  nome_cliente: string
+  documento: string
+  pix_key: string
+  pix_type: string
+  amount: number
+  taxa: number
+  valor_liquido: number
+  status:
+    | 'PENDING'
+    | 'COMPLETED'
+    | 'PAID_OUT'
+    | 'CANCELLED'
+    | 'FAILED'
+    | 'PROCESSING'
+  status_legivel: string
+  tipo_processamento: 'Manual' | 'Automático'
+  executor?: string
+  data: string
+  created_at: string
+  updated_at: string
+  descricao: string
+  end_to_end?: string
+}
+
+export interface WithdrawalDetails extends Withdrawal {
+  id_transaction_gateway?: string
+  descricao_externa?: string
+  callback?: string
+  user_balance: number
+}
+
+export interface WithdrawalStats {
+  periodo: string
+  data_inicio: string
+  data_fim: string
+  total_pendentes: number
+  total_aprovados: number
+  total_rejeitados: number
+  valor_total: number
+  valor_aprovado: number
+  saques_manuais: number
+  saques_automaticos: number
+}
+
+export interface WithdrawalFilters {
+  page?: number
+  limit?: number
+  status?: 'PENDING' | 'COMPLETED' | 'CANCELLED' | 'all'
+  tipo?: 'manual' | 'automatico' | 'all'
+  busca?: string
+  data_inicio?: string
+  data_fim?: string
+}
+
+// API de gerenciamento de saques (Admin)
+export const withdrawalsAPI = {
+  // Listar saques com filtros e paginação
+  list: async (
+    filters?: WithdrawalFilters,
+  ): Promise<{
+    success: boolean
+    data: {
+      data: Withdrawal[]
+      current_page: number
+      last_page: number
+      per_page: number
+      total: number
+      from: number
+      to: number
+    }
+  }> => {
+    const params = new URLSearchParams()
+    if (filters?.page) params.append('page', filters.page.toString())
+    if (filters?.limit) params.append('limit', filters.limit.toString())
+    if (filters?.status) params.append('status', filters.status)
+    if (filters?.tipo) params.append('tipo', filters.tipo)
+    if (filters?.busca) params.append('busca', filters.busca)
+    if (filters?.data_inicio) params.append('data_inicio', filters.data_inicio)
+    if (filters?.data_fim) params.append('data_fim', filters.data_fim)
+
+    return apiRequest(`/admin/withdrawals?${params.toString()}`)
+  },
+
+  // Buscar detalhes de um saque específico
+  getById: async (
+    id: number,
+  ): Promise<{
+    success: boolean
+    data: WithdrawalDetails
+  }> => {
+    return apiRequest(`/admin/withdrawals/${id}`)
+  },
+
+  // Aprovar saque
+  approve: async (
+    id: number,
+  ): Promise<{
+    success: boolean
+    message: string
+  }> => {
+    return apiRequest(`/admin/withdrawals/${id}/approve`, {
+      method: 'POST',
+    })
+  },
+
+  // Rejeitar saque
+  reject: async (
+    id: number,
+  ): Promise<{
+    success: boolean
+    message: string
+  }> => {
+    return apiRequest(`/admin/withdrawals/${id}/reject`, {
+      method: 'POST',
+    })
+  },
+
+  // Obter estatísticas de saques
+  getStats: async (
+    periodo: string = 'hoje',
+  ): Promise<{
+    success: boolean
+    data: WithdrawalStats
+  }> => {
+    return apiRequest(`/admin/withdrawals/stats?periodo=${periodo}`)
+  },
+
+  // Obter configurações de saque
+  getConfig: async (): Promise<{
+    success: boolean
+    data: {
+      saque_automatico: boolean
+      limite_saque_automatico: number | null
+    }
+  }> => {
+    return apiRequest('/admin/withdrawals/config')
+  },
+
+  // Atualizar configurações de saque
+  updateConfig: async (data: {
+    saque_automatico: boolean
+    limite_saque_automatico?: number | null
+  }): Promise<{
+    success: boolean
+    message: string
+    data: {
+      saque_automatico: boolean
+      limite_saque_automatico: number | null
+    }
+  }> => {
+    return apiRequest('/admin/withdrawals/config', {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    })
+  },
+}
+
 // API de integração - Credenciais e IPs autorizados
 export const integrationAPI = {
   getCredentials: async (): Promise<{
