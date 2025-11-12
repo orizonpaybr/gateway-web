@@ -649,7 +649,7 @@ const AprovarSaquesPage = memo(function AprovarSaquesPage() {
                           </div>
                         </td>
                         <td className="py-3 px-3">
-                          <div className="text-sm font-semibold text-red-600">
+                          <div className="text-sm font-semibold text-gray-900">
                             {formatWithdrawalValue(saque.valor_liquido)}
                           </div>
                           <div className="text-xs text-gray-500">
