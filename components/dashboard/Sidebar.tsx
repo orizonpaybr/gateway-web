@@ -21,6 +21,7 @@ import {
   Activity,
   LayoutDashboard,
   Users,
+  DollarSign,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/contexts/AuthContext'
@@ -396,6 +397,88 @@ export const Sidebar = memo(function Sidebar() {
                     <Wallet size={18} />
                     <span>Aprovar Saques</span>
                   </Link>
+                </li>
+                <li>
+                  <button
+                    onClick={() => toggleSubmenu('Financeiro')}
+                    className={cn(
+                      'flex items-center justify-between w-full px-4 py-3 rounded-lg text-sm font-medium transition-colors',
+                      pathname.startsWith('/dashboard/admin/financeiro')
+                        ? 'bg-primary text-white hover:!bg-primary hover:!text-white'
+                        : 'text-gray-700 hover:bg-gray-100',
+                    )}
+                  >
+                    <div className="flex items-center gap-3">
+                      <DollarSign size={18} />
+                      <span>Financeiro</span>
+                    </div>
+                    {expandedMenus.includes('Financeiro') ? (
+                      <ChevronUp size={16} />
+                    ) : (
+                      <ChevronDown size={16} />
+                    )}
+                  </button>
+                  {expandedMenus.includes('Financeiro') && (
+                    <ul className="mt-1 ml-6 space-y-1">
+                      <li>
+                        <Link
+                          href="/dashboard/admin/financeiro/transacoes"
+                          onClick={() => isMobile && closeMobileMenu()}
+                          className={cn(
+                            'block px-4 py-2.5 rounded-lg text-sm transition-colors',
+                            pathname ===
+                              '/dashboard/admin/financeiro/transacoes'
+                              ? 'bg-primary text-white'
+                              : 'text-gray-600 hover:bg-gray-100',
+                          )}
+                        >
+                          Transações
+                        </Link>
+                      </li>
+                      <li>
+                        <Link
+                          href="/dashboard/admin/financeiro/carteiras"
+                          onClick={() => isMobile && closeMobileMenu()}
+                          className={cn(
+                            'block px-4 py-2.5 rounded-lg text-sm transition-colors',
+                            pathname === '/dashboard/admin/financeiro/carteiras'
+                              ? 'bg-primary text-white'
+                              : 'text-gray-600 hover:bg-gray-100',
+                          )}
+                        >
+                          Carteiras
+                        </Link>
+                      </li>
+                      <li>
+                        <Link
+                          href="/dashboard/admin/financeiro/entradas"
+                          onClick={() => isMobile && closeMobileMenu()}
+                          className={cn(
+                            'block px-4 py-2.5 rounded-lg text-sm transition-colors',
+                            pathname === '/dashboard/admin/financeiro/entradas'
+                              ? 'bg-primary text-white'
+                              : 'text-gray-600 hover:bg-gray-100',
+                          )}
+                        >
+                          Entradas
+                        </Link>
+                      </li>
+                      <li>
+                        <Link
+                          href="/dashboard/admin/financeiro/saidas"
+                          onClick={() => isMobile && closeMobileMenu()}
+                          className={cn(
+                            'block px-4 py-2.5 rounded-lg text-sm transition-colors',
+                            pathname === '/dashboard/admin/financeiro/saidas'
+                              ? 'bg-primary text-white'
+                              : 'text-gray-600 hover:bg-gray-100',
+                          )}
+                        >
+                          Saídas
+                        </Link>
+                      </li>
+                    </ul>
+                  )}
                 </li>
               </>
             )}

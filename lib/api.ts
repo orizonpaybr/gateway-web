@@ -1126,6 +1126,249 @@ export const withdrawalsAPI = {
   },
 }
 
+// ============================================
+// API do Módulo Financeiro
+// ============================================
+
+export interface FinancialTransaction {
+  id: number
+  tipo: 'deposito' | 'saque'
+  meio: string
+  cliente_id: string
+  transacao_id: string
+  valor_total: number
+  valor_liquido: number
+  status: string
+  status_legivel: string
+  data: string
+  created_at: string
+}
+
+export interface FinancialTransactionStats {
+  transacoes_aprovadas: number
+  lucro_liquido_hoje: number
+  lucro_liquido_mes: number
+  lucro_liquido_total: number
+  lucro_liquido_periodo: number
+}
+
+export interface Wallet {
+  id: number
+  user_id: string
+  name: string
+  username: string
+  email: string
+  saldo: number
+  total_transacoes: number
+  valor_sacado: number
+  status: string
+  permission: number
+  created_at: string
+}
+
+export interface WalletStats {
+  total_carteiras: number
+  saldo_total: number
+  carteiras_ativas: number
+  valor_medio_carteira: number
+}
+
+export interface Deposit {
+  id: number
+  meio: string
+  cliente_id: string
+  cliente_nome: string
+  transacao_id: string
+  valor_total: number
+  valor_liquido: number
+  taxa: number
+  status: string
+  status_legivel: string
+  data: string
+  created_at: string
+}
+
+export interface DepositStats {
+  total_depositos: number
+  depositos_aprovados: number
+  depositos_pendentes: number
+  valor_total: number
+  lucro_depositos: number
+}
+
+export interface FinancialWithdrawal {
+  id: number
+  meio: string
+  cliente_id: string
+  cliente_nome: string
+  pix_key: string
+  pix_type: string
+  transacao_id: string
+  valor_total: number
+  valor_liquido: number
+  taxa: number
+  status: string
+  status_legivel: string
+  data: string
+  created_at: string
+}
+
+export interface WithdrawalStatsFinancial {
+  total_saques: number
+  saques_aprovados: number
+  saques_pendentes: number
+  valor_total: number
+  lucro_saques: number
+}
+
+export interface FinancialFilters {
+  page?: number
+  limit?: number
+  status?: string
+  meio?: string
+  tipo?: string
+  busca?: string
+  data_inicio?: string
+  data_fim?: string
+  tipo_usuario?: string
+  ordenar?: string
+}
+
+export const financialAPI = {
+  // Transações - Todas (Depósitos + Saques)
+  getAllTransactions: async (
+    filters?: FinancialFilters,
+  ): Promise<{
+    success: boolean
+    data: {
+      data: FinancialTransaction[]
+      current_page: number
+      last_page: number
+      per_page: number
+      total: number
+    }
+  }> => {
+    const params = new URLSearchParams()
+    if (filters?.page) params.append('page', filters.page.toString())
+    if (filters?.limit) params.append('limit', filters.limit.toString())
+    if (filters?.status) params.append('status', filters.status)
+    if (filters?.meio) params.append('meio', filters.meio)
+    if (filters?.tipo) params.append('tipo', filters.tipo)
+    if (filters?.busca) params.append('busca', filters.busca)
+    if (filters?.data_inicio) params.append('data_inicio', filters.data_inicio)
+    if (filters?.data_fim) params.append('data_fim', filters.data_fim)
+
+    return apiRequest(`/admin/financial/transactions?${params.toString()}`)
+  },
+
+  getTransactionsStats: async (
+    periodo: string = 'hoje',
+  ): Promise<{
+    success: boolean
+    data: FinancialTransactionStats
+  }> => {
+    return apiRequest(`/admin/financial/transactions/stats?periodo=${periodo}`)
+  },
+
+  // Carteiras
+  getWallets: async (
+    filters?: FinancialFilters,
+  ): Promise<{
+    success: boolean
+    data: {
+      data: Wallet[]
+      current_page: number
+      last_page: number
+      per_page: number
+      total: number
+    }
+  }> => {
+    const params = new URLSearchParams()
+    if (filters?.page) params.append('page', filters.page.toString())
+    if (filters?.limit) params.append('limit', filters.limit.toString())
+    if (filters?.busca) params.append('busca', filters.busca)
+    if (filters?.tipo_usuario)
+      params.append('tipo_usuario', filters.tipo_usuario)
+    if (filters?.ordenar) params.append('ordenar', filters.ordenar)
+
+    return apiRequest(`/admin/financial/wallets?${params.toString()}`)
+  },
+
+  getWalletsStats: async (): Promise<{
+    success: boolean
+    data: WalletStats
+  }> => {
+    return apiRequest('/admin/financial/wallets/stats')
+  },
+
+  // Depósitos (Entradas)
+  getDeposits: async (
+    filters?: FinancialFilters,
+  ): Promise<{
+    success: boolean
+    data: {
+      data: Deposit[]
+      current_page: number
+      last_page: number
+      per_page: number
+      total: number
+    }
+  }> => {
+    const params = new URLSearchParams()
+    if (filters?.page) params.append('page', filters.page.toString())
+    if (filters?.limit) params.append('limit', filters.limit.toString())
+    if (filters?.status) params.append('status', filters.status)
+    if (filters?.meio) params.append('meio', filters.meio)
+    if (filters?.busca) params.append('busca', filters.busca)
+    if (filters?.data_inicio) params.append('data_inicio', filters.data_inicio)
+    if (filters?.data_fim) params.append('data_fim', filters.data_fim)
+
+    return apiRequest(`/admin/financial/deposits?${params.toString()}`)
+  },
+
+  getDepositsStats: async (
+    periodo: string = 'hoje',
+  ): Promise<{
+    success: boolean
+    data: DepositStats
+  }> => {
+    return apiRequest(`/admin/financial/deposits/stats?periodo=${periodo}`)
+  },
+
+  // Saques (Saídas)
+  getWithdrawals: async (
+    filters?: FinancialFilters,
+  ): Promise<{
+    success: boolean
+    data: {
+      data: FinancialWithdrawal[]
+      current_page: number
+      last_page: number
+      per_page: number
+      total: number
+    }
+  }> => {
+    const params = new URLSearchParams()
+    if (filters?.page) params.append('page', filters.page.toString())
+    if (filters?.limit) params.append('limit', filters.limit.toString())
+    if (filters?.status) params.append('status', filters.status)
+    if (filters?.busca) params.append('busca', filters.busca)
+    if (filters?.data_inicio) params.append('data_inicio', filters.data_inicio)
+    if (filters?.data_fim) params.append('data_fim', filters.data_fim)
+
+    return apiRequest(`/admin/financial/withdrawals?${params.toString()}`)
+  },
+
+  getWithdrawalsStats: async (
+    periodo: string = 'hoje',
+  ): Promise<{
+    success: boolean
+    data: WithdrawalStatsFinancial
+  }> => {
+    return apiRequest(`/admin/financial/withdrawals/stats?periodo=${periodo}`)
+  },
+}
+
 // API de integração - Credenciais e IPs autorizados
 export const integrationAPI = {
   getCredentials: async (): Promise<{
