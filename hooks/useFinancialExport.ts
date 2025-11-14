@@ -1,6 +1,6 @@
 /**
  * Hook para exportação de dados financeiros
- * Centraliza lógica de exportação (DRY)
+ * Centraliza lógica de exportação
  */
 
 import { useCallback } from 'react'
@@ -62,9 +62,7 @@ export function useFinancialExport<T extends ExportItem>(
         'Valor Líquido': item.valor_liquido || 0,
         ...(item.taxa !== undefined && { Taxa: item.taxa }),
         Status: item.status_legivel || '',
-        Data: item.data
-          ? format(new Date(item.data), 'dd/MM/yyyy HH:mm')
-          : '',
+        Data: item.data ? format(new Date(item.data), 'dd/MM/yyyy HH:mm') : '',
       }
     })
 
@@ -82,4 +80,3 @@ export function useFinancialExport<T extends ExportItem>(
 
   return { handleExport }
 }
-
