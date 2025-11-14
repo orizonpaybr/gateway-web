@@ -4,6 +4,7 @@ import {
   AdminDashboardStats,
   AdminUser,
   AdminTransaction,
+  CacheMetrics,
 } from '@/lib/api'
 
 /**
@@ -114,6 +115,32 @@ export function useAdminTransactions(
     staleTime: 30 * 1000, // 30 segundos
     gcTime: 2 * 60 * 1000, // 2 minutos
     refetchOnWindowFocus: true,
+    refetchInterval: 60 * 1000, // Atualizar a cada 1 minuto
+    retry: 1,
+  })
+}
+
+/**
+ * Hook para obter métricas de cache Redis
+ *
+ * @param enabled - Se a query deve ser executada (default: true)
+ */
+export function useCacheMetrics(
+  enabled: boolean = true,
+): UseQueryResult<CacheMetrics, Error> {
+  return useQuery<CacheMetrics, Error>({
+    queryKey: ['admin-cache-metrics'],
+    queryFn: async () => {
+      const response = await adminDashboardAPI.getCacheMetrics()
+      if (!response.success) {
+        throw new Error('Erro ao obter métricas de cache')
+      }
+      return response.data
+    },
+    enabled,
+    staleTime: 60 * 1000, // 1 minuto
+    gcTime: 3 * 60 * 1000, // 3 minutos
+    refetchOnWindowFocus: false,
     refetchInterval: 60 * 1000, // Atualizar a cada 1 minuto
     retry: 1,
   })

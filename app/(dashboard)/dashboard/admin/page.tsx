@@ -9,6 +9,9 @@ import {
   ArrowUpCircle,
   Wallet,
   Clock,
+  Database,
+  Activity,
+  HardDrive,
 } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { StatCard } from '@/components/admin/StatCard'
@@ -18,6 +21,7 @@ import { UsersStatsCard } from '@/components/admin/UsersStatsCard'
 import {
   useAdminDashboardStats,
   useAdminTransactions,
+  useCacheMetrics,
 } from '@/hooks/useAdminDashboard'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import { toast } from 'sonner'
@@ -56,6 +60,13 @@ export default function AdminDashboardPage() {
     { limit: 10 },
     authReady && !!user && Number(user.permission) === 3,
   )
+
+  // Buscar métricas de cache
+  const {
+    data: cacheMetrics,
+    isLoading: cacheMetricsLoading,
+    error: cacheMetricsError,
+  } = useCacheMetrics(authReady && !!user && Number(user.permission) === 3)
 
   // Exibir erros
   useEffect(() => {
@@ -230,6 +241,81 @@ export default function AdminDashboardPage() {
             colorScheme="red"
             formatAsCurrency
           />
+        </div>
+      )}
+
+      {cacheMetrics && (
+        <div className="space-y-4">
+          <div>
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">
+              Métricas de Performance
+            </h2>
+            <p className="text-sm text-gray-600">
+              Monitoramento de cache Redis e performance do sistema
+            </p>
+          </div>
+          {cacheMetrics.general?.redis_connected ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-4">
+              <StatCard
+                title="Taxa de Acerto do Cache"
+                value={
+                  cacheMetricsLoading
+                    ? '...'
+                    : `${(cacheMetrics.general.hit_rate ?? 0).toFixed(2)}%`
+                }
+                icon={Activity}
+                description="Eficiência do cache"
+                colorScheme="green"
+              />
+
+              <StatCard
+                title="Memória Redis"
+                value={
+                  cacheMetricsLoading
+                    ? '...'
+                    : cacheMetrics.general.used_memory_human ?? '0B'
+                }
+                icon={HardDrive}
+                description="Memória utilizada"
+                colorScheme="blue"
+              />
+
+              <StatCard
+                title="Total de Chaves"
+                value={
+                  cacheMetricsLoading
+                    ? '...'
+                    : (
+                        cacheMetrics.general.cache_keys_count ?? 0
+                      ).toLocaleString('pt-BR')
+                }
+                icon={Database}
+                description="Chaves em cache"
+                colorScheme="purple"
+              />
+
+              <StatCard
+                title="Cache Financeiro"
+                value={
+                  cacheMetricsLoading
+                    ? '...'
+                    : (
+                        cacheMetrics.financial?.total_financial_keys ?? 0
+                      ).toLocaleString('pt-BR')
+                }
+                icon={Wallet}
+                description="Chaves financeiras"
+                colorScheme="orange"
+              />
+            </div>
+          ) : (
+            <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <p className="text-sm text-yellow-800">
+                Redis não está conectado ou não está disponível. As métricas de
+                cache não podem ser exibidas.
+              </p>
+            </div>
+          )}
         </div>
       )}
 
