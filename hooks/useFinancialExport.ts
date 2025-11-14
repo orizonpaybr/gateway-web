@@ -10,15 +10,20 @@ import { toast } from 'sonner'
 import { formatTransactionType } from '@/lib/helpers/financialUtils'
 
 export interface ExportItem {
-  id: number
+  id?: number
   tipo?: string
   cliente_id?: string
+  user_id?: string
   transacao_id?: string
   valor_total?: number
+  total_transacoes?: number
+  saldo?: number
   valor_liquido?: number
   taxa?: number
   status_legivel?: string
   data?: string
+  email?: string
+  telefone?: string | null
   [key: string]: any
 }
 

@@ -1158,6 +1158,7 @@ export interface Wallet {
   name: string
   username: string
   email: string
+  telefone: string | null
   saldo: number
   total_transacoes: number
   valor_sacado: number
@@ -1166,11 +1167,24 @@ export interface Wallet {
   created_at: string
 }
 
+export interface Top3User {
+  id: number
+  user_id: string
+  name: string
+  username: string
+  email: string
+  telefone: string | null
+  saldo: number
+  total_transacoes: number
+  valor_sacado: number
+}
+
 export interface WalletStats {
   total_carteiras: number
   saldo_total: number
   carteiras_ativas: number
   valor_medio_carteira: number
+  top_3_usuarios: Top3User[]
 }
 
 export interface Deposit {
@@ -1690,6 +1704,26 @@ export async function enableAllNotifications(
 // API do Dashboard Administrativo
 // ============================================
 
+export interface CacheMetrics {
+  general: {
+    redis_connected: boolean
+    total_commands_processed: number
+    keyspace_hits: number
+    keyspace_misses: number
+    used_memory_human: string
+    used_memory: number
+    cache_keys_count: number
+    hit_rate: number
+    error?: string
+  }
+  financial: {
+    total_financial_keys: number
+    wallets_keys: number
+    stats_keys: number
+    error?: string
+  }
+}
+
 export interface AdminDashboardStats {
   periodo: {
     inicio: string
@@ -1994,6 +2028,16 @@ export const adminDashboardAPI = {
     return apiRequest(
       `/admin/dashboard/transactions${query ? '?' + query : ''}`,
     )
+  },
+
+  /**
+   * Obter métricas de cache Redis
+   */
+  async getCacheMetrics(): Promise<{
+    success: boolean
+    data: CacheMetrics
+  }> {
+    return apiRequest('/admin/dashboard/cache-metrics')
   },
 }
 
