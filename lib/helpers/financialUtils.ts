@@ -80,3 +80,11 @@ export function formatTransactionType(tipo: string): string {
 export function formatTransactionDate(dateString: string): string {
   return format(new Date(dateString), 'dd/MM/yyyy HH:mm')
 }
+
+/**
+ * Formata data e hora de transação para exibição completa
+ */
+export function formatTransactionDateTime(dateString: string): string {
+  const date = new Date(dateString)
+  return `${format(date, 'dd/MM/yyyy')} às ${format(date, 'HH:mm:ss')}`
+}
