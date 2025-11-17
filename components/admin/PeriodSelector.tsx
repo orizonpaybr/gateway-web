@@ -20,7 +20,7 @@ export function PeriodSelector({
     { value: '30dias', label: 'Últimos 30 dias' },
     { value: 'mes_atual', label: 'Mês atual' },
     { value: 'mes_anterior', label: 'Mês anterior' },
-    { value: 'tudo', label: 'Todo o período' },
+    { value: 'total', label: 'Todo o período' },
   ]
 
   return (

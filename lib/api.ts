@@ -1203,11 +1203,13 @@ export interface Deposit {
 }
 
 export interface DepositStats {
-  total_depositos: number
-  depositos_aprovados: number
-  depositos_pendentes: number
-  valor_total: number
-  lucro_depositos: number
+  total_depositos_geral: number
+  depositos_aprovados_geral: number
+  valor_total_geral: number
+  depositos_aprovados_hoje: number
+  valor_total_hoje: number
+  depositos_aprovados_mes: number
+  valor_total_mes: number
 }
 
 export interface FinancialWithdrawal {
@@ -1347,6 +1349,27 @@ export const financialAPI = {
     data: DepositStats
   }> => {
     return apiRequest(`/admin/financial/deposits/stats?periodo=${periodo}`)
+  },
+
+  /**
+   * Atualizar status de depósito
+   * @param depositoId ID do depósito
+   * @param status Novo status (PENDING, PAID_OUT, COMPLETED, CANCELLED, REJECTED)
+   */
+  updateDepositStatus: async (
+    depositoId: number,
+    status: string,
+  ): Promise<{
+    success: boolean
+    data: {
+      deposit: Deposit
+      message: string
+    }
+  }> => {
+    return apiRequest(`/admin/financial/deposits/${depositoId}/status`, {
+      method: 'PUT',
+      body: JSON.stringify({ status }),
+    })
   },
 
   // Saques (Saídas)
@@ -1956,7 +1979,7 @@ export const adminDashboardAPI = {
   /**
    * Obter estatísticas do dashboard administrativo
    *
-   * @param periodo - 'hoje', 'ontem', '7dias', '30dias', 'mes_atual', 'mes_anterior', 'tudo' ou 'YYYY-MM-DD:YYYY-MM-DD'
+   * @param periodo - 'hoje', 'ontem', '7dias', '30dias', 'mes_atual', 'mes_anterior', 'total' ou 'YYYY-MM-DD:YYYY-MM-DD'
    */
   async getStats(periodo: string = 'hoje'): Promise<{
     success: boolean
