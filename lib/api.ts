@@ -1973,6 +1973,37 @@ export interface AdminTransaction {
   created_at: string
 }
 
+export interface ManualDeposit {
+  id: number
+  transaction_id: string
+  amount: number
+  valor_liquido: number
+  taxa: number
+  status: string
+  descricao?: string | null
+  created_at?: string
+  user: {
+    id: number
+    user_id: string
+    name: string
+    username: string
+  }
+}
+
+export interface ManualDepositPayload {
+  user_id: string
+  amount: number
+  description?: string
+}
+
+export interface ManualDepositResponse {
+  success: boolean
+  message: string
+  data: {
+    deposit: ManualDeposit
+  }
+}
+
 /**
  * API para Dashboard Administrativo
  * Apenas usuários com permission === 3 podem acessar
@@ -2077,6 +2108,17 @@ export const adminDashboardAPI = {
     data: CacheMetrics
   }> {
     return apiRequest('/admin/dashboard/cache-metrics')
+  },
+}
+
+export const adminManualTransactionsAPI = {
+  async createDeposit(
+    payload: ManualDepositPayload,
+  ): Promise<ManualDepositResponse> {
+    return apiRequest('/admin/manual-transactions/deposits', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    })
   },
 }
 

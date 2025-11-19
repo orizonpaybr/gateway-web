@@ -22,6 +22,7 @@ import {
   LayoutDashboard,
   Users,
   DollarSign,
+  ArrowLeftRight,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/contexts/AuthContext'
@@ -342,7 +343,6 @@ export const Sidebar = memo(function Sidebar() {
               </Button>
             </li>
 
-            {/* Seção Administração (apenas para admins) */}
             {authReady && Number(user?.permission) === 3 && (
               <>
                 <li aria-hidden className="my-3">
@@ -476,6 +476,51 @@ export const Sidebar = memo(function Sidebar() {
                         >
                           Saídas
                         </Link>
+                      </li>
+                    </ul>
+                  )}
+                </li>
+                <li>
+                  <button
+                    onClick={() => toggleSubmenu('CriarTransacoes')}
+                    className={cn(
+                      'flex items-center justify-between w-full px-4 py-3 rounded-lg text-sm font-medium transition-colors',
+                      pathname.startsWith('/dashboard/admin/criar-transacoes')
+                        ? 'bg-primary text-white hover:!bg-primary hover:!text-white'
+                        : 'text-gray-700 hover:bg-gray-100',
+                    )}
+                  >
+                    <div className="flex items-center gap-3">
+                      <ArrowLeftRight size={18} />
+                      <span>Criar Transações</span>
+                    </div>
+                    {expandedMenus.includes('CriarTransacoes') ? (
+                      <ChevronUp size={16} />
+                    ) : (
+                      <ChevronDown size={16} />
+                    )}
+                  </button>
+                  {expandedMenus.includes('CriarTransacoes') && (
+                    <ul className="mt-1 ml-6 space-y-1">
+                      <li>
+                        <Link
+                          href="/dashboard/admin/criar-transacoes/entrada"
+                          onClick={() => isMobile && closeMobileMenu()}
+                          className={cn(
+                            'block px-4 py-2.5 rounded-lg text-sm transition-colors',
+                            pathname ===
+                              '/dashboard/admin/criar-transacoes/entrada'
+                              ? 'bg-primary text-white'
+                              : 'text-gray-600 hover:bg-gray-100',
+                          )}
+                        >
+                          Entrada
+                        </Link>
+                      </li>
+                      <li>
+                        <div className="block px-4 py-2.5 rounded-lg text-sm text-gray-400 border border-dashed border-gray-200">
+                          Saída (em breve)
+                        </div>
                       </li>
                     </ul>
                   )}
