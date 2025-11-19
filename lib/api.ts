@@ -1230,6 +1230,22 @@ export interface FinancialWithdrawal {
 }
 
 export interface WithdrawalStatsFinancial {
+  // Estatísticas gerais
+  total_saques_geral: number
+  saques_aprovados_geral: number
+  valor_total_geral: number
+  lucro_total_geral: number
+  // Estatísticas de hoje
+  saques_aprovados_hoje: number
+  valor_total_hoje: number
+  lucro_total_hoje: number
+  // Estatísticas do mês
+  saques_aprovados_mes: number
+  valor_total_mes: number
+  lucro_total_mes: number
+  // Pendentes
+  saques_pendentes_geral: number
+  // Compatibilidade (mantido para código antigo)
   total_saques: number
   saques_aprovados: number
   saques_pendentes: number
