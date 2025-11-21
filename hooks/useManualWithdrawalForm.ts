@@ -1,8 +1,8 @@
 import { useState, useCallback } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { toast } from 'sonner'
-import { adminManualTransactionsAPI, ManualDepositResponse } from '@/lib/api'
+import { adminManualTransactionsAPI, ManualWithdrawalResponse } from '@/lib/api'
 import { formatCurrencyBRL } from '@/lib/format'
+import { toast } from 'sonner'
 import { CURRENCY_CENTS_DIVISOR } from '@/lib/constants/manualTransactions'
 
 interface FormErrors {
@@ -10,20 +10,20 @@ interface FormErrors {
   amount?: string
 }
 
-interface UseManualDepositFormProps {
+interface UseManualWithdrawalFormProps {
   onSuccess?: () => void
 }
 
 /**
- * Hook customizado para gerenciar o formulário de depósito manual
+ * Hook customizado para gerenciar o formulário de saque manual
  * Implementa validação, mutação e gerenciamento de estado
  *
  * @param props Propriedades do hook
  * @returns Estado e funções do formulário
  */
-export function useManualDepositForm({
+export function useManualWithdrawalForm({
   onSuccess,
-}: UseManualDepositFormProps = {}) {
+}: UseManualWithdrawalFormProps) {
   const queryClient = useQueryClient()
 
   const [selectedUserId, setSelectedUserId] = useState('')
@@ -52,40 +52,45 @@ export function useManualDepositForm({
     return Object.keys(errors).length === 0
   }, [amount, selectedUserId])
 
-  const createDepositMutation = useMutation<ManualDepositResponse, Error>({
-    mutationFn: async () => {
-      const parsedAmount = Number(amount) / CURRENCY_CENTS_DIVISOR
-      return adminManualTransactionsAPI.createDeposit({
-        user_id: selectedUserId,
-        amount: parsedAmount,
-        description: description.trim() || undefined,
-      })
-    },
-    onSuccess: (response) => {
-      const deposit = response.data.deposit
-      toast.success('Depósito criado com sucesso!', {
-        description: `${deposit.user.name} recebeu ${formatCurrencyBRL(
-          deposit.valor_liquido,
-        )}`,
-      })
+  const createWithdrawalMutation = useMutation<ManualWithdrawalResponse, Error>(
+    {
+      mutationFn: async () => {
+        const parsedAmount = Number(amount) / CURRENCY_CENTS_DIVISOR
+        return adminManualTransactionsAPI.createWithdrawal({
+          user_id: selectedUserId,
+          amount: parsedAmount,
+          description: description.trim() || undefined,
+        })
+      },
+      onSuccess: (response) => {
+        const withdrawal = response.data.withdrawal
+        toast.success('Saque criado com sucesso!', {
+          description: `${withdrawal.user.name} teve ${formatCurrencyBRL(
+            withdrawal.valor_total_descontado,
+          )} debitado (saque: ${formatCurrencyBRL(
+            withdrawal.amount,
+          )}, taxa: ${formatCurrencyBRL(withdrawal.taxa)})`,
+        })
 
-      // Invalidar queries relacionadas
-      queryClient.invalidateQueries({ queryKey: ['financial-deposits'] })
+        // Invalidar queries relacionadas
+        queryClient.invalidateQueries({ queryKey: ['financial-withdrawals'] })
 
-      resetForm()
-      onSuccess?.()
+        resetForm()
+        onSuccess?.()
+      },
+      onError: (error: Error) => {
+        const errorMessage = error.message || 'Erro ao criar saque manual.'
+        toast.error(errorMessage)
+      },
     },
-    onError: (error) => {
-      toast.error(error.message || 'Erro ao criar depósito manual.')
-    },
-  })
+  )
 
   const handleSubmit = useCallback(() => {
     if (!validateForm()) {
       return
     }
-    createDepositMutation.mutate()
-  }, [createDepositMutation, validateForm])
+    createWithdrawalMutation.mutate()
+  }, [createWithdrawalMutation, validateForm])
 
   return {
     // Estado do formulário
@@ -103,7 +108,7 @@ export function useManualDepositForm({
     handleSubmit,
 
     // Estado da mutação
-    isSubmitting: createDepositMutation.isPending,
-    isSuccess: createDepositMutation.isSuccess,
+    isSubmitting: createWithdrawalMutation.isPending,
+    isSuccess: createWithdrawalMutation.isSuccess,
   }
 }
