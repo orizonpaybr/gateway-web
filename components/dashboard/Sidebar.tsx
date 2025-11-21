@@ -518,9 +518,19 @@ export const Sidebar = memo(function Sidebar() {
                         </Link>
                       </li>
                       <li>
-                        <div className="block px-4 py-2.5 rounded-lg text-sm text-gray-400 border border-dashed border-gray-200">
-                          Saída (em breve)
-                        </div>
+                        <Link
+                          href="/dashboard/admin/criar-transacoes/saida"
+                          onClick={() => isMobile && closeMobileMenu()}
+                          className={cn(
+                            'block px-4 py-2.5 rounded-lg text-sm transition-colors',
+                            pathname ===
+                              '/dashboard/admin/criar-transacoes/saida'
+                              ? 'bg-primary text-white'
+                              : 'text-gray-600 hover:bg-gray-100',
+                          )}
+                        >
+                          Saída
+                        </Link>
                       </li>
                     </ul>
                   )}
