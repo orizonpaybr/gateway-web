@@ -2004,6 +2004,38 @@ export interface ManualDepositResponse {
   }
 }
 
+export interface ManualWithdrawal {
+  id: number
+  transaction_id: string
+  amount: number
+  valor_liquido: number
+  taxa: number
+  valor_total_descontado: number
+  status: string
+  descricao: string
+  created_at: string
+  user: {
+    id: number
+    user_id: string
+    name: string
+    username: string
+  }
+}
+
+export interface ManualWithdrawalPayload {
+  user_id: string
+  amount: number
+  description?: string
+}
+
+export interface ManualWithdrawalResponse {
+  success: boolean
+  message: string
+  data: {
+    withdrawal: ManualWithdrawal
+  }
+}
+
 /**
  * API para Dashboard Administrativo
  * Apenas usuários com permission === 3 podem acessar
@@ -2116,6 +2148,15 @@ export const adminManualTransactionsAPI = {
     payload: ManualDepositPayload,
   ): Promise<ManualDepositResponse> {
     return apiRequest('/admin/manual-transactions/deposits', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    })
+  },
+
+  async createWithdrawal(
+    payload: ManualWithdrawalPayload,
+  ): Promise<ManualWithdrawalResponse> {
+    return apiRequest('/admin/manual-transactions/withdrawal', {
       method: 'POST',
       body: JSON.stringify(payload),
     })
