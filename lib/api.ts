@@ -2,6 +2,31 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL
 
 export const BASE_URL = API_URL
+// ============================================
+// API de Configurações do Gateway (Admin)
+// ============================================
+
+export const gatewaySettingsAPI = {
+  getSettings: async (): Promise<{
+    success: boolean
+    data: Record<string, any>
+  }> => {
+    return apiRequest('/admin/settings')
+  },
+
+  updateSettings: async (
+    payload: Record<string, any>,
+  ): Promise<{
+    success: boolean
+    message: string
+    data: Record<string, any>
+  }> => {
+    return apiRequest('/admin/settings', {
+      method: 'PUT',
+      body: JSON.stringify(payload),
+    })
+  },
+}
 
 // Interface para dados de autenticação armazenados
 export interface AuthData {
