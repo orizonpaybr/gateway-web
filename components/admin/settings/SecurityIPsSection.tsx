@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/Button'
 import { Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { isValidIPv4, maskIPInput } from '@/lib/helpers/ip-utils'
+import { Dialog } from '@/components/ui/Dialog'
 
 interface SecurityIPsSectionProps {
   globalIps: string[]
@@ -18,6 +19,8 @@ export function SecurityIPsSection({
   onRemoveIP,
 }: SecurityIPsSectionProps) {
   const [ipInput, setIpInput] = useState('')
+  const [ipToDelete, setIpToDelete] = useState<string | null>(null)
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false)
 
   const handleInputChange = (value: string) => {
     const masked = maskIPInput(value)
@@ -54,6 +57,19 @@ export function SecurityIPsSection({
     }
   }
 
+  const handleRequestDelete = (ip: string) => {
+    setIpToDelete(ip)
+    setIsConfirmOpen(true)
+  }
+
+  const handleConfirmDelete = () => {
+    if (!ipToDelete) return
+    onRemoveIP(ipToDelete)
+    setIsConfirmOpen(false)
+    setIpToDelete(null)
+    toast.success('IP removido com sucesso')
+  }
+
   return (
     <div>
       <Label htmlFor="ip-input">IPs Globais Autorizados</Label>
@@ -87,7 +103,7 @@ export function SecurityIPsSection({
             >
               <span className="font-mono text-sm">{ip}</span>
               <Button
-                onClick={() => onRemoveIP(ip)}
+                onClick={() => handleRequestDelete(ip)}
                 variant="ghost"
                 size="sm"
                 className="text-red-600 hover:text-red-700"
@@ -108,6 +124,38 @@ export function SecurityIPsSection({
           IP sugerido para testes: <strong>187.65.210.34</strong>
         </p>
       </div>
+
+      <Dialog
+        open={isConfirmOpen}
+        onClose={() => setIsConfirmOpen(false)}
+        title="Remover IP autorizado"
+        size="sm"
+        footer={
+          <div className="flex justify-end gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsConfirmOpen(false)}
+            >
+              Cancelar
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="border-red-600 text-red-600 hover:bg-red-50 hover:border-red-700 hover:text-red-700"
+              onClick={handleConfirmDelete}
+            >
+              Remover
+            </Button>
+          </div>
+        }
+      >
+        <p className="text-sm text-gray-700">
+          Tem certeza que deseja remover o IP{' '}
+          <span className="font-mono font-semibold">{ipToDelete}</span> da lista
+          de IPs globais autorizados?
+        </p>
+      </Dialog>
     </div>
   )
 }
