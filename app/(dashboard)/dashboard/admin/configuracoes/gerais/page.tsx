@@ -1,0 +1,188 @@
+'use client'
+
+import { useEffect, useState } from 'react'
+import { Card } from '@/components/ui/Card'
+import { Button } from '@/components/ui/Button'
+import { Settings } from 'lucide-react'
+import { useAuth } from '@/contexts/AuthContext'
+import { toast } from 'sonner'
+import { useGatewaySettings } from '@/hooks/useGatewaySettings'
+import { DepositSettingsSection } from '@/components/admin/settings/DepositSettingsSection'
+import { SecurityIPsSection } from '@/components/admin/settings/SecurityIPsSection'
+import type {
+  GatewaySettings,
+  NumericSettingsField,
+} from '@/types/gateway-settings'
+
+export default function ConfiguracoesGeraisPage() {
+  const { user, authReady } = useAuth()
+  const { settings, isLoading, updateSettings, isUpdating } =
+    useGatewaySettings()
+
+  const [localSettings, setLocalSettings] = useState<GatewaySettings | null>(
+    null,
+  )
+  const [expandedSections, setExpandedSections] = useState<string[]>([
+    'deposito',
+    'saque',
+  ])
+  const [editingValues, setEditingValues] = useState<
+    Partial<Record<NumericSettingsField, string>>
+  >({})
+
+  // Sincronizar com settings do servidor
+  useEffect(() => {
+    if (settings) {
+      setLocalSettings(settings)
+    }
+  }, [settings])
+
+  // Validação de permissão
+  useEffect(() => {
+    if (!authReady) return
+    if (Number(user?.permission) !== 3) {
+      toast.error('Acesso negado', {
+        description: 'Somente administradores podem acessar esta página.',
+      })
+    }
+  }, [authReady, user])
+
+  const toggleSection = (section: string) => {
+    setExpandedSections((prev) =>
+      prev.includes(section)
+        ? prev.filter((s) => s !== section)
+        : [...prev, section],
+    )
+  }
+
+  const getNumericDisplayedValue = (field: NumericSettingsField) => {
+    if (editingValues[field] !== undefined) {
+      return editingValues[field] ?? ''
+    }
+    const value = localSettings?.[field]
+    return value === null || value === undefined ? '' : String(value)
+  }
+
+  const handleNumericChange =
+    (field: NumericSettingsField) =>
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const rawValue = e.target.value
+      setEditingValues((prev) => ({ ...prev, [field]: rawValue }))
+    }
+
+  const handleNumericBlur =
+    (field: NumericSettingsField) =>
+    (e: React.FocusEvent<HTMLInputElement>) => {
+      const rawValue = e.target.value
+      setEditingValues((prev) => {
+        const updated = { ...prev }
+        delete updated[field]
+        return updated
+      })
+
+      if (!localSettings) return
+
+      const parsed = parseFloat(rawValue)
+      const finalValue = isNaN(parsed) || rawValue.trim() === '' ? 0 : parsed
+
+      setLocalSettings({
+        ...localSettings,
+        [field]: finalValue,
+      })
+    }
+
+  const handleAddIP = (ip: string) => {
+    if (!localSettings) return
+    setLocalSettings({
+      ...localSettings,
+      global_ips: [...localSettings.global_ips, ip],
+    })
+  }
+
+  const handleRemoveIP = (ip: string) => {
+    if (!localSettings) return
+    setLocalSettings({
+      ...localSettings,
+      global_ips: localSettings.global_ips.filter((i) => i !== ip),
+    })
+  }
+
+  const handleSave = async () => {
+    if (!localSettings) return
+
+    try {
+      await updateSettings(localSettings)
+    } catch (error) {
+      console.error('Erro ao salvar configurações:', error)
+    }
+  }
+
+  if (isLoading || !localSettings) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    )
+  }
+
+  if (Number(user?.permission) !== 3) {
+    return null
+  }
+
+  return (
+    <div className="p-6 max-w-7xl mx-auto">
+      <div className="mb-6">
+        <div className="flex items-center gap-2 mb-2">
+          <Settings className="h-8 w-8 text-primary" />
+          <h1 className="text-3xl font-bold text-gray-900">Ajustes Gerais</h1>
+        </div>
+        <p className="text-gray-600">
+          Configure as taxas, relatórios e segurança do gateway
+        </p>
+      </div>
+
+      <Card className="mb-6">
+        <div className="p-6">
+          <h2 className="text-xl font-semibold mb-6">
+            Configurações de Taxas e Valores
+          </h2>
+
+          <DepositSettingsSection
+            settings={localSettings}
+            isExpanded={expandedSections.includes('deposito')}
+            onToggle={() => toggleSection('deposito')}
+            getDisplayValue={getNumericDisplayedValue}
+            handleChange={handleNumericChange}
+            handleBlur={handleNumericBlur}
+          />
+        </div>
+      </Card>
+
+      <Card className="mb-6">
+        <div className="p-6">
+          <h2 className="text-xl font-semibold mb-4">
+            Configurações de Segurança
+          </h2>
+
+          <SecurityIPsSection
+            globalIps={localSettings.global_ips}
+            onAddIP={handleAddIP}
+            onRemoveIP={handleRemoveIP}
+          />
+        </div>
+      </Card>
+
+      <div className="flex justify-end">
+        <Button
+          onClick={handleSave}
+          variant="primary"
+          size="sm"
+          disabled={isUpdating}
+          className="px-6"
+        >
+          {isUpdating ? 'Salvando...' : 'Salvar Configurações'}
+        </Button>
+      </div>
+    </div>
+  )
+}
