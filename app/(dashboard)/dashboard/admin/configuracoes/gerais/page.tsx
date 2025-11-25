@@ -7,8 +7,13 @@ import { Settings } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { toast } from 'sonner'
 import { useGatewaySettings } from '@/hooks/useGatewaySettings'
-import { DepositSettingsSection } from '@/components/admin/settings/DepositSettingsSection'
-import { SecurityIPsSection } from '@/components/admin/settings/SecurityIPsSection'
+import {
+  DepositSettingsSection,
+  WithdrawalSettingsSection,
+  FlexibleTaxSystemSection,
+  ReportCustomizationSection,
+  SecurityIPsSection,
+} from '@/components/admin/settings'
 import type {
   GatewaySettings,
   NumericSettingsField,
@@ -25,19 +30,19 @@ export default function ConfiguracoesGeraisPage() {
   const [expandedSections, setExpandedSections] = useState<string[]>([
     'deposito',
     'saque',
+    'flexivel',
+    'relatorios',
   ])
   const [editingValues, setEditingValues] = useState<
     Partial<Record<NumericSettingsField, string>>
   >({})
 
-  // Sincronizar com settings do servidor
   useEffect(() => {
     if (settings) {
       setLocalSettings(settings)
     }
   }, [settings])
 
-  // Validação de permissão
   useEffect(() => {
     if (!authReady) return
     if (Number(user?.permission) !== 3) {
@@ -91,6 +96,14 @@ export default function ConfiguracoesGeraisPage() {
       })
     }
 
+  const handleSwitchChange = (field: keyof GatewaySettings) => {
+    if (!localSettings) return
+    setLocalSettings({
+      ...localSettings,
+      [field]: !localSettings[field],
+    })
+  }
+
   const handleAddIP = (ip: string) => {
     if (!localSettings) return
     setLocalSettings({
@@ -143,9 +156,7 @@ export default function ConfiguracoesGeraisPage() {
 
       <Card className="mb-6">
         <div className="p-6">
-          <h2 className="text-xl font-semibold mb-6">
-            Configurações de Taxas e Valores
-          </h2>
+          <h2 className="text-xl font-semibold mb-6">Taxas</h2>
 
           <DepositSettingsSection
             settings={localSettings}
@@ -154,6 +165,40 @@ export default function ConfiguracoesGeraisPage() {
             getDisplayValue={getNumericDisplayedValue}
             handleChange={handleNumericChange}
             handleBlur={handleNumericBlur}
+          />
+
+          <WithdrawalSettingsSection
+            settings={localSettings}
+            isExpanded={expandedSections.includes('saque')}
+            onToggle={() => toggleSection('saque')}
+            getDisplayValue={getNumericDisplayedValue}
+            handleChange={handleNumericChange}
+            handleBlur={handleNumericBlur}
+          />
+
+          <FlexibleTaxSystemSection
+            settings={localSettings}
+            isExpanded={expandedSections.includes('flexivel')}
+            onToggle={() => toggleSection('flexivel')}
+            getDisplayValue={getNumericDisplayedValue}
+            handleChange={handleNumericChange}
+            handleBlur={handleNumericBlur}
+            onSwitchChange={handleSwitchChange}
+          />
+        </div>
+      </Card>
+
+      <Card className="mb-6">
+        <div className="p-6">
+          <h2 className="text-xl font-semibold mb-6">
+            Personalização de Relatórios
+          </h2>
+
+          <ReportCustomizationSection
+            settings={localSettings}
+            isExpanded={expandedSections.includes('relatorios')}
+            onToggle={() => toggleSection('relatorios')}
+            onSwitchChange={handleSwitchChange}
           />
         </div>
       </Card>
