@@ -13,11 +13,11 @@ export default function DashboardLayout({
   return (
     <BalanceVisibilityProvider>
       <MobileMenuProvider>
-        <div className="min-h-screen bg-gray-50">
+        <div className="h-screen bg-gray-50 overflow-hidden">
           <Sidebar />
           <div className="md:ml-72">
             <Header />
-            <div className="mt-16 pt-4">
+            <div className="mt-16 pt-4 h-[calc(100vh-4rem)] overflow-y-auto">
               <main>{children}</main>
             </div>
           </div>

@@ -116,6 +116,7 @@ export const Sidebar = memo(function Sidebar() {
   const {
     currentLevel,
     totalDeposited,
+    currentLevelMin,
     currentLevelMax,
     nextLevelData,
     isLoading: gamificationLoading,
@@ -237,6 +238,7 @@ export const Sidebar = memo(function Sidebar() {
             <SidebarProgress
               currentLevel={currentLevel}
               totalDeposited={totalDeposited}
+              currentLevelMin={currentLevelMin}
               currentLevelMax={currentLevelMax}
               nextLevelData={nextLevelData}
               isLoading={gamificationLoading}
