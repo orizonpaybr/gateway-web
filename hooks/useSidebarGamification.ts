@@ -1,85 +1,64 @@
 'use client'
 
-import { useQuery } from '@tanstack/react-query'
 import { useStableMemo, useStableCallback } from './useGlobalMemo'
-import { useAuth } from '@/contexts/AuthContext'
-
-interface SidebarGamificationData {
-  currentLevel: string | null
-  totalDeposited: number
-  currentLevelMax: number
-  nextLevelData: {
-    name: string
-    minimo: number
-    maximo: number
-  } | null
-  isLoading: boolean
-  error: Error | null
-  refreshData: () => void
-}
+import { useGamificationData } from './useReactQuery'
+import type {
+  SidebarGamificationData,
+  GamificationJourneyData,
+} from '@/lib/types/gamification'
 
 export function useSidebarGamification(): SidebarGamificationData {
-  const { authReady } = useAuth()
+  const { data, isLoading, error, refetch } = useGamificationData()
 
-  // Hook específico para dados da Sidebar com React Query
-  const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ['sidebar-gamification'],
-    queryFn: async () => {
-      const token = localStorage.getItem('token')
-      if (!token) {
-        throw new Error('Token não encontrado')
-      }
-
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/gamification/sidebar`,
-        {
-          method: 'GET',
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        },
-      )
-
-      if (!response.ok) {
-        throw new Error(`Erro ${response.status}: ${response.statusText}`)
-      }
-
-      const result = await response.json()
-      if (!result.success) {
-        throw new Error(result.message || 'Erro ao obter dados de gamificação')
-      }
-
-      return result
-    },
-    enabled: authReady, // ✅ Só executar quando authReady for true
-    staleTime: 3 * 60 * 1000, // 3 minutos (matching Redis TTL)
-    gcTime: 5 * 60 * 1000, // 5 minutos
-    refetchOnWindowFocus: false,
-    retry: 2,
-    retryDelay: 1000,
-  })
-
-  // Memorizar dados processados para a Sidebar
   const processedData = useStableMemo(() => {
     if (!data?.data) {
       return {
         currentLevel: null,
         totalDeposited: 0,
+        currentLevelMin: 0,
         currentLevelMax: 100000,
         nextLevelData: null,
       }
     }
 
+    const gamification = data.data as GamificationJourneyData
+    const trail = gamification.achievement_trail ?? []
+
+    // Com a nova regra, confiamos que o backend já devolve o nível atual corretamente,
+    // considerando que o Bronze sempre tem mínimo 0,00.
+    let currentLevelMin = 0
+    let currentLevelMax = 100000
+    let currentLevelName = gamification.current_level
+
+    if (trail.length > 0) {
+      if (currentLevelName) {
+        const current = trail.find((level) => level.name === currentLevelName)
+        if (current) {
+          currentLevelMin = current.minimo
+          currentLevelMax = current.maximo
+        } else {
+          // Fallback simples: usar o primeiro nível da trilha (Bronze)
+          currentLevelMin = trail[0].minimo
+          currentLevelMax = trail[0].maximo
+          currentLevelName = trail[0].name
+        }
+      } else {
+        // Se por algum motivo não vier current_level, usamos o primeiro nível
+        currentLevelMin = trail[0].minimo
+        currentLevelMax = trail[0].maximo
+        currentLevelName = trail[0].name
+      }
+    }
+
     return {
-      currentLevel: data.data.current_level,
-      totalDeposited: data.data.total_deposited,
-      currentLevelMax: data.data.current_level_max,
-      nextLevelData: data.data.next_level,
+      currentLevel: currentLevelName,
+      totalDeposited: gamification.total_deposited ?? 0,
+      currentLevelMin,
+      currentLevelMax,
+      nextLevelData: gamification.next_level ?? null,
     }
   }, [data])
 
-  // Callback estável para refresh
   const refreshData = useStableCallback(() => {
     refetch()
   }, [refetch])
