@@ -2421,4 +2421,124 @@ export const adminUsersAPI = {
   }> {
     return apiRequest('/admin/default-fees')
   },
+
+  /**
+   * Gerenciamento de Níveis de Gamificação
+   */
+
+  /**
+   * Listar todos os níveis
+   */
+  async getLevels(): Promise<{
+    success: boolean
+    data: {
+      niveis: GamificationLevel[]
+      niveis_ativo: boolean
+    }
+  }> {
+    return apiRequest('/admin/levels')
+  },
+
+  /**
+   * Obter um nível específico
+   */
+  async getLevel(id: number): Promise<{
+    success: boolean
+    data: GamificationLevel
+  }> {
+    return apiRequest(`/admin/levels/${id}`)
+  },
+
+  /**
+   * Criar novo nível
+   */
+  async createLevel(data: CreateLevelData): Promise<{
+    success: boolean
+    message: string
+    data: GamificationLevel
+  }> {
+    return apiRequest('/admin/levels', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })
+  },
+
+  /**
+   * Atualizar nível
+   */
+  async updateLevel(
+    id: number,
+    data: UpdateLevelData,
+  ): Promise<{
+    success: boolean
+    message: string
+    data: GamificationLevel
+  }> {
+    return apiRequest(`/admin/levels/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    })
+  },
+
+  /**
+   * Deletar nível
+   */
+  async deleteLevel(id: number): Promise<{
+    success: boolean
+    message: string
+  }> {
+    return apiRequest(`/admin/levels/${id}`, {
+      method: 'DELETE',
+    })
+  },
+
+  /**
+   * Ativar/Desativar sistema de níveis
+   */
+  async toggleLevelsActive(niveis_ativo: boolean): Promise<{
+    success: boolean
+    message: string
+    data: {
+      niveis_ativo: boolean
+    }
+  }> {
+    return apiRequest('/admin/levels/toggle-active', {
+      method: 'POST',
+      body: JSON.stringify({ niveis_ativo }),
+    })
+  },
+}
+
+// Alias de compatibilidade para código legado
+// (antigo gatewayApi agora aponta para adminUsersAPI, que concentra
+// operações de usuários e níveis no painel admin)
+export const gatewayApi = adminUsersAPI
+
+// ==================== Interfaces de Gamificação ====================
+
+export interface GamificationLevel {
+  id: number
+  nome: string
+  cor: string
+  icone: string | null
+  minimo: number
+  maximo: number
+  created_at?: string
+  updated_at?: string
+}
+
+export interface CreateLevelData {
+  nome: string
+  cor: string
+  minimo: number
+  maximo: number
+  icone?: string
+}
+
+export interface UpdateLevelData {
+  nome?: string
+  cor?: string
+  minimo?: number
+  maximo?: number
+  icone?: string
 }

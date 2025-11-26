@@ -4,57 +4,15 @@ import React, { memo, useMemo } from 'react'
 import Link from 'next/link'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { cn } from '@/lib/utils'
-
-interface SidebarProgressProps {
-  currentLevel: string | null
-  totalDeposited: number
-  currentLevelMax: number
-  nextLevelData: {
-    name: string
-    minimo: number
-    maximo: number
-  } | null
-  isLoading?: boolean
-}
-
-const getLevelColor = (level: string | null) => {
-  switch (level) {
-    case 'Bronze':
-      return 'bg-amber-600'
-    case 'Prata':
-      return 'bg-gray-400'
-    case 'Ouro':
-      return 'bg-yellow-500'
-    case 'Safira':
-      return 'bg-blue-500'
-    case 'Diamante':
-      return 'bg-purple-600'
-    default:
-      return 'bg-amber-600'
-  }
-}
-
-const getLevelDotColor = (level: string | null) => {
-  switch (level) {
-    case 'Bronze':
-      return 'bg-amber-600'
-    case 'Prata':
-      return 'bg-gray-400'
-    case 'Ouro':
-      return 'bg-yellow-500'
-    case 'Safira':
-      return 'bg-blue-500'
-    case 'Diamante':
-      return 'bg-purple-600'
-    default:
-      return 'bg-amber-600'
-  }
-}
+import { getLevelColorClass } from '@/lib/constants/gamification'
+import { formatCurrency } from '@/lib/currency'
+import type { SidebarProgressProps } from '@/lib/types/gamification'
 
 export const SidebarProgress = memo<SidebarProgressProps>(
   ({
     currentLevel,
     totalDeposited,
+    currentLevelMin,
     currentLevelMax,
     nextLevelData,
     isLoading = false,
@@ -65,34 +23,42 @@ export const SidebarProgress = memo<SidebarProgressProps>(
           progress: 0,
           remainingAmount: 0,
           nextLevelName: 'Prata',
-          formattedCurrent: 'R$ 0,00',
+          formattedMin: 'R$ 0,00',
           formattedTarget: 'R$ 100.000,00',
           formattedRemaining: 'R$ 100.000,00',
         }
       }
 
-      const progress = Math.min(100, (totalDeposited / currentLevelMax) * 100)
-      const remainingAmount = Math.max(0, currentLevelMax - totalDeposited)
-      const nextLevelName = nextLevelData?.name || 'Prata'
+      const min = currentLevelMin ?? 0
+      const max = currentLevelMax
 
-      const formatCurrency = (value: number) => {
-        return new Intl.NumberFormat('pt-BR', {
-          style: 'currency',
-          currency: 'BRL',
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2,
-        }).format(value)
-      }
+      // Progresso dentro do nível atual (de min até max)
+      const range = Math.max(max - min, 1)
+      const effectiveDeposited = Math.max(totalDeposited - min, 0)
+      const progress = Math.min(100, (effectiveDeposited / range) * 100)
+
+      // Quanto falta para atingir o MÁXIMO do nível ATUAL
+      // (que é o mesmo que atingir o mínimo do próximo nível)
+      const remainingAmount = Math.max(0, max - totalDeposited)
+
+      // Nome do próximo nível (se houver)
+      const nextLevelName = nextLevelData?.name || 'Próximo Nível'
 
       return {
         progress,
         remainingAmount,
         nextLevelName,
-        formattedCurrent: formatCurrency(totalDeposited),
-        formattedTarget: formatCurrency(currentLevelMax),
+        formattedMin: formatCurrency(min),
+        formattedTarget: formatCurrency(max),
         formattedRemaining: formatCurrency(remainingAmount),
       }
-    }, [currentLevel, totalDeposited, currentLevelMax, nextLevelData])
+    }, [
+      currentLevel,
+      totalDeposited,
+      currentLevelMin,
+      currentLevelMax,
+      nextLevelData,
+    ])
 
     if (isLoading) {
       return (
@@ -126,7 +92,7 @@ export const SidebarProgress = memo<SidebarProgressProps>(
             <div
               className={cn(
                 'w-3 h-3 rounded-full',
-                getLevelDotColor(currentLevel),
+                getLevelColorClass(currentLevel),
               )}
             />
             <span className="text-sm font-semibold text-gray-900">
@@ -146,14 +112,14 @@ export const SidebarProgress = memo<SidebarProgressProps>(
             <div
               className={cn(
                 'h-full transition-all duration-300',
-                getLevelColor(currentLevel),
+                getLevelColorClass(currentLevel),
               )}
               style={{ width: `${progressData.progress}%` }}
             />
           </div>
 
           <div className="flex justify-between items-center text-xs text-gray-600">
-            <span>{progressData.formattedCurrent}</span>
+            <span>{progressData.formattedMin}</span>
             <span>{progressData.formattedTarget}</span>
           </div>
 
