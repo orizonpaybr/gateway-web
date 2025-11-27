@@ -64,10 +64,10 @@ export function LevelEditForm({
   }
 
   return (
-    <Card className="p-6 border-2 border-blue-300 bg-blue-50">
+    <Card className="p-4 md:p-6 border-2 border-blue-300 bg-blue-50">
       <div>
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-bold text-gray-900">
+        <div className="flex items-center justify-between mb-3 md:mb-4">
+          <h3 className="text-base md:text-lg font-bold text-gray-900">
             Editando: {level.nome}
           </h3>
           <Button
@@ -80,9 +80,9 @@ export function LevelEditForm({
           </Button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
           <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1.5 md:mb-2">
               Nome do Nível *
             </label>
             <Input
@@ -100,11 +100,11 @@ export function LevelEditForm({
 
           {isBronze ? (
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1.5 md:mb-2">
                 Valor Mínimo (R$)
               </label>
               <Input value="R$ 0,00" disabled className="bg-gray-50" />
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-[11px] md:text-xs text-gray-500 mt-1">
                 O nível Bronze sempre inicia em R$ 0,00. O usuário começa no
                 Bronze com saldo zero e progride conforme deposita.
               </p>
@@ -134,7 +134,7 @@ export function LevelEditForm({
           </div>
         </div>
 
-        <div className="flex justify-end gap-3 mt-6">
+        <div className="flex justify-end gap-2 md:gap-3 mt-4 md:mt-6">
           <Button variant="outline" onClick={onCancel} disabled={isSaving}>
             Cancelar
           </Button>

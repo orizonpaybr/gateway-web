@@ -107,26 +107,26 @@ export default function NiveisPage() {
   }
 
   return (
-    <div className="p-6">
-      <div className="max-w-6xl mx-auto space-y-6">
-        <Card className="p-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-blue-600 rounded-xl flex items-center justify-center">
+    <div className="px-4 py-4 md:p-6">
+      <div className="max-w-6xl mx-auto space-y-4 md:space-y-6">
+        <Card className="p-4 md:p-6">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex items-center gap-3 md:gap-4">
+              <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-purple-500 to-blue-600 rounded-xl flex items-center justify-center">
                 <Trophy className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">
+                <h1 className="text-xl md:text-2xl font-bold text-gray-900">
                   Níveis de Gamificação
                 </h1>
-                <p className="text-sm text-gray-600 mt-1">
+                <p className="text-xs md:text-sm text-gray-600 mt-1 max-w-sm">
                   Configure os níveis e valores da jornada do usuário
                 </p>
               </div>
             </div>
 
-            <div className="flex items-center gap-3">
-              <span className="text-sm font-medium text-gray-700">
+            <div className="flex items-center gap-2 md:gap-3 lg:justify-end">
+              <span className="text-xs md:text-sm font-medium text-gray-700 whitespace-nowrap">
                 Sistema de Níveis
               </span>
               <Switch
