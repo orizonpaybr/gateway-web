@@ -2507,6 +2507,117 @@ export const adminUsersAPI = {
       body: JSON.stringify({ niveis_ativo }),
     })
   },
+
+  /**
+   * Listar gerentes com paginação e busca
+   */
+  async listManagers(params?: {
+    search?: string
+    per_page?: number
+    page?: number
+  }): Promise<{
+    success: boolean
+    data: {
+      managers: Manager[]
+      pagination: {
+        current_page: number
+        per_page: number
+        total: number
+        last_page: number
+      }
+    }
+  }> {
+    const queryParams = new URLSearchParams()
+
+    if (params?.search) queryParams.append('search', params.search)
+    if (params?.per_page)
+      queryParams.append('per_page', params.per_page.toString())
+    if (params?.page) queryParams.append('page', params.page.toString())
+
+    const query = queryParams.toString()
+    return apiRequest(`/admin/users-managers${query ? '?' + query : ''}`)
+  },
+
+  /**
+   * Criar novo gerente
+   */
+  async createManager(data: CreateManagerData): Promise<{
+    success: boolean
+    data: {
+      message: string
+      user: Manager
+    }
+  }> {
+    return apiRequest('/admin/users', {
+      method: 'POST',
+      body: JSON.stringify({
+        ...data,
+        permission: 2, // Permission para gerente (MANAGER = 2)
+      }),
+    })
+  },
+
+  /**
+   * Atualizar gerente
+   */
+  async updateManager(
+    managerId: number,
+    data: UpdateManagerData,
+  ): Promise<{
+    success: boolean
+    data: {
+      message: string
+      user: Manager
+    }
+  }> {
+    return apiRequest(`/admin/users/${managerId}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    })
+  },
+
+  /**
+   * Deletar gerente
+   */
+  async deleteManager(managerId: number): Promise<{
+    success: boolean
+    data: {
+      message: string
+    }
+  }> {
+    return apiRequest(`/admin/users/${managerId}`, {
+      method: 'DELETE',
+    })
+  },
+
+  /**
+   * Obter clientes vinculados a um gerente
+   */
+  async getManagerClients(
+    managerId: number,
+    params?: {
+      search?: string
+      per_page?: number
+      page?: number
+    },
+  ): Promise<{
+    success: boolean
+    data: AdminUser[]
+    pagination: {
+      current_page: number
+      per_page: number
+      total: number
+      last_page: number
+    }
+  }> {
+    const queryParams = new URLSearchParams({
+      gerente_id: managerId.toString(),
+      ...(params?.search && { search: params.search }),
+      ...(params?.per_page && { per_page: params.per_page.toString() }),
+      ...(params?.page && { page: params.page.toString() }),
+    })
+    return apiRequest(`/admin/dashboard/users?${queryParams.toString()}`)
+  },
 }
 
 // Alias de compatibilidade para código legado
@@ -2541,4 +2652,37 @@ export interface UpdateLevelData {
   minimo?: number
   maximo?: number
   icone?: string
+}
+
+// ==================== Interfaces de Gerentes ====================
+
+export interface Manager {
+  id: number
+  name: string
+  email: string
+  username: string
+  cpf_cnpj?: string
+  telefone?: string
+  permission: number
+  status: number
+  created_at?: string
+  total_clients?: number // Total de clientes vinculados
+  gerente_percentage?: number
+}
+
+export interface CreateManagerData {
+  name: string
+  email: string
+  password: string
+  cpf_cnpj?: string
+  telefone?: string
+  gerente_percentage?: number
+}
+
+export interface UpdateManagerData {
+  name?: string
+  email?: string
+  telefone?: string
+  gerente_percentage?: number
+  status?: number
 }
