@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useMemo, useCallback } from 'react'
+import { Filter, Plus, Minus } from 'lucide-react'
 import {
   LineChart,
   Line,
@@ -11,13 +12,12 @@ import {
   ResponsiveContainer,
   Legend,
 } from 'recharts'
-import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
+import { Card } from '@/components/ui/Card'
 import { Skeleton } from '@/components/ui/Skeleton'
-import { Filter, Plus, Minus } from 'lucide-react'
 import { useBalanceVisibility } from '@/contexts/BalanceVisibilityContext'
-import { formatCurrencyBRL } from '@/lib/format'
 import { useInteractiveMovement } from '@/hooks/useReactQuery'
+import { formatCurrencyBRL } from '@/lib/format'
 
 interface TransactionChartProps {
   period?: 'hoje' | 'ontem' | '7dias' | '30dias'
@@ -45,10 +45,9 @@ export function TransactionChart({
   const {
     data: interactiveData,
     isLoading,
-    error,
+    error: _error,
   } = useInteractiveMovement(period)
 
-  // Memorizar dados processados
   const processedData = useMemo(() => {
     if (!interactiveData?.data) {
       return {
@@ -73,7 +72,6 @@ export function TransactionChart({
     }
   }, [interactiveData])
 
-  // Memorizar handlers
   const handleZoomIn = useCallback(() => {
     setZoom((prev) => Math.min(prev + 10, 200))
   }, [])
@@ -101,12 +99,20 @@ export function TransactionChart({
     [isBalanceHidden],
   )
 
-  const CustomTooltip = ({ active, payload, label }: any) => {
+  const CustomTooltip = ({
+    active,
+    payload,
+    label,
+  }: {
+    active?: boolean
+    payload?: Array<{ value: number; color: string; name: string }>
+    label?: string
+  }) => {
     if (active && payload && payload.length) {
       return (
         <div className="bg-white border border-gray-200 rounded-lg shadow-lg p-3">
           <p className="text-sm font-semibold text-gray-900 mb-2">{label}</p>
-          {payload.map((entry: any, index: number) => (
+          {payload.map((entry, index: number) => (
             <div key={index} className="flex items-center gap-2 text-sm">
               <div
                 className="w-3 h-3 rounded-full"

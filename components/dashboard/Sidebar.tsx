@@ -1,9 +1,9 @@
 'use client'
 
-import Link from 'next/link'
-import Image from 'next/image'
-import { usePathname } from 'next/navigation'
 import { useState, useEffect, Suspense, lazy, memo } from 'react'
+import Image from 'next/image'
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import {
   Home,
   Search,
@@ -24,22 +24,20 @@ import {
   DollarSign,
   ArrowLeftRight,
 } from 'lucide-react'
-import { cn } from '@/lib/utils'
-import { useAuth } from '@/contexts/AuthContext'
+import { DocumentIcon } from '@/components/icons/DocumentIcon'
 import { PixIcon } from '@/components/icons/PixIcon'
 import { WhatsAppIcon } from '@/components/icons/WhatsAppIcon'
-import { DocumentIcon } from '@/components/icons/DocumentIcon'
-import { Button } from '@/components/ui/Button'
-import { AnimatedAvatar } from '@/components/ui/AnimatedAvatar'
-import { useSidebarGamification } from '@/hooks/useSidebarGamification'
-import { useMobileMenu } from '@/contexts/MobileMenuContext'
 import { UtmifyModal } from '@/components/modals/UtmifyModal'
+import { AnimatedAvatar } from '@/components/ui/AnimatedAvatar'
+import { Button } from '@/components/ui/Button'
+import { useAuth } from '@/contexts/AuthContext'
+import { useMobileMenu } from '@/contexts/MobileMenuContext'
+import { useSidebarGamification } from '@/hooks/useSidebarGamification'
+import { cn } from '@/lib/utils'
 
-// Lazy loading do componente de progresso
 const SidebarProgress = lazy(
   () => import('@/components/gamification/SidebarProgress'),
 )
-
 interface MenuItem {
   icon: React.ElementType
   label: string
@@ -103,7 +101,7 @@ const supportAndDocsItems: MenuItem[] = [
   },
 ]
 
-export const Sidebar = memo(function Sidebar() {
+export const Sidebar = memo(() => {
   const pathname = usePathname()
   const { user, authReady, logout } = useAuth()
   const [expandedMenus, setExpandedMenus] = useState<string[]>([])
@@ -120,14 +118,13 @@ export const Sidebar = memo(function Sidebar() {
     currentLevelMax,
     nextLevelData,
     isLoading: gamificationLoading,
-    error: gamificationError,
+    error: _gamificationError,
   } = useSidebarGamification()
 
   useEffect(() => {
     setIsHydrated(true)
   }, [])
 
-  // Detectar se está em mobile
   useEffect(() => {
     const checkIsMobile = () => {
       setIsMobile(window.innerWidth < 768)
@@ -139,7 +136,6 @@ export const Sidebar = memo(function Sidebar() {
     return () => window.removeEventListener('resize', checkIsMobile)
   }, [])
 
-  // Fechar menu mobile ao trocar de página
   useEffect(() => {
     if (isMobile) {
       closeMobileMenu()
@@ -169,6 +165,14 @@ export const Sidebar = memo(function Sidebar() {
         <div
           className="fixed inset-0 bg-black/50 z-30 md:hidden"
           onClick={closeMobileMenu}
+          onKeyDown={(e) => {
+            if (e.key === 'Escape') {
+              closeMobileMenu()
+            }
+          }}
+          role="button"
+          tabIndex={0}
+          aria-label="Fechar menu"
         />
       )}
 
@@ -331,7 +335,9 @@ export const Sidebar = memo(function Sidebar() {
                 size="sm"
                 onClick={() => {
                   setIsUtmifyModalOpen(true)
-                  if (isMobile) closeMobileMenu()
+                  if (isMobile) {
+                    closeMobileMenu()
+                  }
                 }}
                 className={cn(
                   'flex items-center justify-between w-full px-4 py-3 rounded-lg text-sm font-medium',

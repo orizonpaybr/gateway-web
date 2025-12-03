@@ -1,10 +1,9 @@
 'use client'
 
 import { memo } from 'react'
+import { CheckCircle, DollarSign, TrendingUp, Clock } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
 import { formatCurrencyBRL } from '@/lib/format'
-import { CheckCircle, DollarSign, TrendingUp, Clock } from 'lucide-react'
-
 export interface StatCard {
   label: string
   value: number | string
@@ -14,40 +13,39 @@ export interface StatCard {
   valueColor?: string
   isCurrency?: boolean
 }
-
 export interface FinancialStatsCardsProps {
   stats: StatCard[]
 }
 
-export const FinancialStatsCards = memo(function FinancialStatsCards({
-  stats,
-}: FinancialStatsCardsProps) {
-  return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-4">
-      {stats.map((stat, index) => (
-        <Card key={index} className="p-4">
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex-1 min-w-0">
-              <p className="text-sm text-gray-600">{stat.label}</p>
-              <p
-                className={`text-lg font-bold truncate ${
-                  stat.valueColor || 'text-gray-900'
-                }`}
-              >
-                {stat.isCurrency
-                  ? formatCurrencyBRL(Number(stat.value))
-                  : stat.value}
-              </p>
+export const FinancialStatsCards = memo(
+  ({ stats }: FinancialStatsCardsProps) => {
+    return (
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-4">
+        {stats.map((stat, index) => (
+          <Card key={index} className="p-4">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex-1 min-w-0">
+                <p className="text-sm text-gray-600">{stat.label}</p>
+                <p
+                  className={`text-lg font-bold truncate ${
+                    stat.valueColor || 'text-gray-900'
+                  }`}
+                >
+                  {stat.isCurrency
+                    ? formatCurrencyBRL(Number(stat.value))
+                    : stat.value}
+                </p>
+              </div>
+              <div className={`p-3 ${stat.iconBg} rounded-lg shrink-0`}>
+                <div className={stat.iconColor}>{stat.icon}</div>
+              </div>
             </div>
-            <div className={`p-3 ${stat.iconBg} rounded-lg shrink-0`}>
-              <div className={stat.iconColor}>{stat.icon}</div>
-            </div>
-          </div>
-        </Card>
-      ))}
-    </div>
-  )
-})
+          </Card>
+        ))}
+      </div>
+    )
+  },
+)
 
 // Helpers para criar cards comuns
 export const createStatCard = (

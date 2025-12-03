@@ -1,14 +1,14 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
-import { twoFactorAPI } from '@/lib/api'
-import { useAuth } from '@/contexts/AuthContext'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { TwoFactorModal } from '@/components/modals/TwoFactorModal'
+import { useAuth } from '@/contexts/AuthContext'
+import { twoFactorAPI } from '@/lib/api'
 
 export function TwoFactorSetup() {
   const [showModal, setShowModal] = useState(false)
-  const [isChecking, setIsChecking] = useState(false)
+  const [_isChecking, setIsChecking] = useState(false)
   const [isBlocking, setIsBlocking] = useState(false)
   const [hasInitialized, setHasInitialized] = useState(false)
   const [lastUserId, setLastUserId] = useState<string | null>(null)
@@ -72,10 +72,7 @@ export function TwoFactorSetup() {
             sessionStorage.setItem('2fa_setup_checked', 'true')
           }
         } catch (error) {
-          console.error(
-            '❌ TwoFactorSetup - Erro ao verificar status 2FA:',
-            error,
-          )
+          console.error('TwoFactorSetup - Erro ao verificar status 2FA:', error)
           // Em caso de erro, não forçar configuração - deixar usuário acessar
           sessionStorage.setItem('2fa_setup_checked', 'true')
         } finally {
@@ -86,7 +83,7 @@ export function TwoFactorSetup() {
     }
 
     check2FAStatus()
-  }, [user, hasInitialized])
+  }, [user, hasInitialized, lastUserId])
 
   const handleSuccess = () => {
     setShowModal(false)

@@ -1,17 +1,17 @@
 import { memo, useState, useCallback, useEffect, useRef } from 'react'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
 import { useRouter } from 'next/navigation'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { Lock, Shield } from 'lucide-react'
+import { useForm } from 'react-hook-form'
+import { toast } from 'sonner'
+import { z } from 'zod'
+import { TwoFactorModal } from '@/components/modals/TwoFactorModal'
+import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
-import { Button } from '@/components/ui/Button'
 import { Switch } from '@/components/ui/Switch'
-import { Lock, Shield } from 'lucide-react'
-import { twoFactorAPI, authAPI } from '@/lib/api'
 import { useAuth } from '@/contexts/AuthContext'
-import { toast } from 'sonner'
-import { TwoFactorModal } from '@/components/modals/TwoFactorModal'
+import { twoFactorAPI, authAPI } from '@/lib/api'
 
 const passwordSchema = z
   .object({
@@ -25,7 +25,6 @@ const passwordSchema = z
   })
 
 type PasswordFormData = z.infer<typeof passwordSchema>
-
 interface TwoFAStatus {
   enabled: boolean
   configured: boolean
@@ -66,12 +65,34 @@ export const ConfiguracoesContaTab = memo(() => {
     'enable',
   )
 
+  const loadTwoFAStatus = useCallback(async () => {
+    if (!authReady) {
+      return
+    }
+    try {
+      setIsLoadingStatus(true)
+      const response = await twoFactorAPI.getStatus()
+      if (response.success) {
+        setTwoFAStatus({
+          enabled: response.enabled || false,
+          configured: response.configured || false,
+          enabled_at: (response as { enabled_at?: string }).enabled_at,
+        })
+      }
+    } catch (error) {
+      console.error('Erro ao carregar status 2FA:', error)
+      toast.error('Erro ao carregar status do 2FA')
+    } finally {
+      setIsLoadingStatus(false)
+    }
+  }, [authReady])
+
   // Carregar status de 2FA ao montar (só quando authReady)
   useEffect(() => {
     if (authReady) {
       loadTwoFAStatus()
     }
-  }, [authReady])
+  }, [authReady, loadTwoFAStatus])
 
   // Bloquear scroll do body quando modal de PIN está aberto
   useEffect(() => {
@@ -87,45 +108,6 @@ export const ConfiguracoesContaTab = memo(() => {
       document.documentElement.style.overflow = ''
     }
   }, [showPinModal])
-
-  const loadTwoFAStatus = useCallback(async () => {
-    if (!authReady) return
-    try {
-      setIsLoadingStatus(true)
-      const response = await twoFactorAPI.getStatus()
-      if (response.success) {
-        setTwoFAStatus({
-          enabled: response.enabled || false,
-          configured: response.configured || false,
-          enabled_at: (response as any).enabled_at,
-        })
-      }
-    } catch (error) {
-      console.error('Erro ao carregar status 2FA:', error)
-      toast.error('Erro ao carregar status do 2FA')
-    } finally {
-      setIsLoadingStatus(false)
-    }
-  }, [authReady])
-
-  const onSubmitPassword = useCallback(
-    async (data: PasswordFormData) => {
-      try {
-        // Se 2FA está ativado, pedir confirmação com PIN
-        if (twoFAStatus.enabled) {
-          setShowPinModal(true)
-          return
-        }
-
-        // Se 2FA está desativado, trocar senha diretamente
-        await handleChangePasswordDirect(data)
-      } catch (error: any) {
-        console.error('Erro ao preparar mudança de senha:', error)
-        toast.error(error.message || 'Erro ao preparar mudança de senha')
-      }
-    },
-    [twoFAStatus.enabled],
-  )
 
   const handleChangePasswordDirect = useCallback(
     async (data: PasswordFormData) => {
@@ -143,35 +125,57 @@ export const ConfiguracoesContaTab = memo(() => {
         if (response.success) {
           toast.success('Senha alterada com sucesso! Você será desconectado.')
 
-          // Aguardar um pouco antes de fazer logout
           await new Promise((resolve) => setTimeout(resolve, 1500))
 
-          // Fazer logout automático
           await logout()
 
-          // Redirecionar para login
           router.push('/login')
 
-          // Reset formulário
           reset()
         }
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error('Erro ao alterar senha:', error)
 
-        if (error.message.includes('Senha atual')) {
+        const errorMessage =
+          error instanceof Error ? error.message : 'Erro ao alterar senha'
+
+        if (errorMessage.includes('Senha atual')) {
           toast.error('Senha atual incorreta')
-        } else if (error.message.includes('excedeu o limite')) {
+        } else if (errorMessage.includes('excedeu o limite')) {
           toast.error(
             'Limite de tentativas excedido. Tente novamente em 1 hora.',
           )
         } else {
-          toast.error(error.message || 'Erro ao alterar senha')
+          toast.error(errorMessage)
         }
       } finally {
         setIsPinVerifying(false)
       }
     },
     [logout, router, reset],
+  )
+
+  const onSubmitPassword = useCallback(
+    async (data: PasswordFormData) => {
+      try {
+        // Se 2FA está ativado, pedir confirmação com PIN
+        if (twoFAStatus.enabled) {
+          setShowPinModal(true)
+          return
+        }
+
+        // Se 2FA está desativado, trocar senha diretamente
+        await handleChangePasswordDirect(data)
+      } catch (error: unknown) {
+        console.error('Erro ao preparar mudança de senha:', error)
+        const errorMessage =
+          error instanceof Error
+            ? error.message
+            : 'Erro ao preparar mudança de senha'
+        toast.error(errorMessage)
+      }
+    },
+    [twoFAStatus.enabled, handleChangePasswordDirect],
   )
 
   const handlePinConfirm = useCallback(
@@ -190,35 +194,32 @@ export const ConfiguracoesContaTab = memo(() => {
         if (response.success) {
           toast.success('Senha alterada com sucesso! Você será desconectado.')
 
-          // Fechar modal
           setShowPinModal(false)
 
-          // Aguardar um pouco antes de fazer logout
           await new Promise((resolve) => setTimeout(resolve, 1500))
 
-          // Fazer logout automático
           await logout()
 
-          // Redirecionar para login
           router.push('/login')
 
-          // Reset formulário
           reset()
         }
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error('Erro ao alterar senha:', error)
 
-        // Tratamento específico para diferentes erros
-        if (error.message.includes('2FA')) {
+        const errorMessage =
+          error instanceof Error ? error.message : 'Erro ao alterar senha'
+
+        if (errorMessage.includes('2FA')) {
           toast.error('PIN inválido. Tente novamente.')
-        } else if (error.message.includes('Senha atual')) {
+        } else if (errorMessage.includes('Senha atual')) {
           toast.error('Senha atual incorreta')
-        } else if (error.message.includes('excedeu o limite')) {
+        } else if (errorMessage.includes('excedeu o limite')) {
           toast.error(
             'Limite de tentativas excedido. Tente novamente em 1 hora.',
           )
         } else {
-          toast.error(error.message || 'Erro ao alterar senha')
+          toast.error(errorMessage)
         }
       } finally {
         setIsPinVerifying(false)
@@ -244,7 +245,6 @@ export const ConfiguracoesContaTab = memo(() => {
 
   const handleToggle2FASuccess = useCallback(
     async (_pin?: string) => {
-      // Recarregar status após sucesso (pin não é usado para toggle)
       await loadTwoFAStatus()
     },
     [loadTwoFAStatus],
@@ -279,7 +279,7 @@ export const ConfiguracoesContaTab = memo(() => {
             label="SENHA ATUAL"
             placeholder="Digite sua senha atual"
             error={errors.currentPassword?.message}
-            showPasswordToggle={true}
+            showPasswordToggle
           />
 
           <Input
@@ -288,7 +288,7 @@ export const ConfiguracoesContaTab = memo(() => {
             label="NOVA SENHA"
             placeholder="Digite a nova senha"
             error={errors.newPassword?.message}
-            showPasswordToggle={true}
+            showPasswordToggle
           />
 
           <Input
@@ -297,7 +297,7 @@ export const ConfiguracoesContaTab = memo(() => {
             label="CONFIRMAR NOVA SENHA"
             placeholder="Confirme a nova senha"
             error={errors.confirmPassword?.message}
-            showPasswordToggle={true}
+            showPasswordToggle
           />
 
           <Button
@@ -442,97 +442,101 @@ interface PinInputComponentProps {
   onClose: () => void
 }
 
-const PinInputComponent = memo(function PinInputComponent({
-  pin,
-  setPinValue,
-  isVerifying,
-  onConfirm,
-  onClose,
-}: PinInputComponentProps) {
-  const inputRefs = useRef<(HTMLInputElement | null)[]>([])
-  const [focusedIndex, setFocusedIndex] = useState(0)
+const PinInputComponent = memo(
+  ({
+    pin,
+    setPinValue,
+    isVerifying,
+    onConfirm,
+    onClose,
+  }: PinInputComponentProps) => {
+    const inputRefs = useRef<(HTMLInputElement | null)[]>([])
+    const [_focusedIndex, _setFocusedIndex] = useState(0)
 
-  useEffect(() => {
-    inputRefs.current[0]?.focus()
-  }, [])
+    useEffect(() => {
+      inputRefs.current[0]?.focus()
+    }, [])
 
-  const handleChange = (index: number, digit: string) => {
-    if (!/^\d$/.test(digit) && digit !== '') return
+    const handleChange = (index: number, digit: string) => {
+      if (!/^\d$/.test(digit) && digit !== '') {
+        return
+      }
 
-    const newValue = pin.split('')
-    newValue[index] = digit
-    const newPin = newValue.join('')
+      const newValue = pin.split('')
+      newValue[index] = digit
+      const newPin = newValue.join('')
 
-    setPinValue(newPin)
+      setPinValue(newPin)
 
-    if (digit && index < 5) {
-      inputRefs.current[index + 1]?.focus()
+      if (digit && index < 5) {
+        inputRefs.current[index + 1]?.focus()
+      }
     }
-  }
 
-  const handleKeyDown = (index: number, e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && pin.length === 6) {
-      onConfirm(pin)
-    } else if (e.key === 'Backspace' && !pin[index] && index > 0) {
-      inputRefs.current[index - 1]?.focus()
-    } else if (e.key === 'ArrowLeft' && index > 0) {
-      inputRefs.current[index - 1]?.focus()
-    } else if (e.key === 'ArrowRight' && index < 5) {
-      inputRefs.current[index + 1]?.focus()
+    const handleKeyDown = (index: number, e: React.KeyboardEvent) => {
+      if (e.key === 'Enter' && pin.length === 6) {
+        onConfirm(pin)
+      } else if (e.key === 'Backspace' && !pin[index] && index > 0) {
+        inputRefs.current[index - 1]?.focus()
+      } else if (e.key === 'ArrowLeft' && index > 0) {
+        inputRefs.current[index - 1]?.focus()
+      } else if (e.key === 'ArrowRight' && index < 5) {
+        inputRefs.current[index + 1]?.focus()
+      }
     }
-  }
 
-  const handlePaste = (e: React.ClipboardEvent) => {
-    e.preventDefault()
-    const pastedData = e.clipboardData
-      .getData('text')
-      .replace(/\D/g, '')
-      .slice(0, 6)
-    setPinValue(pastedData)
+    const handlePaste = (e: React.ClipboardEvent) => {
+      e.preventDefault()
+      const pastedData = e.clipboardData
+        .getData('text')
+        .replace(/\D/g, '')
+        .slice(0, 6)
+      setPinValue(pastedData)
 
-    const nextIndex = Math.min(pastedData.length, 5)
-    inputRefs.current[nextIndex]?.focus()
-  }
+      const nextIndex = Math.min(pastedData.length, 5)
+      inputRefs.current[nextIndex]?.focus()
+    }
 
-  return (
-    <>
-      <div className="flex gap-2 justify-center mb-6 flex-wrap">
-        {Array.from({ length: 6 }).map((_, index) => (
-          <input
-            key={index}
-            ref={(el) => {
-              inputRefs.current[index] = el
-            }}
-            type="password"
-            inputMode="numeric"
-            pattern="[0-9]"
-            value={pin[index] || ''}
-            onChange={(e) => handleChange(index, e.target.value)}
-            onKeyDown={(e) => handleKeyDown(index, e)}
-            onPaste={handlePaste}
+    return (
+      <>
+        <div className="flex gap-2 justify-center mb-6 flex-wrap">
+          {Array.from({ length: 6 }).map((_, index) => (
+            <input
+              key={index}
+              ref={(el) => {
+                inputRefs.current[index] = el
+              }}
+              type="password"
+              inputMode="numeric"
+              pattern="[0-9]"
+              value={pin[index] || ''}
+              onChange={(e) => handleChange(index, e.target.value)}
+              onKeyDown={(e) => handleKeyDown(index, e)}
+              onPaste={handlePaste}
+              disabled={isVerifying}
+              className="w-10 h-10 sm:w-12 sm:h-12 text-center text-xl sm:text-2xl font-bold border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none transition-colors disabled:opacity-50"
+            />
+          ))}
+        </div>
+
+        <div className="flex flex-col sm:flex-row gap-3">
+          <Button
+            variant="secondary"
+            onClick={onClose}
             disabled={isVerifying}
-            className="w-10 h-10 sm:w-12 sm:h-12 text-center text-xl sm:text-2xl font-bold border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none transition-colors disabled:opacity-50"
-          />
-        ))}
-      </div>
-
-      <div className="flex flex-col sm:flex-row gap-3">
-        <Button
-          variant="secondary"
-          onClick={onClose}
-          disabled={isVerifying}
-          className="flex-1"
-        >
-          Cancelar
-        </Button>
-        <Button
-          onClick={() => onConfirm(pin)}
-          disabled={isVerifying || pin.length !== 6}
-          className="flex-1"
-        >
-          {isVerifying ? 'Confirmando...' : 'Confirmar Troca'}
-        </Button>
-      </div>
-    </>
-  )
-})
+            className="flex-1"
+          >
+            Cancelar
+          </Button>
+          <Button
+            onClick={() => onConfirm(pin)}
+            disabled={isVerifying || pin.length !== 6}
+            className="flex-1"
+          >
+            {isVerifying ? 'Confirmando...' : 'Confirmar Troca'}
+          </Button>
+        </div>
+      </>
+    )
+  },
+)

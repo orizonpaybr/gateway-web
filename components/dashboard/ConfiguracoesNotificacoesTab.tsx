@@ -1,10 +1,6 @@
 'use client'
 
 import { memo, useMemo } from 'react'
-import { Card } from '@/components/ui/Card'
-import { Switch } from '@/components/ui/Switch'
-import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
-import { useNotificationSettings } from '@/hooks/useNotificationSettings'
 import {
   Bell,
   Smartphone,
@@ -14,6 +10,10 @@ import {
   Shield,
   Info,
 } from 'lucide-react'
+import { Card } from '@/components/ui/Card'
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
+import { Switch } from '@/components/ui/Switch'
+import { useNotificationSettings } from '@/hooks/useNotificationSettings'
 
 export const ConfiguracoesNotificacoesTab = memo(() => {
   const {
@@ -62,7 +62,6 @@ export const ConfiguracoesNotificacoesTab = memo(() => {
     [],
   )
 
-  // Loading state
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -72,7 +71,6 @@ export const ConfiguracoesNotificacoesTab = memo(() => {
     )
   }
 
-  // Error state
   if (isError) {
     return (
       <Card>

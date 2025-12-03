@@ -1,21 +1,19 @@
 'use client'
 
 import { memo } from 'react'
+import { TrendingUp, TrendingDown } from 'lucide-react'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { formatCurrencyBRL } from '@/lib/format'
 import {
   formatTransactionDate,
   getFinancialStatusBadgeClasses,
 } from '@/lib/helpers/financialUtils'
-import { TrendingUp, TrendingDown } from 'lucide-react'
-
-export interface FinancialTableColumn<T = Record<string, any>> {
+export interface FinancialTableColumn<T = Record<string, unknown>> {
   key: string
   label: string
   render?: (item: T) => React.ReactNode
 }
-
-export interface FinancialTableProps<T extends Record<string, any>> {
+export interface FinancialTableProps<T extends Record<string, unknown>> {
   items: T[]
   columns: FinancialTableColumn<T>[]
   isLoading: boolean
@@ -27,7 +25,7 @@ export interface FinancialTableProps<T extends Record<string, any>> {
   getStatusLabelField?: (item: T) => string
 }
 
-export function FinancialTable<T extends Record<string, any>>(
+export function FinancialTable<T extends Record<string, unknown>>(
   props: FinancialTableProps<T>,
 ) {
   const {
@@ -131,7 +129,7 @@ export function FinancialTable<T extends Record<string, any>>(
                             <TrendingDown className="text-red-600" size={16} />
                           )}
                           <span className="text-sm font-medium text-gray-900">
-                            {item[col.key]}
+                            {String(item[col.key] ?? '')}
                           </span>
                         </div>
                       </td>
@@ -172,7 +170,7 @@ export function FinancialTable<T extends Record<string, any>>(
                         key={col.key}
                         className="py-3 px-3 text-sm text-gray-600"
                       >
-                        {formatTransactionDate(item[col.key])}
+                        {formatTransactionDate(String(item[col.key] ?? ''))}
                       </td>
                     )
                   }
@@ -182,7 +180,7 @@ export function FinancialTable<T extends Record<string, any>>(
                       key={col.key}
                       className="py-3 px-3 text-sm text-gray-600"
                     >
-                      {item[col.key]}
+                      {String(item[col.key] ?? '')}
                     </td>
                   )
                 })}

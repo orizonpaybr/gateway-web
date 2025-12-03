@@ -1,16 +1,14 @@
 'use client'
 
 import React, { memo, useMemo } from 'react'
+import Image from 'next/image'
 import { Card } from '@/components/ui/Card'
 import { Skeleton } from '@/components/ui/Skeleton'
-import Image from 'next/image'
-
 interface AchievementMessage {
   level: string
   message: string
   icon: string
 }
-
 interface AchievementMessagesProps {
   messages: AchievementMessage[]
   isLoading?: boolean
@@ -43,7 +41,7 @@ export const AchievementMessages = memo<AchievementMessagesProps>(
       <Card className="p-6">
         <h2 className="text-lg font-semibold mb-6">Mensagens de Conquista</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-          {memoizedMessages.map((achievement, index) => (
+          {memoizedMessages.map((achievement) => (
             <Card
               key={achievement.level}
               className="p-4 border hover:shadow-md transition-shadow h-32 flex flex-col"

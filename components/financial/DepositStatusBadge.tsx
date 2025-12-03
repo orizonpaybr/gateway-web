@@ -2,7 +2,6 @@
 
 import { memo } from 'react'
 import { Badge } from '@/components/ui/Badge'
-
 interface StatusConfig {
   label: string
   variant: 'default' | 'success' | 'warning' | 'error'
@@ -26,15 +25,14 @@ interface DepositStatusBadgeProps {
   statusLegivel?: string
 }
 
-export const DepositStatusBadge = memo(function DepositStatusBadge({
-  status,
-  statusLegivel,
-}: DepositStatusBadgeProps) {
-  const statusUpper = status.toUpperCase()
-  const config = STATUS_MAP[statusUpper] || {
-    label: statusLegivel || statusUpper.replace(/_/g, ' '),
-    variant: 'default' as const,
-  }
+export const DepositStatusBadge = memo(
+  ({ status, statusLegivel }: DepositStatusBadgeProps) => {
+    const statusUpper = status.toUpperCase()
+    const config = STATUS_MAP[statusUpper] || {
+      label: statusLegivel || statusUpper.replace(/_/g, ' '),
+      variant: 'default' as const,
+    }
 
-  return <Badge variant={config.variant}>{config.label}</Badge>
-})
+    return <Badge variant={config.variant}>{config.label}</Badge>
+  },
+)

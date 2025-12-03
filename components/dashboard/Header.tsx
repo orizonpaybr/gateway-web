@@ -1,15 +1,15 @@
 'use client'
 
 import { memo, useEffect, useRef, useState } from 'react'
-import { EyeOff, Eye, RefreshCw, Menu, Bell, CheckCircle2 } from 'lucide-react'
 import Link from 'next/link'
-import { Button } from '@/components/ui/Button'
-import { useNotifications } from '@/hooks/useNotifications'
 import { usePathname, useRouter } from 'next/navigation'
+import { EyeOff, Eye, RefreshCw, Menu, Bell, CheckCircle2 } from 'lucide-react'
+import { Button } from '@/components/ui/Button'
 import { useBalanceVisibility } from '@/contexts/BalanceVisibilityContext'
+import { useMobileMenu } from '@/contexts/MobileMenuContext'
+import { useNotifications } from '@/hooks/useNotifications'
 import { useDashboardStats } from '@/hooks/useReactQuery'
 import { formatCurrencyBRL } from '@/lib/format'
-import { useMobileMenu } from '@/contexts/MobileMenuContext'
 
 const pageTitles: Record<string, string> = {
   '/dashboard': 'Dashboard Orizon',
@@ -26,7 +26,7 @@ const pageTitles: Record<string, string> = {
   '/dashboard/api-docs': 'Dashboard Orizon',
 }
 
-export const Header = memo(function Header() {
+export const Header = memo(() => {
   const { isBalanceHidden, toggleBalanceVisibility } = useBalanceVisibility()
   const { toggleMobileMenu } = useMobileMenu()
   const pathname = usePathname()
@@ -46,29 +46,34 @@ export const Header = memo(function Header() {
     return () => window.removeEventListener('resize', checkIsMobile)
   }, [])
 
-  // Buscar dados do dashboard apenas quando não estiver na página inicial
   const isHomePage = pathname === '/dashboard'
   const { data: stats } = useDashboardStats()
   const twoFaEnabled =
     typeof window !== 'undefined' &&
     sessionStorage.getItem('2fa_verified') === 'true'
 
-  const { unreadCount, notifications, markOne, markAll, refetch } =
-    useNotifications({
-      limit: 50, // Buscar mais para ter dados suficientes para scroll
-      pollIntervalMs: 30000,
-      enabled: twoFaEnabled,
-    })
+  const {
+    unreadCount,
+    notifications,
+    markOne,
+    markAll: _markAll,
+    refetch,
+  } = useNotifications({
+    limit: 50, // Buscar mais para ter dados suficientes para scroll
+    pollIntervalMs: 30000,
+    enabled: twoFaEnabled,
+  })
   const [openDropdown, setOpenDropdown] = useState(false)
   const [hasSeenNotifications, setHasSeenNotifications] = useState(false)
-  const [visibleCount, setVisibleCount] = useState(5) // Começar com 5
+  const [visibleCount, setVisibleCount] = useState(5)
   const dropdownRef = useRef<HTMLDivElement | null>(null)
   const scrollContainerRef = useRef<HTMLDivElement | null>(null)
 
-  // Fechar ao clicar fora
   useEffect(() => {
     const handler = (e: MouseEvent) => {
-      if (!openDropdown) return
+      if (!openDropdown) {
+        return
+      }
       if (
         dropdownRef.current &&
         !dropdownRef.current.contains(e.target as Node)
@@ -80,12 +85,10 @@ export const Header = memo(function Header() {
     return () => document.removeEventListener('mousedown', handler)
   }, [openDropdown])
 
-  // Esconder badge quando dropdown é aberto (usuário visualizou)
   useEffect(() => {
     if (openDropdown) {
       setHasSeenNotifications(true)
       setVisibleCount(5)
-      // Atualizar lastSeenAt quando usuário abre dropdown
       if (notifications.length > 0 && notifications[0]?.created_at) {
         localStorage.setItem(
           'notifications_last_seen_at',
@@ -95,16 +98,16 @@ export const Header = memo(function Header() {
     }
   }, [openDropdown, notifications])
 
-  // Detectar scroll para carregar mais
   useEffect(() => {
-    if (!openDropdown || !scrollContainerRef.current) return
+    if (!openDropdown || !scrollContainerRef.current) {
+      return
+    }
 
     const container = scrollContainerRef.current
 
     const handleScroll = () => {
       const { scrollTop, scrollHeight, clientHeight } = container
-      // Quando estiver próximo do final, carregar mais 5
-      const threshold = 50 // pixels antes do final
+      const threshold = 50
       if (
         scrollHeight - scrollTop - clientHeight <= threshold &&
         visibleCount < notifications.length
@@ -144,9 +147,7 @@ export const Header = memo(function Header() {
   })
 
   const handleRefresh = () => {
-    // Refetch notificações
     refetch()
-    // Recarregar página para atualizar todos os dados
     window.location.reload()
   }
 
@@ -217,7 +218,9 @@ export const Header = memo(function Header() {
                       <button
                         key={n.id}
                         onClick={async () => {
-                          if (!n.read_at) await markOne(n.id)
+                          if (!n.read_at) {
+                            await markOne(n.id)
+                          }
                           setOpenDropdown(false)
                           router.push(
                             `/dashboard/notificacoes?highlight=${n.id}`,
@@ -280,7 +283,7 @@ export const Header = memo(function Header() {
           <span className="hidden sm:inline">
             {!isHomePage
               ? formattedBalance
-              : (isBalanceHidden ? 'Mostrar' : 'Ocultar') + ' Saldo'}
+              : `${isBalanceHidden ? 'Mostrar' : 'Ocultar'} Saldo`}
           </span>
         </Button>
 

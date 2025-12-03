@@ -1,16 +1,15 @@
 import { memo, useState, useCallback, useRef } from 'react'
-import { Card } from '@/components/ui/Card'
-import { Button } from '@/components/ui/Button'
-import { Input } from '@/components/ui/Input'
-import { Key, Copy, Plus, Trash2, AlertCircle, RefreshCw } from 'lucide-react'
-import { integrationAPI } from '@/lib/api'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
-import { Dialog } from '@/components/ui/Dialog'
-import { TwoFactorModal } from '@/components/modals/TwoFactorModal'
-import { twoFactorAPI } from '@/lib/api'
+import { Key, Copy, Plus, Trash2, AlertCircle, RefreshCw } from 'lucide-react'
 import { toast } from 'sonner'
+import { TwoFactorModal } from '@/components/modals/TwoFactorModal'
+import { Button } from '@/components/ui/Button'
+import { Card } from '@/components/ui/Card'
+import { Dialog } from '@/components/ui/Dialog'
+import { Input } from '@/components/ui/Input'
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import { useAuth } from '@/contexts/AuthContext'
+import { integrationAPI, twoFactorAPI } from '@/lib/api'
 
 export const ConfiguracoesIntegracaoTab = memo(() => {
   const { authReady } = useAuth()
@@ -27,7 +26,7 @@ export const ConfiguracoesIntegracaoTab = memo(() => {
     queryKey: ['integration', 'credentials'],
     queryFn: integrationAPI.getCredentials,
     enabled: authReady,
-    staleTime: 5 * 60 * 1000, // 5 minutos
+    staleTime: 5 * 60 * 1000,
     refetchOnWindowFocus: false,
   })
 
@@ -40,7 +39,7 @@ export const ConfiguracoesIntegracaoTab = memo(() => {
     queryKey: ['integration', 'allowed-ips'],
     queryFn: integrationAPI.getAllowedIPs,
     enabled: authReady,
-    staleTime: 2 * 60 * 1000, // 2 minutos
+    staleTime: 2 * 60 * 1000,
   })
 
   // Verificar status 2FA
@@ -54,7 +53,7 @@ export const ConfiguracoesIntegracaoTab = memo(() => {
   // Mutation para regenerar secret
   const regenerateSecretMutation = useMutation({
     mutationFn: (pin?: string) => integrationAPI.regenerateSecret(pin),
-    onSuccess: (data) => {
+    onSuccess: (_data) => {
       queryClient.invalidateQueries({
         queryKey: ['integration', 'credentials'],
       })
@@ -118,7 +117,9 @@ export const ConfiguracoesIntegracaoTab = memo(() => {
   }, [])
 
   const handleAddIP = useCallback(() => {
-    if (!novoIP.trim()) return
+    if (!novoIP.trim()) {
+      return
+    }
 
     // Validação básica de IP
     const ipRegex = /^(\d{1,3}\.){3}\d{1,3}$/
@@ -150,22 +151,22 @@ export const ConfiguracoesIntegracaoTab = memo(() => {
         pendingRemoveIPRef.current = ip // Guardar também no ref
         setShow2FAModal(true)
       } else {
-        if (confirm('Tem certeza que deseja remover este IP?')) {
-          removeIPMutation.mutate({ ip })
-        }
+        setShowConfirmRemoveIP(ip)
       }
     },
-    [twoFAStatus?.enabled, removeIPMutation],
+    [twoFAStatus?.enabled],
   )
 
   // ==== 2FA e Dialogs ====
   const [showConfirm, setShowConfirm] = useState(false)
-  const [showConfirmRemoveIP, setShowConfirmRemoveIP] = useState(false)
+  const [showConfirmRemoveIP, setShowConfirmRemoveIP] = useState<string | null>(
+    null,
+  )
   const [show2FAModal, setShow2FAModal] = useState(false)
   const [pendingRegenerate, setPendingRegenerate] = useState(false)
   const [pendingAddIP, setPendingAddIP] = useState<string | null>(null)
   const [pendingRemoveIP, setPendingRemoveIP] = useState<string | null>(null)
-  const [pendingRemoveIPPin, setPendingRemoveIPPin] = useState<
+  const [_pendingRemoveIPPin, setPendingRemoveIPPin] = useState<
     string | undefined
   >(undefined)
 
@@ -198,12 +199,10 @@ export const ConfiguracoesIntegracaoTab = memo(() => {
         addIPMutation.mutate({ ip: pendingAddIP, pin })
         setPendingAddIP(null)
       } else if (pendingRemoveIP) {
-        // Guardar PIN e mostrar dialog de confirmação
-        // Usar refs para garantir que os valores sejam preservados
         pendingRemoveIPRef.current = pendingRemoveIP
         pendingRemoveIPPinRef.current = pin
         setPendingRemoveIPPin(pin)
-        setShowConfirmRemoveIP(true)
+        setShowConfirmRemoveIP(pendingRemoveIP)
       }
     },
     [
@@ -216,12 +215,11 @@ export const ConfiguracoesIntegracaoTab = memo(() => {
   )
 
   const handleConfirmRemoveIP = useCallback(() => {
-    // Usar refs para garantir que temos os valores corretos
     const ipToRemove = pendingRemoveIPRef.current
     const pinToUse = pendingRemoveIPPinRef.current
 
     if (ipToRemove && pinToUse !== undefined) {
-      setShowConfirmRemoveIP(false)
+      setShowConfirmRemoveIP(null)
       removeIPMutation.mutate(
         { ip: ipToRemove, pin: pinToUse },
         {
@@ -237,11 +235,10 @@ export const ConfiguracoesIntegracaoTab = memo(() => {
         },
       )
     } else {
-      setShowConfirmRemoveIP(false)
+      setShowConfirmRemoveIP(null)
     }
   }, [removeIPMutation])
 
-  // Loading state
   if (isLoadingCredentials || isLoadingIPs) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -250,7 +247,6 @@ export const ConfiguracoesIntegracaoTab = memo(() => {
     )
   }
 
-  // Error state
   if (credentialsError || ipsError) {
     return (
       <div className="bg-red-50 border border-red-200 rounded-lg p-4">
@@ -283,9 +279,9 @@ export const ConfiguracoesIntegracaoTab = memo(() => {
 
         <div className="space-y-4">
           <div>
-            <label className="text-xs font-semibold text-gray-600 uppercase mb-2 block">
+            <div className="text-xs font-semibold text-gray-600 uppercase mb-2 block">
               Client Key
-            </label>
+            </div>
             <div className="flex flex-col sm:flex-row gap-2">
               <div
                 className="flex-1 bg-gray-50 px-4 py-3 rounded-lg font-mono text-sm text-gray-900 border border-gray-200 break-all min-w-0"
@@ -309,9 +305,9 @@ export const ConfiguracoesIntegracaoTab = memo(() => {
           </div>
 
           <div>
-            <label className="text-xs font-semibold text-gray-600 uppercase mb-2 block">
+            <div className="text-xs font-semibold text-gray-600 uppercase mb-2 block">
               Client Secret
-            </label>
+            </div>
             <div className="flex flex-col sm:flex-row gap-2">
               <div
                 className="flex-1 bg-gray-50 px-4 py-3 rounded-lg font-mono text-sm text-gray-900 border border-gray-200 break-all min-w-0"
@@ -402,13 +398,14 @@ export const ConfiguracoesIntegracaoTab = memo(() => {
                     onChange={(e) => setNovoIP(e.target.value)}
                     className="flex-1"
                     onKeyDown={(e) => {
-                      if (e.key === 'Enter') handleAddIP()
+                      if (e.key === 'Enter') {
+                        handleAddIP()
+                      }
                       if (e.key === 'Escape') {
                         setIsAddingIP(false)
                         setNovoIP('')
                       }
                     }}
-                    autoFocus
                     data-cy="new-ip-input"
                   />
                   <Button
@@ -523,9 +520,9 @@ export const ConfiguracoesIntegracaoTab = memo(() => {
       />
 
       <Dialog
-        open={showConfirmRemoveIP}
+        open={!!showConfirmRemoveIP}
         onClose={() => {
-          setShowConfirmRemoveIP(false)
+          setShowConfirmRemoveIP(null)
           setPendingRemoveIP(null)
           setPendingRemoveIPPin(undefined)
           pendingRemoveIPRef.current = null
@@ -539,14 +536,17 @@ export const ConfiguracoesIntegracaoTab = memo(() => {
           </h3>
           <p className="text-sm text-gray-700 mb-4">
             Tem certeza que deseja remover o IP{' '}
-            <span className="font-mono font-semibold">{pendingRemoveIP}</span>?
+            <span className="font-mono font-semibold">
+              {showConfirmRemoveIP}
+            </span>
+            ?
           </p>
           <div className="mt-4 flex justify-end gap-2">
             <Button
               variant="outline"
               type="button"
               onClick={() => {
-                setShowConfirmRemoveIP(false)
+                setShowConfirmRemoveIP(null)
                 setPendingRemoveIP(null)
                 setPendingRemoveIPPin(undefined)
                 pendingRemoveIPRef.current = null

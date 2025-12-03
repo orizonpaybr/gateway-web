@@ -1,13 +1,12 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
-import { Shield } from 'lucide-react'
-import { Button } from '@/components/ui/Button'
-import { twoFactorAPI } from '@/lib/api'
-import { toast } from 'sonner'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
+import { Shield } from 'lucide-react'
+import { toast } from 'sonner'
+import { Button } from '@/components/ui/Button'
 import { useAuth } from '@/contexts/AuthContext'
-
+import { twoFactorAPI } from '@/lib/api'
 interface PinInputProps {
   value: string
   onChange: (value: string) => void
@@ -17,7 +16,7 @@ interface PinInputProps {
 
 function PinInput({ value, onChange, onKeyPress, autoFocus }: PinInputProps) {
   const inputRefs = useRef<(HTMLInputElement | null)[]>([])
-  const [focusedIndex, setFocusedIndex] = useState(0)
+  const [_focusedIndex, setFocusedIndex] = useState(0)
 
   useEffect(() => {
     if (autoFocus && inputRefs.current[0]) {
@@ -26,7 +25,9 @@ function PinInput({ value, onChange, onKeyPress, autoFocus }: PinInputProps) {
   }, [autoFocus])
 
   const handleChange = (index: number, digit: string) => {
-    if (!/^\d$/.test(digit) && digit !== '') return
+    if (!/^\d$/.test(digit) && digit !== '') {
+      return
+    }
 
     const newValue = value.split('')
     newValue[index] = digit
@@ -97,14 +98,7 @@ export function TwoFactorVerify() {
   const router = useRouter()
   const hasChecked = useRef(false)
 
-  useEffect(() => {
-    if ((user || tempToken) && !hasChecked.current) {
-      hasChecked.current = true
-      checkIfNeedsVerification()
-    }
-  }, [user, tempToken])
-
-  const checkIfNeedsVerification = async () => {
+  const checkIfNeedsVerification = useCallback(async () => {
     if (tempToken) {
       setShouldRender(true)
       setShowModal(true)
@@ -121,7 +115,14 @@ export function TwoFactorVerify() {
 
     setShouldRender(false)
     setIsVerified(true)
-  }
+  }, [tempToken])
+
+  useEffect(() => {
+    if ((user || tempToken) && !hasChecked.current) {
+      hasChecked.current = true
+      checkIfNeedsVerification()
+    }
+  }, [user, tempToken, checkIfNeedsVerification])
 
   if (!shouldRender) {
     return null
@@ -164,7 +165,7 @@ export function TwoFactorVerify() {
         })
         setCode('')
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Erro ao verificar PIN:', error)
       toast.error('Erro na verificação', {
         description: 'Erro ao conectar com o servidor',
@@ -186,7 +187,9 @@ export function TwoFactorVerify() {
     router.push('/login')
   }
 
-  if (!showModal || isVerified) return null
+  if (!showModal || isVerified) {
+    return null
+  }
 
   return (
     <>
@@ -213,14 +216,16 @@ export function TwoFactorVerify() {
 
           <div className="space-y-3">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="two-factor-pin-input"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 PIN de Segurança
               </label>
               <PinInput
                 value={code}
                 onChange={setCode}
                 onKeyPress={handleKeyPress}
-                autoFocus
               />
             </div>
 
