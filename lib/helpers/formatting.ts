@@ -1,10 +1,5 @@
-/**
- * Hooks e helpers de formatação
- * Centraliza formatação de dados (DRY)
- * Usa useCallback para memoização
- */
-
 import { useCallback } from 'react'
+
 import {
   formatDateBR,
   formatCurrencyBRL,
@@ -17,7 +12,9 @@ import {
  */
 export function useFormatDate() {
   return useCallback((dateStr?: string | null): string => {
-    if (!dateStr) return '-'
+    if (!dateStr) {
+      return '-'
+    }
     return formatDateBR(dateStr)
   }, [])
 }
@@ -50,7 +47,9 @@ export function useFormatNumber(decimals: number = 2) {
  * Útil para uso fora de componentes React
  */
 export function formatDate(dateStr?: string | null): string {
-  if (!dateStr) return '-'
+  if (!dateStr) {
+    return '-'
+  }
   return formatDateBR(dateStr)
 }
 

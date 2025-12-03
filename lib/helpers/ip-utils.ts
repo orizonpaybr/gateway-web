@@ -1,7 +1,9 @@
 export function isValidIPv4(ip: string): boolean {
   const ipv4Regex = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/
 
-  if (!ipv4Regex.test(ip)) return false
+  if (!ipv4Regex.test(ip)) {
+    return false
+  }
 
   const parts = ip.split('.').map(Number)
   return parts.every((part) => part >= 0 && part <= 255)
@@ -22,7 +24,7 @@ export function maskIPInput(value: string): string {
   const limitedParts = parts.slice(0, 4)
 
   // Limitar cada octeto a 3 dígitos e máximo 255
-  const maskedParts = limitedParts.map((part, index) => {
+  const maskedParts = limitedParts.map((part) => {
     // Limitar a 3 dígitos
     let limited = part.slice(0, 3)
 

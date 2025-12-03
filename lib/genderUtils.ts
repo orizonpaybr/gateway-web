@@ -1,6 +1,3 @@
-// Utilitários para identificação de gênero por nome
-
-// Nomes femininos comuns no Brasil - usando Set para performance O(1)
 const FEMALE_NAMES = new Set([
   'ana',
   'maria',
@@ -210,7 +207,9 @@ export function detectGenderByName(
  * @returns Número aleatório consistente
  */
 export function getConsistentRandom(name: string, max: number): number {
-  if (!name || max <= 0) return 0
+  if (!name || max <= 0) {
+    return 0
+  }
 
   let hash = 0
   for (let i = 0; i < name.length; i++) {

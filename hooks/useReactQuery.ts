@@ -1,12 +1,16 @@
-// lib/react-query.ts
-import { QueryClient } from '@tanstack/react-query'
+import {
+  QueryClient,
+  useQuery,
+  useMutation,
+  useQueryClient,
+} from '@tanstack/react-query'
 import { useAuth } from '@/contexts/AuthContext'
 
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 5 * 60 * 1000, // 5 minutos
-      gcTime: 10 * 60 * 1000, // 10 minutos (cacheTime foi renomeado para gcTime)
+      staleTime: 5 * 60 * 1000,
+      gcTime: 10 * 60 * 1000,
       refetchOnWindowFocus: false,
       retry: 2,
       retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
@@ -16,9 +20,6 @@ export const queryClient = new QueryClient({
     },
   },
 })
-
-// Importações centralizadas dos hooks do React Query
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   transactionsAPI,
   dashboardAPI,
@@ -46,24 +47,24 @@ export function useQRCodes(filters: QRCodeFilters = {}) {
   return useQuery({
     queryKey: ['qrcodes', filters],
     queryFn: () => qrCodeAPI.list(filters),
-    enabled: authReady, // ✅ Só executar quando autenticado
-    staleTime: 2 * 60 * 1000, // 2 minutos para dados dinâmicos
-    gcTime: 5 * 60 * 1000, // 5 minutos
+    enabled: authReady,
+    staleTime: 2 * 60 * 1000,
+    gcTime: 5 * 60 * 1000,
     refetchOnWindowFocus: false,
     retry: 2,
   })
 }
 
 // ===== TRANSACTIONS HOOKS =====
-export function useTransactions(filters: any = {}) {
+export function useTransactions(filters: Record<string, unknown> = {}) {
   const { authReady } = useAuth()
 
   return useQuery({
     queryKey: ['transactions', filters],
     queryFn: () => transactionsAPI.list(filters),
-    enabled: authReady, // ✅ Só executar quando autenticado
-    staleTime: 1 * 60 * 1000, // 1 minuto para transações
-    gcTime: 3 * 60 * 1000, // 3 minutos
+    enabled: authReady,
+    staleTime: 1 * 60 * 1000,
+    gcTime: 3 * 60 * 1000,
     refetchOnWindowFocus: false,
   })
 }
@@ -85,9 +86,9 @@ export function useExtrato(filters: ExtratoFilters = {}) {
   return useQuery({
     queryKey: ['extrato', filters],
     queryFn: () => extratoAPI.list(filters),
-    enabled: authReady, // ✅ Só executar quando autenticado
-    staleTime: 2 * 60 * 1000, // 2 minutos para extrato
-    gcTime: 5 * 60 * 1000, // 5 minutos
+    enabled: authReady,
+    staleTime: 2 * 60 * 1000,
+    gcTime: 5 * 60 * 1000,
     refetchOnWindowFocus: false,
     retry: 2,
   })
@@ -101,9 +102,9 @@ export function useExtratoSummary(
   return useQuery({
     queryKey: ['extrato', 'summary', filters],
     queryFn: () => extratoAPI.getSummary(filters),
-    enabled: authReady, // ✅ Só executar quando autenticado
-    staleTime: 2 * 60 * 1000, // 2 minutos para resumo
-    gcTime: 5 * 60 * 1000, // 5 minutos
+    enabled: authReady,
+    staleTime: 2 * 60 * 1000,
+    gcTime: 5 * 60 * 1000,
     refetchOnWindowFocus: false,
     retry: 2,
   })
@@ -115,7 +116,7 @@ export function useRecentTransactions(limit: number = 7) {
   return useQuery({
     queryKey: ['transactions', 'recent', limit],
     queryFn: () => transactionsAPI.list({ limit, page: 1 }),
-    enabled: authReady, // ✅ Só executar quando autenticado
+    enabled: authReady,
     staleTime: 1 * 60 * 1000,
     gcTime: 3 * 60 * 1000,
     refetchOnWindowFocus: false,
@@ -129,9 +130,9 @@ export function useDashboardStats() {
   return useQuery({
     queryKey: ['dashboard', 'stats'],
     queryFn: () => dashboardAPI.getStats(),
-    enabled: authReady, // ✅ Só executar quando autenticado
-    staleTime: 2 * 60 * 1000, // 2 minutos para estatísticas
-    gcTime: 5 * 60 * 1000, // 5 minutos
+    enabled: authReady,
+    staleTime: 2 * 60 * 1000,
+    gcTime: 5 * 60 * 1000,
     refetchOnWindowFocus: false,
   })
 }
@@ -142,9 +143,9 @@ export function useTransactionChart(period: string = '7d') {
   return useQuery({
     queryKey: ['dashboard', 'chart', period],
     queryFn: () => dashboardAPI.getInteractiveMovement(period),
-    enabled: authReady, // ✅ Só executar quando autenticado
-    staleTime: 1 * 60 * 1000, // 1 minuto para gráficos
-    gcTime: 3 * 60 * 1000, // 3 minutos
+    enabled: authReady,
+    staleTime: 1 * 60 * 1000,
+    gcTime: 3 * 60 * 1000,
     refetchOnWindowFocus: false,
   })
 }
@@ -155,9 +156,9 @@ export function useTransactionSummary(period: string = '7d') {
   return useQuery({
     queryKey: ['dashboard', 'summary', period],
     queryFn: () => dashboardAPI.getTransactionSummary(period),
-    enabled: authReady, // ✅ Só executar quando autenticado
-    staleTime: 1 * 60 * 1000, // 1 minuto para resumos
-    gcTime: 3 * 60 * 1000, // 3 minutos
+    enabled: authReady,
+    staleTime: 1 * 60 * 1000,
+    gcTime: 3 * 60 * 1000,
     refetchOnWindowFocus: false,
   })
 }
@@ -168,23 +169,23 @@ export function useInteractiveMovement(period: string = '7d') {
   return useQuery({
     queryKey: ['dashboard', 'interactive', period],
     queryFn: () => dashboardAPI.getInteractiveMovement(period),
-    enabled: authReady, // ✅ Só executar quando autenticado
-    staleTime: 1 * 60 * 1000, // 1 minuto para movimento interativo
-    gcTime: 3 * 60 * 1000, // 3 minutos
+    enabled: authReady,
+    staleTime: 1 * 60 * 1000,
+    gcTime: 3 * 60 * 1000,
     refetchOnWindowFocus: false,
   })
 }
 
 // ===== PIX INFRAÇÕES HOOKS =====
-export function usePixInfracoes(filters: any = {}) {
+export function usePixInfracoes(filters: Record<string, unknown> = {}) {
   const { authReady } = useAuth()
 
   return useQuery({
     queryKey: ['pix-infracoes', filters],
     queryFn: () => pixAPI.listInfracoes(filters),
-    enabled: authReady, // ✅ Só executar quando autenticado
-    staleTime: 2 * 60 * 1000, // 2 minutos para infrações
-    gcTime: 5 * 60 * 1000, // 5 minutos
+    enabled: authReady,
+    staleTime: 2 * 60 * 1000,
+    gcTime: 5 * 60 * 1000,
     refetchOnWindowFocus: false,
   })
 }
@@ -194,8 +195,8 @@ export function useProfile() {
   return useQuery({
     queryKey: ['profile'],
     queryFn: () => authAPI.verifyToken(),
-    staleTime: 5 * 60 * 1000, // 5 minutos para perfil
-    gcTime: 10 * 60 * 1000, // 10 minutos
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
     refetchOnWindowFocus: false,
   })
 }
@@ -206,13 +207,16 @@ export function useLogin() {
   return useMutation({
     mutationFn: (credentials: { email: string; password: string }) =>
       authAPI.login(credentials.email, credentials.password),
-    onSuccess: (data) => {
+    onSuccess: (_data) => {
       // Invalida queries relacionadas ao auth
       queryClient.invalidateQueries({ queryKey: ['profile'] })
       toast.success('Login realizado com sucesso!')
     },
-    onError: (error: any) => {
-      toast.error(error?.response?.data?.message || 'Erro ao fazer login')
+    onError: (error: unknown) => {
+      const errorMessage =
+        (error as { response?: { data?: { message?: string } } })?.response
+          ?.data?.message || 'Erro ao fazer login'
+      toast.error(errorMessage)
     },
   })
 }
@@ -223,12 +227,14 @@ export function useLogout() {
   return useMutation({
     mutationFn: () => authAPI.logout(),
     onSuccess: () => {
-      // Limpa todo o cache
       queryClient.clear()
       toast.success('Logout realizado com sucesso!')
     },
-    onError: (error: any) => {
-      toast.error(error?.response?.data?.message || 'Erro ao fazer logout')
+    onError: (error: unknown) => {
+      const errorMessage =
+        (error as { response?: { data?: { message?: string } } })?.response
+          ?.data?.message || 'Erro ao fazer logout'
+      toast.error(errorMessage)
     },
   })
 }
@@ -240,9 +246,9 @@ export function useAccountData() {
   return useQuery({
     queryKey: ['account'],
     queryFn: () => accountAPI.getProfile(),
-    enabled: authReady, // ✅ Só executar quando autenticado
-    staleTime: 5 * 60 * 1000, // 5 minutos para dados da conta
-    gcTime: 10 * 60 * 1000, // 10 minutos
+    enabled: authReady,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
     refetchOnWindowFocus: false,
   })
 }
@@ -251,15 +257,17 @@ export function useUpdateAccount() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (data: any) => accountAPI.updateProfile(data),
+    mutationFn: (data: Record<string, unknown>) =>
+      accountAPI.updateProfile(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['account'] })
       toast.success('Dados da conta atualizados com sucesso!')
     },
-    onError: (error: any) => {
-      toast.error(
-        error?.response?.data?.message || 'Erro ao atualizar dados da conta',
-      )
+    onError: (error: unknown) => {
+      const errorMessage =
+        (error as { response?: { data?: { message?: string } } })?.response
+          ?.data?.message || 'Erro ao atualizar dados da conta'
+      toast.error(errorMessage)
     },
   })
 }
@@ -300,7 +308,7 @@ export function useGamificationData() {
 
       return data
     },
-    enabled: authReady, // ✅ Só executar quando authReady for true
+    enabled: authReady,
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
     refetchOnWindowFocus: false,

@@ -1,8 +1,3 @@
-/**
- * Utilitários para gerenciamento financeiro
- * Centraliza lógica reutilizável
- */
-
 import { format } from 'date-fns'
 
 /**

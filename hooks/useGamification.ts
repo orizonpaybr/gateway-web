@@ -1,4 +1,6 @@
 'use client'
+
+import { useCallback } from 'react'
 import { useGamificationData } from './useReactQuery'
 import { useStableMemo, useStableCallback } from './useGlobalMemo'
 
@@ -41,7 +43,9 @@ export function useGamification() {
 
   // Memorização de dados processados
   const processedData = useStableMemo(() => {
-    if (!data?.data) return null
+    if (!data?.data) {
+      return null
+    }
 
     const gamificationData: GamificationData = data.data
 
@@ -79,13 +83,11 @@ export function useGamification() {
     }
   }, [data])
 
-  // Callback estável para refresh
   const refreshData = useStableCallback(() => {
     refetch()
   }, [refetch])
 
-  // Callback estável para formatação de moeda
-  const formatCurrency = useStableCallback((value: number) => {
+  const formatCurrency = useCallback((value: number) => {
     return value.toLocaleString('pt-BR', {
       style: 'currency',
       currency: 'BRL',

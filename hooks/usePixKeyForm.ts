@@ -8,12 +8,6 @@ import { centsToBRL } from '@/lib/format'
 import { toast } from 'sonner'
 import { useAuth } from '@/contexts/AuthContext'
 
-/**
- * Hook customizado para gerenciar o formulário de PIX com chave
- * Centraliza toda a lógica de estado, validações e mutações
- *
- * @returns {Object} Estado e handlers do formulário
- */
 export function usePixKeyForm() {
   const queryClient = useQueryClient()
   const { authReady } = useAuth()
@@ -22,23 +16,23 @@ export function usePixKeyForm() {
   const [step, setStep] = useState<'form' | 'confirm'>('form')
   const [selectedKeyType, setSelectedKeyType] = useState<PixKeyType>('cpf')
   const [keyValue, setKeyValue] = useState('')
-  const [amount, setAmount] = useState('') // Valor em centavos como string
+  const [amount, setAmount] = useState('')
 
   // ===== QUERIES (com cache automático via React Query) =====
   const { data: balanceData, isLoading: isLoadingBalance } = useQuery({
     queryKey: ['balance'],
     queryFn: accountAPI.getBalance,
-    enabled: authReady, // ✅ Só executar quando autenticado
-    refetchInterval: 30000, // Refetch a cada 30s
-    staleTime: 10000, // Cache válido por 10s
+    enabled: authReady,
+    refetchInterval: 30000,
+    staleTime: 10000,
   })
 
   const { data: savedKeysData, isLoading: isLoadingKeys } = useQuery({
     queryKey: ['pix-keys'],
     queryFn: pixAPI.listKeys,
-    enabled: authReady, // ✅ Só executar quando autenticado
-    staleTime: 60000, // Cache válido por 60s
-    gcTime: 300000, // Garbage collection após 5min
+    enabled: authReady,
+    staleTime: 60000,
+    gcTime: 300000,
   })
 
   // ===== MUTATION (Saque) =====
@@ -50,11 +44,12 @@ export function usePixKeyForm() {
       queryClient.invalidateQueries({ queryKey: ['balance'] })
       queryClient.invalidateQueries({ queryKey: ['transactions'] })
       queryClient.invalidateQueries({ queryKey: ['recent-transactions'] })
-      // Reset form
       resetForm()
     },
-    onError: (error: any) => {
-      toast.error(error.message || 'Erro ao realizar saque')
+    onError: (error: unknown) => {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Erro ao realizar saque'
+      toast.error(errorMessage)
     },
   })
 
@@ -102,7 +97,7 @@ export function usePixKeyForm() {
 
   const handleKeyTypeChange = useCallback((type: PixKeyType) => {
     setSelectedKeyType(type)
-    setKeyValue('') // Limpar valor ao mudar tipo
+    setKeyValue('')
   }, [])
 
   const handleAdvanceToConfirm = useCallback(() => {
@@ -130,7 +125,7 @@ export function usePixKeyForm() {
   const handleConfirmWithdraw = useCallback(() => {
     withdrawMutation.mutate({
       key_type: selectedKeyType,
-      key_value: keyValue.replace(/\D/g, ''), // Remove formatação
+      key_value: keyValue.replace(/\D/g, ''),
       amount: numericAmount,
     })
   }, [selectedKeyType, keyValue, numericAmount, withdrawMutation])

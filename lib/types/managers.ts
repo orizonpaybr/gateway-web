@@ -1,13 +1,3 @@
-/**
- * Type definitions para o módulo de Gerentes
- *
- * Segue padrões:
- * - Type Safety
- * - Documentação inline
- * - Reutilização de tipos
- * - Separação de concerns
- */
-
 // ==================== Base Types ====================
 
 /**

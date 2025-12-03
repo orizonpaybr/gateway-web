@@ -1,28 +1,38 @@
-// hooks/useGlobalMemo.ts
 'use client'
 
-import { useMemo, useRef, useCallback } from 'react'
+import { useRef } from 'react'
 
-interface MemoizedFunction<T extends (...args: any[]) => any> {
+interface MemoizedFunction<T extends (...args: unknown[]) => unknown> {
   (...args: Parameters<T>): ReturnType<T>
 }
 
-export function useGlobalMemo<T extends (...args: any[]) => any>(
+export function useGlobalMemo<T extends (...args: unknown[]) => unknown>(
   fn: T,
   deps: React.DependencyList,
 ): MemoizedFunction<T> {
-  const memoizedFn = useMemo(() => fn, deps)
-  const cacheRef = useRef(new Map<string, ReturnType<T>>())
+  const depsRef = useRef<React.DependencyList>([])
+  const fnRef = useRef<T>(fn)
+  const memoizedFnRef = useRef<T>(fn)
 
-  return useCallback(
-    (...args: Parameters<T>) => {
+  if (!areEqual(depsRef.current, deps) || fnRef.current !== fn) {
+    depsRef.current = deps
+    fnRef.current = fn
+    memoizedFnRef.current = fn
+  }
+
+  const cacheRef = useRef(new Map<string, ReturnType<T>>())
+  const callbackRef = useRef<MemoizedFunction<T>>()
+
+  if (!callbackRef.current) {
+    callbackRef.current = ((...args: Parameters<T>) => {
       const key = JSON.stringify(args)
 
-      if (cacheRef.current.has(key)) {
-        return cacheRef.current.get(key)!
+      const cached = cacheRef.current.get(key)
+      if (cached !== undefined) {
+        return cached
       }
 
-      const result = memoizedFn(...args)
+      const result = fnRef.current(...args) as ReturnType<T>
       cacheRef.current.set(key, result)
 
       // Limitar cache para evitar vazamentos de memória
@@ -34,12 +44,12 @@ export function useGlobalMemo<T extends (...args: any[]) => any>(
       }
 
       return result
-    },
-    [memoizedFn],
-  )
+    }) as MemoizedFunction<T>
+  }
+
+  return callbackRef.current
 }
 
-// Hook para memoizar objetos complexos
 export function useStableMemo<T>(
   factory: () => T,
   deps: React.DependencyList,
@@ -54,20 +64,32 @@ export function useStableMemo<T>(
 }
 
 function areEqual(a: React.DependencyList, b: React.DependencyList): boolean {
-  if (a.length !== b.length) return false
+  if (a.length !== b.length) {
+    return false
+  }
 
   for (let i = 0; i < a.length; i++) {
-    if (a[i] !== b[i]) return false
+    if (a[i] !== b[i]) {
+      return false
+    }
   }
 
   return true
 }
 
-// Hook para memoizar callbacks com dependências estáveis
-export function useStableCallback<T extends (...args: any[]) => any>(
+export function useStableCallback<T extends (...args: unknown[]) => unknown>(
   callback: T,
-  deps: React.DependencyList,
+  _deps: React.DependencyList,
 ): T {
-  const stableDeps = useStableMemo(() => deps, deps)
-  return useCallback(callback, stableDeps)
+  const callbackRef = useRef<T>(callback)
+  const stableCallbackRef = useRef<T>()
+
+  if (callbackRef.current !== callback || !stableCallbackRef.current) {
+    callbackRef.current = callback
+    stableCallbackRef.current = ((...args: Parameters<T>) => {
+      return callbackRef.current(...args)
+    }) as T
+  }
+
+  return stableCallbackRef.current
 }

@@ -1,14 +1,4 @@
 /**
- * Utilit\u00e1rios para manipula\u00e7\u00e3o de moeda (BRL)
- *
- * Conven\u00e7\u00f5es:
- * - Frontend usa "centavos" (string) para inputs mascarados
- * - Backend usa "reais" (number) para c\u00e1lculos
- *
- * @module lib/currency
- */
-
-/**
  * Converte string de centavos (CurrencyInput) para valor em reais (number)
  *
  * @example
@@ -20,7 +10,9 @@
  */
 export function toReais(value: string): number {
   const numeric = parseFloat(value || '0')
-  if (Number.isNaN(numeric)) return 0
+  if (Number.isNaN(numeric)) {
+    return 0
+  }
   return numeric / 100
 }
 
@@ -38,7 +30,9 @@ export function toReais(value: string): number {
 export function reaisToCentsString(
   value: number | string | null | undefined,
 ): string {
-  if (value === null || value === undefined) return '0'
+  if (value === null || value === undefined) {
+    return '0'
+  }
 
   let numeric: number
 

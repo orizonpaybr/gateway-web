@@ -1,14 +1,5 @@
 import { z } from 'zod'
 
-/**
- * Schema Zod para validação de Nível de Gamificação
- *
- * Garante type-safety e validações consistentes
- * entre formulário e API
- *
- * @module lib/schemas/nivel
- */
-
 export const nivelSchema = z.object({
   id: z.number().int().positive(),
   nome: z.string().min(1, 'Nome é obrigatório').max(100, 'Nome muito longo'),

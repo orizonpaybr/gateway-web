@@ -1,12 +1,3 @@
-/**
- * Constantes para transações manuais
- * Centraliza valores configuráveis e magic numbers
- */
-
-/**
- * Divisor para conversão de centavos para reais
- * Frontend armazena valores em centavos (integer) para evitar problemas de precisão
- */
 export const CURRENCY_CENTS_DIVISOR = 100
 
 /**

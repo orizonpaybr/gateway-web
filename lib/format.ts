@@ -1,7 +1,7 @@
-// Utilitários centralizados de formatação (DRY)
-
 export function formatCurrencyBRL(value: number, opts?: { hide?: boolean }) {
-  if (opts?.hide) return '••••••'
+  if (opts?.hide) {
+    return '••••••'
+  }
   return new Intl.NumberFormat('pt-BR', {
     style: 'currency',
     currency: 'BRL',
@@ -43,11 +43,17 @@ export function formatDocumentBR(doc: string) {
 }
 
 export function formatCurrencyInput(value: string): string {
-  if (!value || value === '') return ''
+  if (!value || value === '') {
+    return ''
+  }
   const numericValue = value.replace(/\D/g, '')
-  if (numericValue === '') return ''
+  if (numericValue === '') {
+    return ''
+  }
   const floatValue = parseFloat(numericValue) / 100
-  if (isNaN(floatValue)) return ''
+  if (isNaN(floatValue)) {
+    return ''
+  }
   return floatValue.toLocaleString('pt-BR', {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
@@ -76,7 +82,7 @@ export function formatNumber(
   decimals: number = 2,
 ): string {
   if (value === undefined || value === null || Number.isNaN(value)) {
-    return decimals > 0 ? '0' + '.' + '0'.repeat(decimals) : '0'
+    return decimals > 0 ? `0` + `.${'0'.repeat(decimals)}` : '0'
   }
   return Number(value).toFixed(decimals)
 }

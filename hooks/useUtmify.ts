@@ -4,21 +4,6 @@ import { toast } from 'sonner'
 import { useState, useCallback } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 
-/**
- * Hook otimizado para gerenciar integração com Utmify
- *
- * Features:
- * - Cache automático com React Query
- * - Invalidação inteligente de cache
- * - Tratamento de erros
- * - Suporte a 2FA
- * - Performance otimizada
- *
- * @example
- * ```tsx
- * const { config, isLoading, saveApiKey, removeApiKey, testConnection } = useUtmify()
- * ```
- */
 export function useUtmify() {
   const { authReady } = useAuth()
   const queryClient = useQueryClient()
@@ -38,8 +23,8 @@ export function useUtmify() {
     queryKey: ['utmify', 'config'],
     queryFn: utmifyAPI.getConfig,
     enabled: authReady,
-    staleTime: 5 * 60 * 1000, // 5 minutos
-    gcTime: 10 * 60 * 1000, // 10 minutos
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
     refetchOnWindowFocus: false,
     retry: 2,
   })
@@ -48,7 +33,7 @@ export function useUtmify() {
   const saveConfigMutation = useMutation({
     mutationFn: ({ apiKey, pin }: { apiKey: string; pin?: string }) =>
       utmifyAPI.saveConfig(apiKey, pin),
-    onSuccess: (data) => {
+    onSuccess: (_data) => {
       // Invalidar cache para forçar refetch
       queryClient.invalidateQueries({ queryKey: ['utmify', 'config'] })
 
@@ -61,15 +46,18 @@ export function useUtmify() {
       setIsPending2FA(false)
       setPendingAction({ type: null })
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       // Verificar se requer 2FA
-      if (error.requires_2fa) {
+      if ((error as { requires_2fa?: boolean })?.requires_2fa) {
         setIsPending2FA(true)
         return
       }
 
+      const errorMessage =
+        error instanceof Error ? error.message : 'Tente novamente mais tarde'
+
       toast.error('Erro ao salvar API Key', {
-        description: error.message || 'Tente novamente mais tarde',
+        description: errorMessage,
       })
 
       setIsPending2FA(false)
@@ -90,14 +78,17 @@ export function useUtmify() {
       setIsPending2FA(false)
       setPendingAction({ type: null })
     },
-    onError: (error: any) => {
-      if (error.requires_2fa) {
+    onError: (error: unknown) => {
+      if ((error as { requires_2fa?: boolean })?.requires_2fa) {
         setIsPending2FA(true)
         return
       }
 
+      const errorMessage =
+        error instanceof Error ? error.message : 'Tente novamente mais tarde'
+
       toast.error('Erro ao remover API Key', {
-        description: error.message || 'Tente novamente mais tarde',
+        description: errorMessage,
       })
 
       setIsPending2FA(false)
@@ -113,9 +104,11 @@ export function useUtmify() {
         description: `Status: ${data.data.status}`,
       })
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Verifique sua API Key'
       toast.error('Erro ao testar conexão', {
-        description: error.message || 'Verifique sua API Key',
+        description: errorMessage,
       })
     },
   })

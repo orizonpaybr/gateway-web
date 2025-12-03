@@ -1,10 +1,4 @@
-/**
- * Helpers para status e permissões de usuário
- * Centraliza lógica de status (DRY)
- * Similar ao UserStatusHelper do backend
- */
-
-import { AdminUser } from '@/lib/api'
+import type { AdminUser } from '@/lib/api'
 import {
   USER_STATUS,
   USER_PERMISSION,

@@ -1,10 +1,3 @@
-/**
- * Constantes para o módulo de Gerentes
- *
- * Centraliza valores e validações para evitar magic numbers
- * e promover reutilização (DRY)
- */
-
 // ==================== Validação ====================
 
 /**
@@ -70,7 +63,7 @@ export const VALIDATION_MESSAGES = {
 /**
  * Tipo para função de validação
  */
-export type ValidationRule<T = Record<string, any>> = {
+export type ValidationRule<T = Record<string, unknown>> = {
   field: string
   validate: (value: string, formData: T) => string | null
   condition?: (formData: T) => boolean
@@ -95,7 +88,9 @@ export function emailRule(message: string): ValidationRule {
   return {
     field: 'email',
     validate: (value: string) => {
-      if (!value.trim()) return null
+      if (!value.trim()) {
+        return null
+      }
       return EMAIL_REGEX.test(value) ? null : message
     },
   }
@@ -111,7 +106,9 @@ export function passwordRule(
   return {
     field: 'password',
     validate: (value: string) => {
-      if (!value.trim()) return null
+      if (!value.trim()) {
+        return null
+      }
       return value.length >= minLength ? null : message
     },
   }
@@ -128,7 +125,9 @@ export function percentageRule(
   return {
     field: 'gerente_percentage',
     validate: (value: string) => {
-      if (!value || !value.trim()) return null
+      if (!value || !value.trim()) {
+        return null
+      }
       const normalizedValue = value.trim().replace(',', '.')
       const percentage = parseFloat(normalizedValue)
       if (isNaN(percentage) || percentage < min || percentage > max) {

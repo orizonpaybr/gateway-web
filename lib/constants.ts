@@ -1,8 +1,3 @@
-/**
- * Constants para status e permissões de usuários
- * Segue padrão do backend (UserStatus, UserPermission)
- */
-
 // Status de usuário
 export const USER_STATUS = {
   INACTIVE: 0,

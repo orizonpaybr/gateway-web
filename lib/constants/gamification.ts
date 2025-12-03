@@ -1,13 +1,4 @@
 /**
- * Constantes de gamifica\u00e7\u00e3o
- *
- * Centraliza configura\u00e7\u00f5es, cores e mapeamentos
- * relacionados ao sistema de n\u00edveis
- *
- * @module lib/constants/gamification
- */
-
-/**
  * Nomes dos n\u00edveis (normalizados para compara\u00e7\u00e3o)
  */
 export const LEVEL_NAMES = {
@@ -80,7 +71,9 @@ const DEFAULT_COLORS = {
  * @returns Objeto com classes Tailwind para diferentes variantes
  */
 export function getLevelColors(level: string | null): typeof DEFAULT_COLORS {
-  if (!level) return DEFAULT_COLORS
+  if (!level) {
+    return DEFAULT_COLORS
+  }
 
   const normalizedLevel = normalizeLevelName(level)
 
@@ -105,7 +98,9 @@ export function getLevelColorClass(level: string | null): string {
  * @returns Path do \u00edcone ou null se n\u00e3o encontrado
  */
 export function getLevelIcon(level: string | null): string | null {
-  if (!level) return null
+  if (!level) {
+    return null
+  }
 
   const normalizedLevel = normalizeLevelName(level)
   return LEVEL_ICONS[normalizedLevel as LevelName] || null
@@ -139,7 +134,9 @@ export function normalizeLevelName(level: string): string {
  * @returns true se for Bronze (ou varia\u00e7\u00f5es), false caso contr\u00e1rio
  */
 export function isBronzeLevel(levelName: string | null | undefined): boolean {
-  if (!levelName) return false
+  if (!levelName) {
+    return false
+  }
   return normalizeLevelName(levelName) === LEVEL_NAMES.BRONZE
 }
 

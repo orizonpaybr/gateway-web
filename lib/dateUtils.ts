@@ -1,4 +1,3 @@
-// lib/dateUtils.ts
 export const normalize = (s: string) =>
   s
     .normalize('NFD')

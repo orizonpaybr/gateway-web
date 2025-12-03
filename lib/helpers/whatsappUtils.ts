@@ -6,7 +6,9 @@
  * Limpa número de telefone removendo caracteres não numéricos
  */
 export function cleanPhoneNumber(phone: string | null | undefined): string {
-  if (!phone) return ''
+  if (!phone) {
+    return ''
+  }
   return phone.replace(/\D/g, '')
 }
 
