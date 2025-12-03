@@ -1,10 +1,9 @@
 'use client'
 
 import React, { memo, useMemo } from 'react'
+import Image from 'next/image'
 import { Card } from '@/components/ui/Card'
 import { Skeleton } from '@/components/ui/Skeleton'
-import Image from 'next/image'
-
 interface CurrentLevelProgressProps {
   currentLevel: string
   totalDeposited: number
@@ -56,7 +55,9 @@ export const CurrentLevelProgress = memo<CurrentLevelProgressProps>(
     )
 
     const remainingAmount = useMemo(() => {
-      if (!currentLevelMax) return 0
+      if (!currentLevelMax) {
+        return 0
+      }
       return Math.max(0, currentLevelMax - totalDeposited)
     }, [currentLevelMax, totalDeposited])
 

@@ -1,20 +1,18 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { Dialog } from '@/components/ui/Dialog'
+import { useState, useEffect, useCallback } from 'react'
+import { AlertCircle, Calendar, DollarSign, Hash, FileText } from 'lucide-react'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/Button'
+import { Dialog } from '@/components/ui/Dialog'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { pixAPI } from '@/lib/api'
-import { toast } from 'sonner'
-import { AlertCircle, Calendar, DollarSign, Hash, FileText } from 'lucide-react'
 import { formatCurrencyBRL, formatDateTimeBR } from '@/lib/format'
-
 interface InfracaoDetailsModalProps {
   isOpen: boolean
   onClose: () => void
   infracaoId: number | null
 }
-
 interface InfracaoDetails {
   id: number
   status: string
@@ -43,14 +41,10 @@ export function InfracaoDetailsModal({
   const [infracao, setInfracao] = useState<InfracaoDetails | null>(null)
   const [isLoading, setIsLoading] = useState(false)
 
-  useEffect(() => {
-    if (isOpen && infracaoId) {
-      fetchInfracaoDetails()
+  const fetchInfracaoDetails = useCallback(async () => {
+    if (!infracaoId) {
+      return
     }
-  }, [isOpen, infracaoId])
-
-  const fetchInfracaoDetails = async () => {
-    if (!infracaoId) return
 
     setIsLoading(true)
     try {
@@ -68,7 +62,13 @@ export function InfracaoDetailsModal({
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [infracaoId, onClose])
+
+  useEffect(() => {
+    if (isOpen && infracaoId) {
+      fetchInfracaoDetails()
+    }
+  }, [isOpen, infracaoId, fetchInfracaoDetails])
 
   const formatCurrency = formatCurrencyBRL
   const formatDate = formatDateTimeBR

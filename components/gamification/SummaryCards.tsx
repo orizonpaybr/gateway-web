@@ -1,10 +1,9 @@
 'use client'
 
 import React, { memo, useMemo } from 'react'
+import Image from 'next/image'
 import { Card } from '@/components/ui/Card'
 import { Skeleton } from '@/components/ui/Skeleton'
-import Image from 'next/image'
-
 interface SummaryCard {
   title: string
   value: string
@@ -12,7 +11,6 @@ interface SummaryCard {
   isImage?: boolean
   imageSrc?: string
 }
-
 interface SummaryCardsProps {
   cards: SummaryCard[]
   isLoading?: boolean

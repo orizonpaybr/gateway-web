@@ -1,9 +1,7 @@
-// components/optimized/LazyComponent.tsx
 'use client'
 
-import React, { Suspense, memo, ComponentType } from 'react'
+import React, { Suspense, memo, type ComponentType } from 'react'
 import { Skeleton } from '@/components/ui/Skeleton'
-
 interface LazyComponentProps {
   fallback?: React.ReactNode
   className?: string
@@ -19,10 +17,9 @@ const DefaultFallback = memo(() => (
 
 DefaultFallback.displayName = 'DefaultFallback'
 
-export function createLazyComponent<T extends ComponentType<any>>(
-  importFunc: () => Promise<{ default: T }>,
-  fallback?: React.ReactNode,
-) {
+export function createLazyComponent<
+  T extends ComponentType<Record<string, unknown>>,
+>(importFunc: () => Promise<{ default: T }>, _fallback?: React.ReactNode) {
   const LazyComponent = React.lazy(importFunc)
 
   return memo((props: React.ComponentProps<T> & LazyComponentProps) => {
@@ -38,12 +35,9 @@ export function createLazyComponent<T extends ComponentType<any>>(
           )
         }
       >
-        <LazyComponent {...(restProps as React.ComponentProps<T>)} />
+        {/* @ts-expect-error - LazyComponent props are correctly typed but TypeScript can't infer the complex lazy component type */}
+        <LazyComponent {...restProps} />
       </Suspense>
     )
   })
 }
-
-// Exemplo de uso:
-// const LazyDashboard = createLazyComponent(() => import('./Dashboard'))
-// const LazyChart = createLazyComponent(() => import('./Chart'))

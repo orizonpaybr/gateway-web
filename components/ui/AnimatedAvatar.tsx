@@ -3,7 +3,6 @@
 import React, { memo, useMemo } from 'react'
 import Image from 'next/image'
 import { detectGenderByName } from '@/lib/genderUtils'
-
 interface AnimatedAvatarProps {
   name: string
   size?: 'sm' | 'md' | 'lg'

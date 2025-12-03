@@ -1,11 +1,9 @@
-// components/optimized/QRCodeItem.tsx
 'use client'
 
 import React, { memo } from 'react'
-import { Button } from '@/components/ui/Button'
 import { Eye, Download, Trash2 } from 'lucide-react'
+import { Button } from '@/components/ui/Button'
 import { formatCurrencyBRL, formatDateBR } from '@/lib/format'
-
 interface QRCodeItemProps {
   qrCode: {
     id: number

@@ -2,10 +2,9 @@
 
 import { useState } from 'react'
 import { X, Shield } from 'lucide-react'
-import { Button } from '@/components/ui/Button'
 import { toast } from 'sonner'
+import { Button } from '@/components/ui/Button'
 import { PinInput } from './PinInput'
-
 interface Verify2FAModalProps {
   isOpen: boolean
   tempToken: string
@@ -15,7 +14,7 @@ interface Verify2FAModalProps {
 
 export function Verify2FAModal({
   isOpen,
-
+  tempToken: _tempToken,
   onVerify,
   onClose,
 }: Verify2FAModalProps) {
@@ -33,7 +32,7 @@ export function Verify2FAModal({
     try {
       setIsLoading(true)
       await onVerify(code)
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Erro na verificação 2FA:', error)
       setCode('')
     } finally {
@@ -47,7 +46,9 @@ export function Verify2FAModal({
     }
   }
 
-  if (!isOpen) return null
+  if (!isOpen) {
+    return null
+  }
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
@@ -75,14 +76,13 @@ export function Verify2FAModal({
 
         <div className="space-y-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-4 text-center">
+            <div className="block text-sm font-medium text-gray-700 mb-4 text-center">
               Código de Autenticação
-            </label>
+            </div>
             <PinInput
               value={code}
               onChange={setCode}
               onKeyPress={handleKeyPress}
-              autoFocus={true}
             />
           </div>
 

@@ -1,7 +1,6 @@
 'use client'
 
 import { useRef, useState, useEffect } from 'react'
-
 interface PinInputProps {
   value: string
   onChange: (value: string) => void
@@ -16,7 +15,7 @@ export function PinInput({
   autoFocus,
 }: PinInputProps) {
   const inputRefs = useRef<(HTMLInputElement | null)[]>([])
-  const [focusedIndex, setFocusedIndex] = useState(0)
+  const [_focusedIndex, setFocusedIndex] = useState(0)
 
   useEffect(() => {
     if (autoFocus && inputRefs.current[0]) {
@@ -25,7 +24,9 @@ export function PinInput({
   }, [autoFocus])
 
   const handleChange = (index: number, digit: string) => {
-    if (!/^\d$/.test(digit) && digit !== '') return
+    if (!/^\d$/.test(digit) && digit !== '') {
+      return
+    }
 
     const newValue = value.split('')
     newValue[index] = digit

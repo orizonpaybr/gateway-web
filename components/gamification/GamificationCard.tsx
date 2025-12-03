@@ -4,7 +4,6 @@ import React, { memo } from 'react'
 import { Card } from '@/components/ui/Card'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { cn } from '@/lib/utils'
-
 interface GamificationCardProps {
   title: string
   value: string | number

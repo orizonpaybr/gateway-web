@@ -1,25 +1,22 @@
 import { memo, useState, useCallback, useEffect } from 'react'
-import { Dialog } from '@/components/ui/Dialog'
-import { Button } from '@/components/ui/Button'
-import { Input } from '@/components/ui/Input'
-import { Activity, AlertCircle, CheckCircle, Copy, X } from 'lucide-react'
-import { useUtmify } from '@/hooks/useUtmify'
-import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
-import { TwoFactorModal } from '@/components/modals/TwoFactorModal'
 import { useQuery } from '@tanstack/react-query'
-import { twoFactorAPI } from '@/lib/api'
+import { Activity, AlertCircle, CheckCircle, Copy, X } from 'lucide-react'
 import { toast } from 'sonner'
+import { TwoFactorModal } from '@/components/modals/TwoFactorModal'
+import { Button } from '@/components/ui/Button'
+import { Dialog } from '@/components/ui/Dialog'
+import { Input } from '@/components/ui/Input'
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import { useAuth } from '@/contexts/AuthContext'
+import { useUtmify } from '@/hooks/useUtmify'
+import { twoFactorAPI } from '@/lib/api'
 
 interface UtmifyModalProps {
   isOpen: boolean
   onClose: () => void
 }
 
-export const UtmifyModal = memo(function UtmifyModal({
-  isOpen,
-  onClose,
-}: UtmifyModalProps) {
+export const UtmifyModal = memo(({ isOpen, onClose }: UtmifyModalProps) => {
   const { authReady } = useAuth()
   const [utmifyApiKey, setUtmifyApiKey] = useState('')
   const [isEditingUtmify, setIsEditingUtmify] = useState(false)
@@ -53,7 +50,6 @@ export const UtmifyModal = memo(function UtmifyModal({
     retryWith2FA,
   } = useUtmify()
 
-  // Funções Utmify
   const handleSaveUtmify = useCallback(() => {
     if (!utmifyApiKey.trim()) {
       toast.error('API Key inválida', {
@@ -191,7 +187,10 @@ export const UtmifyModal = memo(function UtmifyModal({
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-gray-700 mb-2 block">
+                <label
+                  htmlFor="utmify-api-key"
+                  className="text-xs font-semibold text-gray-700 mb-2 block"
+                >
                   API Key da Utmify
                 </label>
 
@@ -259,7 +258,6 @@ export const UtmifyModal = memo(function UtmifyModal({
                         value={utmifyApiKey}
                         onChange={(e) => setUtmifyApiKey(e.target.value)}
                         className="w-full h-9"
-                        autoFocus
                       />
                     </div>
                     <div className="grid grid-cols-2 sm:flex gap-2">

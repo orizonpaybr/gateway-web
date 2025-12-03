@@ -1,12 +1,11 @@
 'use client'
 
 import React, { memo, useMemo } from 'react'
+import Image from 'next/image'
+import { CheckCircle, Lock } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
 import { Skeleton } from '@/components/ui/Skeleton'
-import { CheckCircle, Lock } from 'lucide-react'
-import Image from 'next/image'
 import { cn } from '@/lib/utils'
-
 interface AchievementLevel {
   id: number
   name: string
@@ -20,7 +19,6 @@ interface AchievementLevel {
   cor: string
   icone: string | null
 }
-
 interface AchievementTrailProps {
   levels: AchievementLevel[]
   isLoading?: boolean

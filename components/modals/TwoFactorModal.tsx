@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect } from 'react'
 import { Shield, CheckCircle, AlertCircle } from 'lucide-react'
-import { Button } from '@/components/ui/Button'
 import { toast } from 'sonner'
+import { Button } from '@/components/ui/Button'
 import { twoFactorAPI } from '@/lib/api'
 import { PinInput } from './PinInput'
 
@@ -57,7 +57,6 @@ export function TwoFactorModal({
     }
   }, [isOpen])
 
-  // Handler para setup inicial (2 etapas)
   const handleInitialSetup = async () => {
     if (pin.length !== 6) {
       toast.error('PIN inválido', {
@@ -114,10 +113,12 @@ export function TwoFactorModal({
           description: response.message || 'Tente novamente',
         })
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Erro ao verificar PIN:', error)
+      const errorMessage =
+        error instanceof Error ? error.message : 'Erro de conexão'
       toast.error('Erro ao ativar 2FA', {
-        description: error.message || 'Erro de conexão',
+        description: errorMessage,
       })
     } finally {
       setIsLoading(false)
@@ -161,9 +162,11 @@ export function TwoFactorModal({
       } else {
         setError(response.message || 'Erro ao processar 2FA')
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Erro:', err)
-      setError(err?.message || 'Erro ao processar solicitação')
+      const errorMessage =
+        err instanceof Error ? err.message : 'Erro ao processar solicitação'
+      setError(errorMessage)
     } finally {
       setIsLoading(false)
     }
@@ -193,9 +196,10 @@ export function TwoFactorModal({
     onClose()
   }
 
-  if (!isOpen) return null
+  if (!isOpen) {
+    return null
+  }
 
-  // Conteúdo do header baseado no modo
   const getHeaderContent = () => {
     switch (mode) {
       case 'initial-setup':
@@ -268,21 +272,20 @@ export function TwoFactorModal({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <div className="block text-sm font-medium text-gray-700 mb-2">
                 Novo PIN
-              </label>
+              </div>
               <PinInput
                 value={pin}
                 onChange={setPin}
                 onKeyPress={handleKeyPress}
-                autoFocus
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <div className="block text-sm font-medium text-gray-700 mb-2">
                 Confirmar PIN
-              </label>
+              </div>
               <PinInput
                 value={confirmPin}
                 onChange={setConfirmPin}
@@ -326,14 +329,13 @@ export function TwoFactorModal({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <div className="block text-sm font-medium text-gray-700 mb-2">
                 PIN de Verificação
-              </label>
+              </div>
               <PinInput
                 value={pin}
                 onChange={setPin}
                 onKeyPress={handleKeyPress}
-                autoFocus
               />
             </div>
 
@@ -365,14 +367,13 @@ export function TwoFactorModal({
           mode === 'change-password') && (
           <div className="space-y-4 sm:space-y-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-3 sm:mb-4 text-center">
+              <div className="block text-sm font-medium text-gray-700 mb-3 sm:mb-4 text-center">
                 PIN de 6 dígitos
-              </label>
+              </div>
               <PinInput
                 value={pin}
                 onChange={setPin}
                 onKeyPress={handleKeyPress}
-                autoFocus
               />
             </div>
 

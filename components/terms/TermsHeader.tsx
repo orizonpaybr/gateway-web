@@ -1,8 +1,7 @@
 import React from 'react'
-import Link from 'next/link'
 import Image from 'next/image'
+import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
-
 interface TermsHeaderProps {
   title: string
   lastUpdated?: string

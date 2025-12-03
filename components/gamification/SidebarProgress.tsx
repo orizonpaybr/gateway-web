@@ -3,10 +3,10 @@
 import React, { memo, useMemo } from 'react'
 import Link from 'next/link'
 import { Skeleton } from '@/components/ui/Skeleton'
-import { cn } from '@/lib/utils'
 import { getLevelColorClass } from '@/lib/constants/gamification'
 import { formatCurrency } from '@/lib/currency'
 import type { SidebarProgressProps } from '@/lib/types/gamification'
+import { cn } from '@/lib/utils'
 
 export const SidebarProgress = memo<SidebarProgressProps>(
   ({
