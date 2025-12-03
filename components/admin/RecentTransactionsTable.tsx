@@ -1,11 +1,12 @@
-'use client'
+'use client';
 
-import { formatCurrencyBRL } from '@/lib/format'
-import { formatDistanceToNow } from 'date-fns'
-import { ptBR } from 'date-fns/locale'
-import { ArrowDownCircle, ArrowUpCircle } from 'lucide-react'
-import { Badge } from '@/components/ui/Badge'
-import { AdminTransaction } from '@/lib/api'
+import { formatDistanceToNow } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+import { ArrowDownCircle, ArrowUpCircle } from 'lucide-react';
+
+import { Badge } from '@/components/ui/Badge';
+import type { AdminTransaction } from '@/lib/api';
+import { formatCurrencyBRL } from '@/lib/format';
 
 interface RecentTransactionsTableProps {
   transactions: AdminTransaction[]
@@ -17,10 +18,10 @@ export function RecentTransactionsTable({
   isLoading,
 }: RecentTransactionsTableProps) {
   const cleaned = (transactions || []).filter((t) => {
-    const amount = Number(t.amount || 0)
-    const fee = Number(t.taxa || 0)
-    return amount > 0 || fee > 0
-  })
+    const amount = Number(t.amount || 0);
+    const fee = Number(t.taxa || 0);
+    return amount > 0 || fee > 0;
+  });
   const getStatusBadge = (status: string) => {
     const map: Record<
       string,
@@ -39,9 +40,9 @@ export function RecentTransactionsTable({
       REJECTED: { label: 'Rejeitado', variant: 'error' },
       CANCELLED: { label: 'Cancelado', variant: 'error' },
       FAILED: { label: 'Falhou', variant: 'error' },
-    }
+    };
 
-    const key = (status || '').toUpperCase()
+    const key = (status || '').toUpperCase();
     const config = map[key] || {
       // fallback genérico: substitui _ por espaço e capitaliza
       label: key
@@ -49,9 +50,9 @@ export function RecentTransactionsTable({
         .replace(/_/g, ' ')
         .replace(/(^|\s)\S/g, (c) => c.toUpperCase()),
       variant: 'default' as const,
-    }
-    return <Badge variant={config.variant}>{config.label}</Badge>
-  }
+    };
+    return <Badge variant={config.variant}>{config.label}</Badge>;
+  };
 
   if (isLoading) {
     return (
@@ -76,7 +77,7 @@ export function RecentTransactionsTable({
           </div>
         </div>
       </div>
-    )
+    );
   }
 
   if (!cleaned || cleaned.length === 0) {
@@ -89,7 +90,7 @@ export function RecentTransactionsTable({
           Nenhuma transação encontrada
         </p>
       </div>
-    )
+    );
   }
 
   return (
@@ -187,5 +188,5 @@ export function RecentTransactionsTable({
         </table>
       </div>
     </div>
-  )
+  );
 }

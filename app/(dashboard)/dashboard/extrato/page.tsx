@@ -1,13 +1,7 @@
 'use client'
 
 import { useState, useMemo, useCallback, memo } from 'react'
-import { Card } from '@/components/ui/Card'
-import { Button } from '@/components/ui/Button'
-import { Input } from '@/components/ui/Input'
-import { Skeleton } from '@/components/ui/Skeleton'
-import { useDebounce } from '@/hooks/useDebounce'
-import { useExtrato, useExtratoSummary } from '@/hooks/useReactQuery'
-import { toast } from 'sonner'
+
 import {
   ArrowUpRight,
   ArrowDownLeft,
@@ -16,15 +10,19 @@ import {
   RotateCcw,
   Calendar,
 } from 'lucide-react'
+import { toast } from 'sonner'
 import * as XLSX from 'xlsx'
-import {
-  createPaginationFilters,
-  createResetDatesHandler,
-  formatDateForExport,
-} from '@/lib/dateUtils'
+
+import { Button } from '@/components/ui/Button'
+import { Card } from '@/components/ui/Card'
+import { Input } from '@/components/ui/Input'
+import { Skeleton } from '@/components/ui/Skeleton'
+import { useDebounce } from '@/hooks/useDebounce'
+import { useExtrato, useExtratoSummary } from '@/hooks/useReactQuery'
+import { createPaginationFilters, formatDateForExport } from '@/lib/dateUtils'
 import { formatCurrencyBRL } from '@/lib/format'
 
-const ExtratoPage = memo(function ExtratoPage() {
+const ExtratoPage = memo(() => {
   const [search, setSearch] = useState('')
   const debouncedSearch = useDebounce(search, 500)
   const [period, setPeriod] = useState<'hoje' | '7d' | '30d' | 'custom' | null>(
@@ -39,7 +37,6 @@ const ExtratoPage = memo(function ExtratoPage() {
     'all',
   )
 
-  // Memorizar filtros para React Query usando função centralizada
   const filters = useMemo(() => {
     const baseFilters = createPaginationFilters(
       page,
@@ -50,25 +47,31 @@ const ExtratoPage = memo(function ExtratoPage() {
       endDate,
     )
 
-    // Adicionar filtro de tipo se não for 'all'
     if (filterType !== 'all') {
       baseFilters.tipo = filterType as 'entrada' | 'saida'
     }
 
-    return baseFilters
+    return baseFilters as {
+      page: number
+      limit: number
+      busca?: string
+      data_inicio?: string
+      data_fim?: string
+      tipo?: 'entrada' | 'saida'
+    }
   }, [page, perPage, debouncedSearch, period, startDate, endDate, filterType])
 
-  // React Query hooks
-  const { data, isLoading, error } = useExtrato(filters as any)
+  const { data, isLoading, error: _error } = useExtrato(filters)
   const { data: summaryData } = useExtratoSummary({
     periodo: period || 'hoje',
     data_inicio: startDate,
     data_fim: endDate,
   })
 
-  // Memorizar dados processados
   const processedData = useMemo(() => {
-    if (!data?.data) return { items: [], totalPages: 1, totalItems: 0 }
+    if (!data?.data) {
+      return { items: [], totalPages: 1, totalItems: 0 }
+    }
 
     return {
       items: data.data.data || [],
@@ -78,7 +81,6 @@ const ExtratoPage = memo(function ExtratoPage() {
     }
   }, [data])
 
-  // Memorizar handlers
   const handleExport = useCallback(() => {
     if (processedData.items.length === 0) {
       toast.error('Nenhuma transação para exportar')
@@ -108,22 +110,18 @@ const ExtratoPage = memo(function ExtratoPage() {
     toast.success('Arquivo exportado com sucesso!')
   }, [processedData.items])
 
-  const resetDates = useCallback(
-    createResetDatesHandler(
-      setStartDate,
-      setEndDate,
-      setShowDatePicker,
-      setPeriod,
-      setPage,
-    ),
-    [],
-  )
+  const resetDates = useCallback(() => {
+    setStartDate('')
+    setEndDate('')
+    setShowDatePicker(false)
+    setPeriod(null)
+    setPage(1)
+  }, [setStartDate, setEndDate, setShowDatePicker, setPeriod, setPage])
 
   const canPrev = page > 1
   const canNext = page < processedData.totalPages
   const hasData = !isLoading && processedData.items.length > 0
 
-  // Calcular totais do período
   const totalEntradas = summaryData?.data?.resumo?.total_entradas_liquidas || 0
   const totalSaidas = summaryData?.data?.resumo?.total_saidas_liquidas || 0
   const saldoPeriodo = totalEntradas - totalSaidas
@@ -286,17 +284,24 @@ const ExtratoPage = memo(function ExtratoPage() {
               <div className="absolute right-0 top-11 z-10 bg-white border border-gray-200 rounded-lg shadow-md p-3 w-64">
                 <div className="space-y-2">
                   <div>
-                    <label className="block text-xs text-gray-600 mb-1">
+                    <label
+                      htmlFor="extrato-start-date"
+                      className="block text-xs text-gray-600 mb-1"
+                    >
                       Data inicial
                     </label>
                     <Input
+                      id="extrato-start-date"
                       type="date"
                       value={startDate}
                       onChange={(e) => setStartDate(e.target.value)}
                     />
                   </div>
                   <div>
-                    <label className="block text-xs text-gray-600 mb-1">
+                    <label
+                      htmlFor="extrato-end-date"
+                      className="block text-xs text-gray-600 mb-1"
+                    >
                       Data final
                     </label>
                     <Input

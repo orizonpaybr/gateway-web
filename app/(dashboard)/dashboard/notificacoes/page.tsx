@@ -1,14 +1,14 @@
 'use client'
 
 import { useState, useEffect, useRef, Suspense } from 'react'
-import { useNotifications } from '@/hooks/useNotifications'
-import { Card } from '@/components/ui/Card'
-import { Button } from '@/components/ui/Button'
-import { Badge } from '@/components/ui/Badge'
-import { Switch } from '@/components/ui/Switch'
-import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
-import { AlertCircle, CheckCircle2 } from 'lucide-react'
 import { useSearchParams } from 'next/navigation'
+import { AlertCircle, CheckCircle2 } from 'lucide-react'
+import { Badge } from '@/components/ui/Badge'
+import { Button } from '@/components/ui/Button'
+import { Card } from '@/components/ui/Card'
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
+import { Switch } from '@/components/ui/Switch'
+import { useNotifications } from '@/hooks/useNotifications'
 
 function NotificacoesContent() {
   const [page, setPage] = useState(1)
@@ -25,7 +25,7 @@ function NotificacoesContent() {
     unreadCount,
     markAll,
     markOne,
-    refetch,
+    refetch: _refetch,
   } = useNotifications({
     page,
     limit: 20,

@@ -1,21 +1,19 @@
 'use client'
 
 import { useState, useMemo, useCallback, memo } from 'react'
-import { Card } from '@/components/ui/Card'
+
+import { Filter, RotateCcw, Calendar, QrCode } from 'lucide-react'
+
 import { Button } from '@/components/ui/Button'
+import { Card } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { useDebounce } from '@/hooks/useDebounce'
 import { useQRCodes } from '@/hooks/useReactQuery'
-import { Filter, RotateCcw, Calendar, QrCode } from 'lucide-react'
-import {
-  createPaginationFilters,
-  createResetDatesHandler,
-  formatDateForExport,
-} from '@/lib/dateUtils'
+import { createPaginationFilters, formatDateForExport } from '@/lib/dateUtils'
 import { formatCurrencyBRL } from '@/lib/format'
 
-const QRCodeListagemPage = memo(function QRCodeListagemPage() {
+const QRCodeListagemPage = memo(() => {
   const [search, setSearch] = useState('')
   const debouncedSearch = useDebounce(search, 500)
   const [period, setPeriod] = useState<'hoje' | '7d' | '30d' | 'custom' | null>(
@@ -25,9 +23,8 @@ const QRCodeListagemPage = memo(function QRCodeListagemPage() {
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
   const [page, setPage] = useState(1)
-  const [perPage, setPerPage] = useState(20)
+  const [perPage, _setPerPage] = useState(20)
 
-  // Memorizar filtros para React Query usando função centralizada
   const filters = useMemo(() => {
     return createPaginationFilters(
       page,
@@ -40,11 +37,12 @@ const QRCodeListagemPage = memo(function QRCodeListagemPage() {
   }, [page, perPage, debouncedSearch, period, startDate, endDate])
 
   // React Query hooks
-  const { data, isLoading, error } = useQRCodes(filters)
+  const { data, isLoading, error: _error } = useQRCodes(filters)
 
-  // Memorizar dados processados
   const processedData = useMemo(() => {
-    if (!data?.data) return { items: [], totalPages: 1, totalItems: 0 }
+    if (!data?.data) {
+      return { items: [], totalPages: 1, totalItems: 0 }
+    }
 
     return {
       items: data.data.data || [],
@@ -56,16 +54,13 @@ const QRCodeListagemPage = memo(function QRCodeListagemPage() {
   const canPrev = page > 1
   const canNext = page < processedData.totalPages
 
-  const resetDates = useCallback(
-    createResetDatesHandler(
-      setStartDate,
-      setEndDate,
-      setShowDatePicker,
-      setPeriod,
-      setPage,
-    ),
-    [],
-  )
+  const resetDates = useCallback(() => {
+    setStartDate('')
+    setEndDate('')
+    setShowDatePicker(false)
+    setPeriod(null)
+    setPage(1)
+  }, [setStartDate, setEndDate, setShowDatePicker, setPeriod, setPage])
 
   const hasData = !isLoading && processedData.items.length > 0
 
@@ -215,20 +210,28 @@ const QRCodeListagemPage = memo(function QRCodeListagemPage() {
               <div className="absolute right-0 top-11 z-10 bg-white border border-gray-200 rounded-lg shadow-md p-3 w-64">
                 <div className="space-y-2">
                   <div>
-                    <label className="block text-xs text-gray-600 mb-1">
+                    <label
+                      htmlFor="qrcodes-start-date"
+                      className="block text-xs text-gray-600 mb-1"
+                    >
                       Data inicial
                     </label>
                     <Input
+                      id="qrcodes-start-date"
                       type="date"
                       value={startDate}
                       onChange={(e) => setStartDate(e.target.value)}
                     />
                   </div>
                   <div>
-                    <label className="block text-xs text-gray-600 mb-1">
+                    <label
+                      htmlFor="qrcodes-end-date"
+                      className="block text-xs text-gray-600 mb-1"
+                    >
                       Data final
                     </label>
                     <Input
+                      id="qrcodes-end-date"
                       type="date"
                       value={endDate}
                       onChange={(e) => setEndDate(e.target.value)}
@@ -360,10 +363,10 @@ const QRCodeListagemPage = memo(function QRCodeListagemPage() {
                       </span>
                     </td>
                     <td className="hidden lg:table-cell py-3 px-3 text-sm text-gray-600">
-                      {(qrCode as any).devedor || '---'}
+                      {(qrCode as { devedor?: string }).devedor || '---'}
                     </td>
                     <td className="hidden lg:table-cell py-3 px-3 text-sm text-gray-600">
-                      {(qrCode as any).documento || '---'}
+                      {(qrCode as { documento?: string }).documento || '---'}
                     </td>
                     <td className="hidden md:table-cell py-3 px-3 text-sm text-gray-600">
                       {formatDate(qrCode.data_criacao)}

@@ -1,16 +1,18 @@
 'use client'
 
 import { memo, useMemo } from 'react'
-import { Card } from '@/components/ui/Card'
-import { Button } from '@/components/ui/Button'
-import { Select } from '@/components/ui/Select'
-import { PixKeyInput } from '@/components/ui/PixKeyInput'
-import { CurrencyInput } from '@/components/ui/CurrencyInput'
-import { Badge } from '@/components/ui/Badge'
-import { Skeleton } from '@/components/ui/Skeleton'
+
 import { ArrowRight, Check, Loader2 } from 'lucide-react'
-import { PixKeyType } from '@/lib/api'
+
+import { Badge } from '@/components/ui/Badge'
+import { Button } from '@/components/ui/Button'
+import { Card } from '@/components/ui/Card'
+import { CurrencyInput } from '@/components/ui/CurrencyInput'
+import { PixKeyInput } from '@/components/ui/PixKeyInput'
+import { Select } from '@/components/ui/Select'
+import { Skeleton } from '@/components/ui/Skeleton'
 import { usePixKeyForm } from '@/hooks/usePixKeyForm'
+import type { PixKeyType } from '@/lib/api'
 
 const KEY_TYPES = [
   { value: 'cpf', label: 'CPF', placeholder: '000.000.000-00' },
@@ -43,7 +45,7 @@ const SavedKeysSkeletonLoader = memo(() => (
 
 SavedKeysSkeletonLoader.displayName = 'SavedKeysSkeletonLoader'
 
-const PixChavePage = memo(function PixChavePage() {
+const PixChavePage = memo(() => {
   const {
     // Estado
     step,
@@ -51,13 +53,13 @@ const PixChavePage = memo(function PixChavePage() {
     keyValue,
     amount,
     // Valores computados
-    balance,
+    balance: _balance,
     numericAmount,
     hasKeys,
     // Validações
     canAdvance,
     // Estados de loading
-    isLoadingKeys,
+    isLoadingKeys: _isLoadingKeys,
     isWithdrawing,
     // Data
     savedKeysData,
@@ -191,10 +193,14 @@ const PixChavePage = memo(function PixChavePage() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label
+                  htmlFor="pix-key-type-select"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
                   TIPO DE CHAVE
                 </label>
                 <Select
+                  id="pix-key-type-select"
                   value={selectedKeyType}
                   onChange={(value) => handleKeyTypeChange(value as PixKeyType)}
                   options={KEY_TYPES.map((type) => ({
@@ -206,14 +212,18 @@ const PixChavePage = memo(function PixChavePage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label
+                  htmlFor="pix-key-input"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
                   CHAVE PIX
                 </label>
                 <PixKeyInput
+                  id="pix-key-input"
                   keyType={selectedKeyType}
                   value={keyValue}
                   onChange={setKeyValue}
-                  hideLabel={true}
+                  hideLabel
                   className="w-full"
                 />
               </div>

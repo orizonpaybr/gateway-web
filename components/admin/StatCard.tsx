@@ -1,8 +1,9 @@
 'use client'
 
-import { LucideIcon } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
 import { formatCurrencyBRL } from '@/lib/format'
+
+import type { LucideIcon } from 'lucide-react'
 
 interface StatCardProps {
   title: string
@@ -78,7 +79,7 @@ export function StatCard({
       <div className="flex items-start justify-between">
         <div className="flex-1">
           <p className="text-sm font-medium text-gray-600 mb-2">{title}</p>
-          <p className={`text-3xl font-bold text-gray-900 mb-1`}>
+          <p className="text-3xl font-bold text-gray-900 mb-1">
             {formatValue()}
           </p>
           {description && (

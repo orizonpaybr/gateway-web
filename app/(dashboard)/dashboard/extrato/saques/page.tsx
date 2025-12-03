@@ -1,13 +1,7 @@
 'use client'
 
 import { useState, useMemo, useCallback } from 'react'
-import { Card } from '@/components/ui/Card'
-import { Button } from '@/components/ui/Button'
-import { Input } from '@/components/ui/Input'
-import { Skeleton } from '@/components/ui/Skeleton'
-import { useDebounce } from '@/hooks/useDebounce'
-import { useTransactions } from '@/hooks/useReactQuery'
-import { toast } from 'sonner'
+
 import {
   ArrowUpRight,
   Filter,
@@ -15,12 +9,16 @@ import {
   Calendar,
   RotateCcw,
 } from 'lucide-react'
+import { toast } from 'sonner'
 import * as XLSX from 'xlsx'
-import {
-  createPaginationFilters,
-  createResetDatesHandler,
-  formatDateForExport,
-} from '@/lib/dateUtils'
+
+import { Button } from '@/components/ui/Button'
+import { Card } from '@/components/ui/Card'
+import { Input } from '@/components/ui/Input'
+import { Skeleton } from '@/components/ui/Skeleton'
+import { useDebounce } from '@/hooks/useDebounce'
+import { useTransactions } from '@/hooks/useReactQuery'
+import { createPaginationFilters, formatDateForExport } from '@/lib/dateUtils'
 
 export default function SaquesPage() {
   const [search, setSearch] = useState('')
@@ -34,7 +32,6 @@ export default function SaquesPage() {
   const [page, setPage] = useState(1)
   const perPage = 20
 
-  // Memorizar filtros para React Query usando função centralizada
   const filters = useMemo(() => {
     return createPaginationFilters(
       page,
@@ -48,11 +45,12 @@ export default function SaquesPage() {
   }, [page, perPage, debouncedSearch, period, startDate, endDate])
 
   // React Query hook
-  const { data, isLoading, error } = useTransactions(filters)
+  const { data, isLoading, error: _error } = useTransactions(filters)
 
-  // Memorizar dados processados
   const processedData = useMemo(() => {
-    if (!data?.data) return { items: [], totalPages: 1, totalItems: 0 }
+    if (!data?.data) {
+      return { items: [], totalPages: 1, totalItems: 0 }
+    }
 
     return {
       items: data.data.data || [],
@@ -61,7 +59,6 @@ export default function SaquesPage() {
     }
   }, [data])
 
-  // Memorizar handlers
   const handleExport = useCallback(() => {
     if (processedData.items.length === 0) {
       toast.error('Nenhum saque para exportar')
@@ -89,16 +86,13 @@ export default function SaquesPage() {
     toast.success('Arquivo exportado com sucesso!')
   }, [processedData.items])
 
-  const resetDates = useCallback(
-    createResetDatesHandler(
-      setStartDate,
-      setEndDate,
-      setShowDatePicker,
-      setPeriod,
-      setPage,
-    ),
-    [],
-  )
+  const resetDates = useCallback(() => {
+    setStartDate('')
+    setEndDate('')
+    setShowDatePicker(false)
+    setPeriod(null)
+    setPage(1)
+  }, [setStartDate, setEndDate, setShowDatePicker, setPeriod, setPage])
 
   const canPrev = page > 1
   const canNext = page < processedData.totalPages
@@ -214,17 +208,24 @@ export default function SaquesPage() {
               <div className="absolute right-0 top-11 z-10 bg-white border border-gray-200 rounded-lg shadow-md p-3 w-64">
                 <div className="space-y-2">
                   <div>
-                    <label className="block text-xs text-gray-600 mb-1">
+                    <label
+                      htmlFor="saques-start-date"
+                      className="block text-xs text-gray-600 mb-1"
+                    >
                       Data inicial
                     </label>
                     <Input
+                      id="saques-start-date"
                       type="date"
                       value={startDate}
                       onChange={(e) => setStartDate(e.target.value)}
                     />
                   </div>
                   <div>
-                    <label className="block text-xs text-gray-600 mb-1">
+                    <label
+                      htmlFor="saques-end-date"
+                      className="block text-xs text-gray-600 mb-1"
+                    >
                       Data final
                     </label>
                     <Input

@@ -1,14 +1,7 @@
 'use client'
 
 import { useState, useMemo, useCallback, memo } from 'react'
-import { Card } from '@/components/ui/Card'
-import { Button } from '@/components/ui/Button'
-import { Input } from '@/components/ui/Input'
-import { Skeleton } from '@/components/ui/Skeleton'
-import { InfracaoDetailsModal } from '@/components/modals/InfracaoDetailsModal'
-import { useDebounce } from '@/hooks/useDebounce'
-import { usePixInfracoes } from '@/hooks/useReactQuery'
-import { toast } from 'sonner'
+
 import {
   Filter,
   Eye,
@@ -17,7 +10,16 @@ import {
   Calendar,
   FileText,
 } from 'lucide-react'
+import { toast } from 'sonner'
 import * as XLSX from 'xlsx'
+
+import { InfracaoDetailsModal } from '@/components/modals/InfracaoDetailsModal'
+import { Button } from '@/components/ui/Button'
+import { Card } from '@/components/ui/Card'
+import { Input } from '@/components/ui/Input'
+import { Skeleton } from '@/components/ui/Skeleton'
+import { useDebounce } from '@/hooks/useDebounce'
+import { usePixInfracoes } from '@/hooks/useReactQuery'
 import { createPaginationFilters, formatDateForDisplay } from '@/lib/dateUtils'
 import { formatCurrencyBRL } from '@/lib/format'
 
@@ -32,7 +34,7 @@ type InfracaoItem = {
   descricao: string
 }
 
-const PixInfracoesPage = memo(function PixInfracoesPage() {
+const PixInfracoesPage = memo(() => {
   const [search, setSearch] = useState('')
   const debouncedSearch = useDebounce(search, 500)
   const [period, setPeriod] = useState<'hoje' | '7d' | '30d' | 'custom' | null>(
@@ -42,13 +44,12 @@ const PixInfracoesPage = memo(function PixInfracoesPage() {
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
   const [page, setPage] = useState(1)
-  const [perPage, setPerPage] = useState(20)
+  const [perPage, _setPerPage] = useState(20)
   const [selectedInfracaoId, setSelectedInfracaoId] = useState<number | null>(
     null,
   )
   const [isModalOpen, setIsModalOpen] = useState(false)
 
-  // Memorizar filtros para React Query usando função centralizada
   const filters = useMemo(() => {
     return createPaginationFilters(
       page,
@@ -61,11 +62,12 @@ const PixInfracoesPage = memo(function PixInfracoesPage() {
   }, [page, perPage, debouncedSearch, period, startDate, endDate])
 
   // React Query hook
-  const { data, isLoading, error } = usePixInfracoes(filters)
+  const { data, isLoading, error: _error } = usePixInfracoes(filters)
 
-  // Memorizar dados processados
   const processedData = useMemo(() => {
-    if (!data?.data) return { items: [], totalPages: 1, totalItems: 0 }
+    if (!data?.data) {
+      return { items: [], totalPages: 1, totalItems: 0 }
+    }
 
     return {
       items: data.data.data || [],
@@ -73,8 +75,6 @@ const PixInfracoesPage = memo(function PixInfracoesPage() {
       totalItems: data.data.total || 0,
     }
   }, [data])
-
-  // Memorizar handlers
 
   const handleCloseModal = useCallback(() => {
     setIsModalOpen(false)
@@ -94,23 +94,23 @@ const PixInfracoesPage = memo(function PixInfracoesPage() {
 
   const hasData = !isLoading && processedData.items.length > 0
 
-  const buildRowsForExcel = (rows: InfracaoItem[]) =>
-    rows.map((r) => ({
-      ID: r.id,
-      Status: formatStatus(r.status),
-      'Data de Criação': r.data_criacao,
-      'Data Limite': r.data_limite,
-      Valor: r.valor,
-      'End to End': r.end_to_end,
-      Tipo: r.tipo,
-      Descrição: r.descricao,
-    }))
-
   const handleExport = useCallback(() => {
     if (processedData.items.length === 0) {
       toast.error('Não há dados para exportar')
       return
     }
+
+    const buildRowsForExcel = (rows: InfracaoItem[]) =>
+      rows.map((r) => ({
+        ID: r.id,
+        Status: formatStatus(r.status),
+        'Data de Criação': r.data_criacao,
+        'Data Limite': r.data_limite,
+        Valor: r.valor,
+        'End to End': r.end_to_end,
+        Tipo: r.tipo,
+        Descrição: r.descricao,
+      }))
 
     const rows = buildRowsForExcel(processedData.items)
     const ws = XLSX.utils.json_to_sheet(rows)
@@ -272,17 +272,24 @@ const PixInfracoesPage = memo(function PixInfracoesPage() {
               <div className="absolute right-0 top-11 z-10 bg-white border border-gray-200 rounded-lg shadow-md p-3 w-64">
                 <div className="space-y-2">
                   <div>
-                    <label className="block text-xs text-gray-600 mb-1">
+                    <label
+                      htmlFor="infracoes-start-date"
+                      className="block text-xs text-gray-600 mb-1"
+                    >
                       Data inicial
                     </label>
                     <Input
+                      id="infracoes-start-date"
                       type="date"
                       value={startDate}
                       onChange={(e) => setStartDate(e.target.value)}
                     />
                   </div>
                   <div>
-                    <label className="block text-xs text-gray-600 mb-1">
+                    <label
+                      htmlFor="infracoes-end-date"
+                      className="block text-xs text-gray-600 mb-1"
+                    >
                       Data final
                     </label>
                     <Input

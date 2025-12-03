@@ -1,11 +1,13 @@
 'use client'
 
 import { memo, useState, useCallback } from 'react'
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/Tabs'
+
+import { Settings } from 'lucide-react'
+
 import { ConfiguracoesContaTab } from '@/components/dashboard/ConfiguracoesContaTab'
 import { ConfiguracoesIntegracaoTab } from '@/components/dashboard/ConfiguracoesIntegracaoTab'
 import { ConfiguracoesNotificacoesTab } from '@/components/dashboard/ConfiguracoesNotificacoesTab'
-import { Settings } from 'lucide-react'
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/Tabs'
 
 const ConfiguracoesPage = memo(() => {
   const [activeTab, setActiveTab] = useState('conta')

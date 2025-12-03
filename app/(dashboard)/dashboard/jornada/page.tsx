@@ -1,11 +1,11 @@
 'use client'
 
 import React, { Suspense, lazy } from 'react'
-import { useGamification } from '@/hooks/useGamification'
-import { Skeleton } from '@/components/ui/Skeleton'
-import { Card } from '@/components/ui/Card'
 
-// Lazy loading dos componentes de gamificação
+import { Card } from '@/components/ui/Card'
+import { Skeleton } from '@/components/ui/Skeleton'
+import { useGamification } from '@/hooks/useGamification'
+
 const CurrentLevelProgress = lazy(
   () => import('@/components/gamification/CurrentLevelProgress'),
 )
@@ -19,7 +19,6 @@ const SummaryCards = lazy(
   () => import('@/components/gamification/SummaryCards'),
 )
 
-// Componente de loading para lazy loading
 const GamificationSkeleton = () => (
   <div className="space-y-8 p-6">
     <Card className="p-8 bg-gradient-to-br from-blue-50 to-indigo-50">

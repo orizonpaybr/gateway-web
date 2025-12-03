@@ -1,13 +1,15 @@
 'use client'
 
 import { useState } from 'react'
-import { useForm } from 'react-hook-form'
+
 import { zodResolver } from '@hookform/resolvers/zod'
+import { Send, AlertCircle, CheckCircle } from 'lucide-react'
+import { useForm } from 'react-hook-form'
 import { z } from 'zod'
+
+import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
-import { Button } from '@/components/ui/Button'
-import { Send, AlertCircle, CheckCircle } from 'lucide-react'
 
 const pixSchema = z.object({
   pixKey: z.string().min(1, 'Chave Pix é obrigatória'),
@@ -164,18 +166,18 @@ export default function PixPage() {
 
           <div className="space-y-4 mb-6">
             <div className="bg-gray-50 p-4 rounded-lg">
-              <label className="text-xs font-semibold text-gray-600 uppercase">
+              <div className="text-xs font-semibold text-gray-600 uppercase">
                 Chave Pix
-              </label>
+              </div>
               <p className="text-sm text-gray-900 mt-1 font-medium">
                 {pixData.pixKey}
               </p>
             </div>
 
             <div className="bg-gray-50 p-4 rounded-lg">
-              <label className="text-xs font-semibold text-gray-600 uppercase">
+              <div className="text-xs font-semibold text-gray-600 uppercase">
                 Valor
-              </label>
+              </div>
               <p className="text-2xl font-bold text-gray-900 mt-1">
                 R$ {pixData.amount}
               </p>
@@ -183,9 +185,9 @@ export default function PixPage() {
 
             {pixData.description && (
               <div className="bg-gray-50 p-4 rounded-lg">
-                <label className="text-xs font-semibold text-gray-600 uppercase">
+                <div className="text-xs font-semibold text-gray-600 uppercase">
                   Descrição
-                </label>
+                </div>
                 <p className="text-sm text-gray-900 mt-1">
                   {pixData.description}
                 </p>
@@ -230,21 +232,19 @@ export default function PixPage() {
             <div className="bg-gray-50 rounded-lg p-6 mb-6 max-w-md mx-auto">
               <div className="space-y-3">
                 <div>
-                  <label className="text-xs text-gray-600">Chave Pix</label>
+                  <div className="text-xs text-gray-600">Chave Pix</div>
                   <p className="text-sm font-medium text-gray-900">
                     {pixData?.pixKey}
                   </p>
                 </div>
                 <div>
-                  <label className="text-xs text-gray-600">
-                    Valor Transferido
-                  </label>
+                  <div className="text-xs text-gray-600">Valor Transferido</div>
                   <p className="text-xl font-bold text-gray-900">
                     R$ {pixData?.amount}
                   </p>
                 </div>
                 <div>
-                  <label className="text-xs text-gray-600">Data e Hora</label>
+                  <div className="text-xs text-gray-600">Data e Hora</div>
                   <p className="text-sm font-medium text-gray-900">
                     {new Date().toLocaleString('pt-BR')}
                   </p>

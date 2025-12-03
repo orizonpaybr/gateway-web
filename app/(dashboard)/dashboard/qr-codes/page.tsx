@@ -1,10 +1,12 @@
 'use client'
 
 import { useState } from 'react'
-import { Card } from '@/components/ui/Card'
-import { Button } from '@/components/ui/Button'
-import { Input } from '@/components/ui/Input'
+
 import { QrCode, Search, CheckCircle, Clock, XCircle } from 'lucide-react'
+
+import { Button } from '@/components/ui/Button'
+import { Card } from '@/components/ui/Card'
+import { Input } from '@/components/ui/Input'
 
 export default function QRCodesPage() {
   const [searchTerm, setSearchTerm] = useState('')

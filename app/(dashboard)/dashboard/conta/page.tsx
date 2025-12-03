@@ -1,10 +1,7 @@
 'use client'
 
 import { useMemo, memo } from 'react'
-import { Card } from '@/components/ui/Card'
-import { Skeleton } from '@/components/ui/Skeleton'
-import { useAccountData } from '@/hooks/useReactQuery'
-import { formatCurrencyBRL } from '@/lib/format'
+
 import {
   User as UserIcon,
   Info as InfoIcon,
@@ -17,11 +14,74 @@ import {
   Cloud,
 } from 'lucide-react'
 
-const ContaPage = memo(function ContaPage() {
-  const { data: accountResponse, isLoading } = useAccountData() as any
+import { Card } from '@/components/ui/Card'
+import { Skeleton } from '@/components/ui/Skeleton'
+import { useAccountData } from '@/hooks/useReactQuery'
+import { formatCurrencyBRL } from '@/lib/format'
+
+interface AccountData {
+  data?: {
+    username?: string
+    email?: string
+    cnpj?: string
+    status_text?: string
+    company?: {
+      razao_social?: string
+      nome_fantasia?: string
+      area_atuacao?: string
+      tipo_pessoa?: string
+      status_atual?: string
+    }
+    contacts?: {
+      telefone_principal?: string
+      email_principal?: string
+    }
+    taxes?: {
+      deposit?: {
+        fixed?: number
+        percent?: number
+        after_limit_fixed?: number
+        after_limit_percent?: number
+      }
+      withdraw?: {
+        dashboard?: {
+          fixed?: number
+          percent?: number
+          after_limit_fixed?: number
+          after_limit_percent?: number
+        }
+        api?: {
+          fixed?: number
+          percent?: number
+          after_limit_fixed?: number
+          after_limit_percent?: number
+        }
+      }
+      affiliate?: {
+        fixed?: number
+        percent?: number
+      }
+    }
+    limits?: {
+      deposit_min?: number
+      withdraw_min?: number
+      retention_value?: number
+      retention_percent?: number
+    }
+    features?: {
+      saque_automatico?: boolean
+      saque_via_dashboard?: boolean
+      saque_via_api?: boolean
+    }
+    [key: string]: unknown
+  }
+}
+
+const ContaPage = memo(() => {
+  const { data: accountResponse, isLoading } = useAccountData()
   const account =
-    accountResponse && (accountResponse as any).data
-      ? (accountResponse as any).data
+    accountResponse && (accountResponse as AccountData)?.data
+      ? (accountResponse as AccountData).data
       : null
 
   const taxes = useMemo(() => account?.taxes ?? {}, [account])
@@ -54,19 +114,19 @@ const ContaPage = memo(function ContaPage() {
               <div className="min-w-0">
                 <p className="text-gray-600">Usuário:</p>
                 <p className="font-medium text-gray-900 truncate">
-                  {account.username}
+                  {account.username as string}
                 </p>
               </div>
               <div className="min-w-0">
                 <p className="text-gray-600">Email:</p>
                 <p className="font-medium text-gray-900 truncate">
-                  {account.email || '—'}
+                  {(account.email as string) || '—'}
                 </p>
               </div>
               <div className="min-w-0">
                 <p className="text-gray-600">CPF/CNPJ:</p>
                 <p className="font-medium text-gray-900 truncate">
-                  {account.cnpj || '—'}
+                  {(account.cnpj as string) || '—'}
                 </p>
               </div>
             </div>

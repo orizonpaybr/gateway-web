@@ -1,12 +1,14 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { Card } from '@/components/ui/Card'
+
+import { Clock, CheckCircle, Info, Send } from 'lucide-react'
+
+import { PixDepositModal } from '@/components/modals/PixDepositModal'
 import { Button } from '@/components/ui/Button'
+import { Card } from '@/components/ui/Card'
 import { CurrencyInput } from '@/components/ui/CurrencyInput'
 import { Input } from '@/components/ui/Input'
-import { Clock, CheckCircle, Info, Send } from 'lucide-react'
-import { PixDepositModal } from '@/components/modals/PixDepositModal'
 import { formatCurrencyBRL } from '@/lib/format'
 
 export default function DepositarPage() {
@@ -14,7 +16,6 @@ export default function DepositarPage() {
   const [selectedAmount, setSelectedAmount] = useState('')
   const [selectedDescription, setSelectedDescription] = useState('')
 
-  // Valores sugeridos para depósito rápido
   const quickAmounts = useMemo(() => [50, 100, 200, 500, 1000, 2000], [])
 
   const handleQuickAmount = (amount: number) => {
@@ -66,7 +67,8 @@ export default function DepositarPage() {
               <div>
                 <p className="font-medium text-gray-900">Gere o QR Code</p>
                 <p className="text-sm text-gray-600">
-                  Clique em "Gerar QR Code" e aguarde a geração do código PIX
+                  Clique em &quot;Gerar QR Code&quot; e aguarde a geração do
+                  código PIX
                 </p>
               </div>
             </div>

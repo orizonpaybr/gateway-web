@@ -1,10 +1,13 @@
 'use client'
 
 import { useState } from 'react'
-import { Card } from '@/components/ui/Card'
-import { Button } from '@/components/ui/Button'
-import { Input } from '@/components/ui/Input'
+
 import { Download, Search, AlertTriangle } from 'lucide-react'
+import { toast } from 'sonner'
+
+import { Button } from '@/components/ui/Button'
+import { Card } from '@/components/ui/Card'
+import { Input } from '@/components/ui/Input'
 
 export default function InfracoesPage() {
   const [searchTerm, setSearchTerm] = useState('')
@@ -78,7 +81,7 @@ export default function InfracoesPage() {
   }
 
   const handleExport = () => {
-    alert(
+    toast.info(
       'Funcionalidade de exportação será implementada com a integração da API',
     )
   }

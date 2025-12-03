@@ -1,20 +1,19 @@
 'use client'
 
 import { useState, useMemo, useCallback, memo } from 'react'
-import { Card } from '@/components/ui/Card'
+
+import { Clock, Filter, RotateCcw, Calendar, Eye } from 'lucide-react'
+
+import { TransactionDetailsModal } from '@/components/modals/TransactionDetailsModal'
 import { Button } from '@/components/ui/Button'
+import { Card } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { useDebounce } from '@/hooks/useDebounce'
 import { useTransactions } from '@/hooks/useReactQuery'
-import { Clock, Filter, RotateCcw, Calendar, Eye } from 'lucide-react'
-import {
-  createPaginationFilters,
-  createResetDatesHandler,
-} from '@/lib/dateUtils'
-import { TransactionDetailsModal } from '@/components/modals/TransactionDetailsModal'
+import { createPaginationFilters } from '@/lib/dateUtils'
 
-const PendentesPage = memo(function PendentesPage() {
+const PendentesPage = memo(() => {
   const [search, setSearch] = useState('')
   const debouncedSearch = useDebounce(search, 500)
   const [period, setPeriod] = useState<'hoje' | '7d' | '30d' | 'custom' | null>(
@@ -28,7 +27,6 @@ const PendentesPage = memo(function PendentesPage() {
   const [detailsId, setDetailsId] = useState<string | number | null>(null)
   const [isDetailsOpen, setIsDetailsOpen] = useState(false)
 
-  // Filtros com status fixo PENDING
   const filters = useMemo(() => {
     const base = createPaginationFilters(
       page,
@@ -44,7 +42,9 @@ const PendentesPage = memo(function PendentesPage() {
   const { data, isLoading } = useTransactions(filters)
 
   const processedData = useMemo(() => {
-    if (!data?.data) return { items: [], totalPages: 1, totalItems: 0 }
+    if (!data?.data) {
+      return { items: [], totalPages: 1, totalItems: 0 }
+    }
 
     return {
       items: data.data.data || [],
@@ -53,16 +53,13 @@ const PendentesPage = memo(function PendentesPage() {
     }
   }, [data])
 
-  const resetDates = useCallback(
-    createResetDatesHandler(
-      setStartDate,
-      setEndDate,
-      setShowDatePicker,
-      setPeriod,
-      setPage,
-    ),
-    [],
-  )
+  const resetDates = useCallback(() => {
+    setStartDate('')
+    setEndDate('')
+    setShowDatePicker(false)
+    setPeriod(null)
+    setPage(1)
+  }, [setStartDate, setEndDate, setShowDatePicker, setPeriod, setPage])
 
   const canPrev = page > 1
   const canNext = page < processedData.totalPages
@@ -170,20 +167,28 @@ const PendentesPage = memo(function PendentesPage() {
               <div className="absolute right-0 top-11 z-10 bg-white border border-gray-200 rounded-lg shadow-md p-3 w-64">
                 <div className="space-y-2">
                   <div>
-                    <label className="block text-xs text-gray-600 mb-1">
+                    <label
+                      htmlFor="pendentes-start-date"
+                      className="block text-xs text-gray-600 mb-1"
+                    >
                       Data inicial
                     </label>
                     <Input
+                      id="pendentes-start-date"
                       type="date"
                       value={startDate}
                       onChange={(e) => setStartDate(e.target.value)}
                     />
                   </div>
                   <div>
-                    <label className="block text-xs text-gray-600 mb-1">
+                    <label
+                      htmlFor="pendentes-end-date"
+                      className="block text-xs text-gray-600 mb-1"
+                    >
                       Data final
                     </label>
                     <Input
+                      id="pendentes-end-date"
                       type="date"
                       value={endDate}
                       onChange={(e) => setEndDate(e.target.value)}
@@ -260,7 +265,7 @@ const PendentesPage = memo(function PendentesPage() {
                       </td>
                     </tr>
                   ) : (
-                    processedData.items.map((t: any) => (
+                    processedData.items.map((t) => (
                       <tr
                         key={t.id}
                         className="border-b border-gray-100 hover:bg-gray-50"

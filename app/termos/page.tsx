@@ -1,7 +1,8 @@
 'use client'
 
-import Link from 'next/link'
 import Image from 'next/image'
+import Link from 'next/link'
+
 import { Button } from '@/components/ui/Button'
 
 export default function TermosPage() {
@@ -53,24 +54,24 @@ export default function TermosPage() {
               </h2>
               <div className="space-y-3">
                 <p className="text-gray-700">
-                  <strong>"Orizon Pay":</strong> Refere-se à Orizon Pay, sua
-                  instituição de pagamento, que oferece serviços de transações
-                  financeiras através deste aplicativo.
+                  <strong>&quot;Orizon Pay&quot;:</strong> Refere-se à Orizon
+                  Pay, sua instituição de pagamento, que oferece serviços de
+                  transações financeiras através deste aplicativo.
                 </p>
                 <p className="text-gray-700">
-                  <strong>"Usuário":</strong> Qualquer pessoa que utilize o
-                  aplicativo da Orizon Pay.
+                  <strong>&quot;Usuário&quot;:</strong> Qualquer pessoa que
+                  utilize o aplicativo da Orizon Pay.
                 </p>
                 <p className="text-gray-700">
-                  <strong>"Aplicativo":</strong> Refere-se ao software de
-                  propriedade da Orizon Pay disponibilizado para os usuários em
-                  dispositivos móveis.
+                  <strong>&quot;Aplicativo&quot;:</strong> Refere-se ao software
+                  de propriedade da Orizon Pay disponibilizado para os usuários
+                  em dispositivos móveis.
                 </p>
                 <p className="text-gray-700">
-                  <strong>"Serviços":</strong> Todas as funcionalidades
-                  oferecidas pela Orizon Pay por meio do aplicativo, incluindo,
-                  mas não se limitando a transferências, pagamentos e consultas
-                  de saldo.
+                  <strong>&quot;Serviços&quot;:</strong> Todas as
+                  funcionalidades oferecidas pela Orizon Pay por meio do
+                  aplicativo, incluindo, mas não se limitando a transferências,
+                  pagamentos e consultas de saldo.
                 </p>
               </div>
             </section>
