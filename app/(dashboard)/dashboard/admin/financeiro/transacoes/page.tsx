@@ -1,15 +1,9 @@
 'use client'
 
 import { useState, useMemo, useCallback, memo } from 'react'
-import { Card } from '@/components/ui/Card'
-import { Button } from '@/components/ui/Button'
+
 import { Download } from 'lucide-react'
-import { useDebounce } from '@/hooks/useDebounce'
-import {
-  useFinancialTransactions,
-  useFinancialTransactionsStats,
-} from '@/hooks/useFinancial'
-import { useFinancialExport } from '@/hooks/useFinancialExport'
+
 import { FinancialFilters } from '@/components/financial/FinancialFilters'
 import {
   FinancialStatsCards,
@@ -17,11 +11,19 @@ import {
   StatIcons,
 } from '@/components/financial/FinancialStatsCards'
 import { FinancialTable } from '@/components/financial/FinancialTable'
-import { computeFinancialDateRange } from '@/lib/helpers/financialUtils'
+import { Button } from '@/components/ui/Button'
+import { Card } from '@/components/ui/Card'
 import { useAuth } from '@/contexts/AuthContext'
+import { useDebounce } from '@/hooks/useDebounce'
+import {
+  useFinancialTransactions,
+  useFinancialTransactionsStats,
+} from '@/hooks/useFinancial'
+import { useFinancialExport } from '@/hooks/useFinancialExport'
 import { USER_PERMISSION } from '@/lib/constants'
+import { computeFinancialDateRange } from '@/lib/helpers/financialUtils'
 
-const TransacoesFinanceirasPage = memo(function TransacoesFinanceirasPage() {
+const TransacoesFinanceirasPage = memo(() => {
   const { user } = useAuth()
   const [search, setSearch] = useState('')
   const debouncedSearch = useDebounce(search, 500)
@@ -60,9 +62,6 @@ const TransacoesFinanceirasPage = memo(function TransacoesFinanceirasPage() {
     debouncedSearch,
     statusFilter,
     tipoFilter,
-    period,
-    startDate,
-    endDate,
     computeDateRange,
   ])
 
@@ -70,7 +69,9 @@ const TransacoesFinanceirasPage = memo(function TransacoesFinanceirasPage() {
   const { data: stats } = useFinancialTransactionsStats('hoje', isAdmin)
 
   const processedData = useMemo(() => {
-    if (!data?.data) return { items: [], totalPages: 1, totalItems: 0 }
+    if (!data?.data) {
+      return { items: [], totalPages: 1, totalItems: 0 }
+    }
 
     return {
       items: data.data.data || [],
@@ -89,9 +90,10 @@ const TransacoesFinanceirasPage = memo(function TransacoesFinanceirasPage() {
   const canPrev = page > 1
   const canNext = page < processedData.totalPages
 
-  // Cards de estatísticas
   const statsCards = useMemo(() => {
-    if (!stats?.data) return []
+    if (!stats?.data) {
+      return []
+    }
 
     return [
       createStatCard(
@@ -137,7 +139,6 @@ const TransacoesFinanceirasPage = memo(function TransacoesFinanceirasPage() {
     ]
   }, [stats?.data])
 
-  // Colunas da tabela
   const tableColumns = useMemo(
     () => [
       { key: 'cliente_id', label: 'Cliente ID' },
@@ -197,13 +198,13 @@ const TransacoesFinanceirasPage = memo(function TransacoesFinanceirasPage() {
 
         <div className="mt-4">
           <FinancialTable
-            items={processedData.items}
+            items={processedData.items as unknown as Record<string, unknown>[]}
             columns={tableColumns}
             isLoading={isLoading}
             getRowKey={(item) => `${item.tipo}-${item.id}`}
             getTransactionType={(item) => item.tipo as 'deposito' | 'saque'}
-            getStatusField={(item) => item.status}
-            getStatusLabelField={(item) => item.status_legivel}
+            getStatusField={(item) => item.status as string}
+            getStatusLabelField={(item) => item.status_legivel as string}
           />
         </div>
 

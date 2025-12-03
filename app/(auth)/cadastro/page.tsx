@@ -1,19 +1,19 @@
 'use client'
 
 import { useState } from 'react'
-import { useForm, Controller } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
-import Link from 'next/link'
 import Image from 'next/image'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { ArrowRight, ArrowLeft, HelpCircle, User } from 'lucide-react'
+import { useForm, Controller } from 'react-hook-form'
 import { toast } from 'sonner'
+import { z } from 'zod'
+import { Button } from '@/components/ui/Button'
+import { DocumentInput, validateDocument } from '@/components/ui/DocumentInput'
+import { FileUpload } from '@/components/ui/FileUpload'
 import { Input } from '@/components/ui/Input'
 import { PhoneInput, validatePhone } from '@/components/ui/PhoneInput'
-import { DocumentInput, validateDocument } from '@/components/ui/DocumentInput'
-import { Button } from '@/components/ui/Button'
-import { FileUpload } from '@/components/ui/FileUpload'
-import { ArrowRight, ArrowLeft, HelpCircle, User } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { authAPI } from '@/lib/api'
 
@@ -22,14 +22,14 @@ const step1Schema = z.object({
     .string()
     .min(3, 'Nome completo é obrigatório')
     .regex(
-      /^[a-zA-ZÀ-ÿ\s'\-]+$/,
+      /^[a-zA-ZÀ-ÿ\s'-]+$/,
       'O nome deve conter apenas letras, espaços, apóstrofos e hífens.',
     ),
   username: z
     .string()
     .min(3, 'Nome de usuário é obrigatório')
     .regex(
-      /^[a-zA-Z0-9À-ÿ\s'\-]+$/,
+      /^[a-zA-Z0-9À-ÿ\s'-]+$/,
       'O nome de usuário aceita apenas letras, números, espaços, apóstrofos e hífens.',
     ),
   email: z.string().email('Email inválido'),
@@ -41,7 +41,7 @@ const step2Schema = z
       .string()
       .min(8, 'Senha deve ter no mínimo 8 caracteres')
       .regex(
-        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&+#^~`|\\/:";'<>,.=\-_\[\]{}()])/,
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&+#^~`|\\/:";'<>,.=\-_[\]{}()])/,
         'A senha deve conter pelo menos uma letra minúscula, uma letra maiúscula, um número e um caractere especial',
       ),
     confirmPassword: z.string().min(1, 'Confirme sua senha'),
@@ -73,7 +73,7 @@ export default function CadastroPage() {
   const [step, setStep] = useState(1)
   const [isLoading, setIsLoading] = useState(false)
   const [isValidating, setIsValidating] = useState(false)
-  const [validationErrors, setValidationErrors] = useState<
+  const [_validationErrors, setValidationErrors] = useState<
     Record<string, string>
   >({})
   const [selectedFiles, setSelectedFiles] = useState<{
@@ -135,7 +135,7 @@ export default function CadastroPage() {
         Object.entries(validationResult.errors).forEach(([field, message]) => {
           step1Form.setError(field as keyof Step1FormData, {
             type: 'manual',
-            message: message,
+            message,
           })
         })
 
@@ -144,7 +144,7 @@ export default function CadastroPage() {
 
       setStep1Data(data)
       setStep(2)
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Erro na validação:', error)
       toast.error('Erro na validação', {
         description: 'Erro ao verificar dados. Tente novamente.',
@@ -174,7 +174,7 @@ export default function CadastroPage() {
           if (field === 'telefone' || field === 'cpf_cnpj') {
             step2Form.setError(field as keyof Step2FormData, {
               type: 'manual',
-              message: message,
+              message,
             })
           }
         })
@@ -184,7 +184,7 @@ export default function CadastroPage() {
 
       setStep2Data(data)
       setStep(3)
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Erro na validação:', error)
       toast.error('Erro na validação', {
         description: 'Erro ao verificar dados. Tente novamente.',
@@ -195,7 +195,7 @@ export default function CadastroPage() {
     }
   }
 
-  const onStep3Submit = async (data: Step3FormData) => {
+  const onStep3Submit = async (_data: Step3FormData) => {
     if (!step1Data || !step2Data) {
       toast.error('Erro no cadastro', {
         description: 'Dados das etapas anteriores não encontrados',
@@ -236,8 +236,9 @@ export default function CadastroPage() {
       )
 
       router.push('/dashboard')
-    } catch (err: any) {
-      const errorMessage = err.message || 'Erro ao criar conta'
+    } catch (err: unknown) {
+      const errorMessage =
+        err instanceof Error ? err.message : 'Erro ao criar conta'
 
       toast.error('Erro no cadastro', {
         description: errorMessage,
@@ -354,7 +355,7 @@ export default function CadastroPage() {
                   type="password"
                   label="SENHA"
                   placeholder="Mínimo 8 caracteres"
-                  showPasswordToggle={true}
+                  showPasswordToggle
                   error={step2Form.formState.errors.password?.message}
                 />
 
@@ -363,7 +364,7 @@ export default function CadastroPage() {
                   type="password"
                   label="CONFIRMAR SENHA"
                   placeholder="Repita sua senha"
-                  showPasswordToggle={true}
+                  showPasswordToggle
                   error={step2Form.formState.errors.confirmPassword?.message}
                 />
 

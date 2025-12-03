@@ -1,25 +1,15 @@
 'use client'
 
-/**
- * Página de gerenciamento de níveis de gamificação (Admin)
- *
- * Versão refatorada usando:
- * - useGamificationLevels (React Query)
- * - LevelCard e LevelEditForm (componentes)
- *
- * @module app/(dashboard)/dashboard/admin/configuracoes/niveis
- */
-
 import React, { useState } from 'react'
+import { Trophy, AlertCircle } from 'lucide-react'
+import { LevelCard } from '@/components/admin/levels/LevelCard'
+import { LevelEditForm } from '@/components/admin/levels/LevelEditForm'
 import { Card } from '@/components/ui/Card'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { Switch } from '@/components/ui/Switch'
-import { LevelCard } from '@/components/admin/levels/LevelCard'
-import { LevelEditForm } from '@/components/admin/levels/LevelEditForm'
-import { useGamificationLevels } from '@/hooks/useGamificationLevels'
 import { useAuth } from '@/contexts/AuthContext'
+import { useGamificationLevels } from '@/hooks/useGamificationLevels'
 import { USER_PERMISSION } from '@/lib/constants'
-import { Trophy, AlertCircle } from 'lucide-react'
 import type {
   GamificationLevel,
   UpdateLevelData,

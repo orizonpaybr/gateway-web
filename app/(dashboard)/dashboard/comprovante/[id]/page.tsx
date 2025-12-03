@@ -1,14 +1,18 @@
 'use client'
 
 import { useState, useEffect, memo, useCallback } from 'react'
+
+import Image from 'next/image'
 import { useRouter, useParams } from 'next/navigation'
-import { Card } from '@/components/ui/Card'
-import { Button } from '@/components/ui/Button'
-import { Skeleton } from '@/components/ui/Skeleton'
-import { transactionsAPI } from '@/lib/api'
-import { useAuth } from '@/contexts/AuthContext'
-import { toast } from 'sonner'
+
 import { ArrowLeft } from 'lucide-react'
+import { toast } from 'sonner'
+
+import { Button } from '@/components/ui/Button'
+import { Card } from '@/components/ui/Card'
+import { Skeleton } from '@/components/ui/Skeleton'
+import { useAuth } from '@/contexts/AuthContext'
+import { transactionsAPI } from '@/lib/api'
 import {
   formatCurrencyBRL,
   formatDateTimeBR,
@@ -46,7 +50,7 @@ interface TransactionDetails {
   end_to_end?: string
 }
 
-const ComprovantePage = memo(function ComprovantePage() {
+const ComprovantePage = memo(() => {
   const router = useRouter()
   const params = useParams()
   const id = params.id as string
@@ -88,10 +92,25 @@ const ComprovantePage = memo(function ComprovantePage() {
     fetchTransaction()
   }, [id, user, router])
 
-  // Memorizar funções de formatação
   const formatCurrency = useCallback(formatCurrencyBRL, [])
   const formatDate = useCallback(formatDateTimeBR, [])
   const formatDocument = useCallback(formatDocumentBR, [])
+
+  const getStatusColor = useCallback((status: string) => {
+    switch (status.toUpperCase()) {
+      case 'PAID_OUT':
+      case 'COMPLETED':
+        return 'bg-green-100 text-green-700'
+      case 'PENDING':
+      case 'WAITING_FOR_APPROVAL':
+        return 'bg-yellow-100 text-yellow-700'
+      case 'REJECTED':
+      case 'CANCELLED':
+        return 'bg-red-100 text-red-700'
+      default:
+        return 'bg-gray-100 text-gray-700'
+    }
+  }, [])
 
   if (isLoading) {
     return (
@@ -114,24 +133,6 @@ const ComprovantePage = memo(function ComprovantePage() {
     return null
   }
 
-  // Memorizar função de cor de status
-  const getStatusColor = useCallback((status: string) => {
-    switch (status.toUpperCase()) {
-      case 'PAID_OUT':
-      case 'COMPLETED':
-        return 'bg-green-100 text-green-700'
-      case 'PENDING':
-      case 'WAITING_FOR_APPROVAL':
-        return 'bg-yellow-100 text-yellow-700'
-      case 'REJECTED':
-      case 'CANCELLED':
-      case 'BLOCKED':
-        return 'bg-red-100 text-red-700'
-      default:
-        return 'bg-gray-100 text-gray-700'
-    }
-  }, [])
-
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
@@ -152,9 +153,11 @@ const ComprovantePage = memo(function ComprovantePage() {
         <div className="space-y-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <img
+              <Image
                 src="/LOGO-ORIZON.png"
                 alt="Orizon Pay"
+                width={120}
+                height={40}
                 className="w-10 h-10 rounded-lg object-contain bg-white"
               />
               <div>

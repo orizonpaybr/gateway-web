@@ -1,20 +1,22 @@
 'use client'
 
 import { useState, useMemo, useCallback, memo } from 'react'
-import { Card } from '@/components/ui/Card'
+
+import { Wallet, Download, Award } from 'lucide-react'
+import { toast } from 'sonner'
+
 import { Button } from '@/components/ui/Button'
+import { Card } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
 import { Skeleton } from '@/components/ui/Skeleton'
+import { useAuth } from '@/contexts/AuthContext'
 import { useDebounce } from '@/hooks/useDebounce'
 import { useWallets, useWalletsStats } from '@/hooks/useFinancial'
 import { useFinancialExport } from '@/hooks/useFinancialExport'
-import { Wallet, Download, Award } from 'lucide-react'
-import { formatCurrencyBRL } from '@/lib/format'
-import { useAuth } from '@/contexts/AuthContext'
-import { USER_PERMISSION } from '@/lib/constants'
-import { openWhatsApp } from '@/lib/helpers/whatsappUtils'
-import { toast } from 'sonner'
 import type { Wallet as WalletType, Top3User } from '@/lib/api'
+import { USER_PERMISSION } from '@/lib/constants'
+import { formatCurrencyBRL } from '@/lib/format'
+import { openWhatsApp } from '@/lib/helpers/whatsappUtils'
 
 const PER_PAGE = 20
 const DEBOUNCE_DELAY = 500
@@ -51,8 +53,12 @@ const Top3UserItem = memo<{
   index: number
 }>(({ user, index }) => {
   const medalColors = useMemo(() => {
-    if (index === 0) return 'bg-amber-500 text-white'
-    if (index === 1) return 'bg-gray-400 text-white'
+    if (index === 0) {
+      return 'bg-amber-500 text-white'
+    }
+    if (index === 1) {
+      return 'bg-gray-400 text-white'
+    }
     return 'bg-orange-400 text-white'
   }, [index])
 
@@ -122,7 +128,7 @@ const WalletTableRow = memo<{
 
 WalletTableRow.displayName = 'WalletTableRow'
 
-const CarteirasPage = memo(function CarteirasPage() {
+const CarteirasPage = memo(() => {
   const { user } = useAuth()
   const [search, setSearch] = useState('')
   const debouncedSearch = useDebounce(search, DEBOUNCE_DELAY)
@@ -145,7 +151,9 @@ const CarteirasPage = memo(function CarteirasPage() {
   const { data: stats, isLoading: isLoadingStats } = useWalletsStats(isAdmin)
 
   const processedData = useMemo(() => {
-    if (!data?.data) return { items: [], totalPages: 1, totalItems: 0 }
+    if (!data?.data) {
+      return { items: [], totalPages: 1, totalItems: 0 }
+    }
 
     return {
       items: data.data.data || [],
@@ -154,17 +162,20 @@ const CarteirasPage = memo(function CarteirasPage() {
     }
   }, [data])
 
-  const { handleExport } = useFinancialExport(processedData.items, {
-    filename: `carteiras_${new Date().toISOString().slice(0, 10)}.csv`,
-    sheetName: 'Carteiras',
-    customMapper: (item) => ({
-      'User ID': item.user_id,
-      Faturamento: item.total_transacoes,
-      'Saldo da Carteira': item.saldo,
-      Email: item.email,
-      Telefone: item.telefone || 'Não informado',
-    }),
-  })
+  const { handleExport } = useFinancialExport<WalletType>(
+    processedData.items as WalletType[],
+    {
+      filename: `carteiras_${new Date().toISOString().slice(0, 10)}.csv`,
+      sheetName: 'Carteiras',
+      customMapper: (item) => ({
+        'User ID': item.user_id,
+        Faturamento: item.total_transacoes,
+        'Saldo da Carteira': item.saldo,
+        Email: item.email,
+        Telefone: item.telefone || 'Não informado',
+      }),
+    },
+  )
 
   const handleWhatsApp = useCallback((telefone: string | null) => {
     if (!openWhatsApp(telefone)) {
@@ -282,10 +293,14 @@ const CarteirasPage = memo(function CarteirasPage() {
           </div>
 
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label
+              htmlFor="carteiras-search"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
               Pesquisar
             </label>
             <Input
+              id="carteiras-search"
               placeholder="Pesquisar"
               value={search}
               onChange={handleSearchChange}

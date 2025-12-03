@@ -1,13 +1,9 @@
 'use client'
 
 import { useState, useMemo, useCallback } from 'react'
-import { Card } from '@/components/ui/Card'
-import { Button } from '@/components/ui/Button'
-import { Skeleton } from '@/components/ui/Skeleton'
-import { NotificationBanner } from '@/components/dashboard/NotificationBanner'
+
 import { useRouter } from 'next/navigation'
-import { useBalanceVisibility } from '@/contexts/BalanceVisibilityContext'
-import { formatCurrencyBRL } from '@/lib/format'
+
 import {
   ArrowUpRight,
   ArrowDownLeft,
@@ -16,10 +12,15 @@ import {
   Search,
   List,
 } from 'lucide-react'
+
+import { NotificationBanner } from '@/components/dashboard/NotificationBanner'
 import { PixIcon } from '@/components/icons/PixIcon'
 import { createLazyComponent } from '@/components/optimized/LazyComponent'
+import { Button } from '@/components/ui/Button'
+import { Card } from '@/components/ui/Card'
+import { Skeleton } from '@/components/ui/Skeleton'
+import { useBalanceVisibility } from '@/contexts/BalanceVisibilityContext'
 
-// Componentes lazy para melhor performance
 const LazyTransactionChart = createLazyComponent(() =>
   import('@/components/dashboard/TransactionChart').then((m) => ({
     default: m.TransactionChart,
@@ -41,6 +42,7 @@ import {
   useTransactionSummary,
   useRecentTransactions,
 } from '@/hooks/useReactQuery'
+import { formatCurrencyBRL } from '@/lib/format'
 
 export default function DashboardPage() {
   const router = useRouter()
@@ -55,16 +57,15 @@ export default function DashboardPage() {
   const {
     data: stats,
     isLoading: statsLoading,
-    error: statsError,
+    error: _statsError,
   } = useDashboardStats()
-  const { data: interactiveData, isLoading: interactiveLoading } =
+  const { data: _interactiveData, isLoading: interactiveLoading } =
     useInteractiveMovement(chartPeriod)
-  const { data: summaryData, isLoading: summaryLoading } =
+  const { data: _summaryData, isLoading: summaryLoading } =
     useTransactionSummary(chartPeriod)
-  const { data: recentData, isLoading: recentLoading } =
+  const { data: _recentData, isLoading: recentLoading } =
     useRecentTransactions(7)
 
-  // Memorizar handlers para evitar re-renders
   const handlePeriodChange = useCallback(
     (period: 'hoje' | 'ontem' | '7dias' | '30dias') => {
       setChartPeriod(period)
@@ -83,7 +84,9 @@ export default function DashboardPage() {
 
   // Memorizar dados das estatísticas
   const statsDisplay = useMemo(() => {
-    if (!stats?.data) return []
+    if (!stats?.data) {
+      return []
+    }
 
     return [
       {
@@ -194,7 +197,7 @@ export default function DashboardPage() {
             <LazyTransactionChart
               period={chartPeriod}
               onPeriodChange={handlePeriodChange}
-              embedded={true}
+              embedded
             />
 
             <div>
@@ -204,7 +207,7 @@ export default function DashboardPage() {
               <p className="text-sm text-gray-600">Seus dados de transações</p>
             </div>
 
-            <LazyTransactionSummary period={chartPeriod} embedded={true} />
+            <LazyTransactionSummary period={chartPeriod} embedded />
           </div>
         </Card>
 

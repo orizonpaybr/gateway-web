@@ -1,7 +1,9 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+
 import { useRouter } from 'next/navigation'
+
 import {
   DollarSign,
   TrendingUp,
@@ -13,18 +15,19 @@ import {
   Activity,
   HardDrive,
 } from 'lucide-react'
-import { useAuth } from '@/contexts/AuthContext'
-import { StatCard } from '@/components/admin/StatCard'
+import { toast } from 'sonner'
+
 import { PeriodSelector } from '@/components/admin/PeriodSelector'
 import { RecentTransactionsTable } from '@/components/admin/RecentTransactionsTable'
+import { StatCard } from '@/components/admin/StatCard'
 import { UsersStatsCard } from '@/components/admin/UsersStatsCard'
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
+import { useAuth } from '@/contexts/AuthContext'
 import {
   useAdminDashboardStats,
   useAdminTransactions,
   useCacheMetrics,
 } from '@/hooks/useAdminDashboard'
-import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
-import { toast } from 'sonner'
 
 export default function AdminDashboardPage() {
   const router = useRouter()
@@ -65,7 +68,7 @@ export default function AdminDashboardPage() {
   const {
     data: cacheMetrics,
     isLoading: cacheMetricsLoading,
-    error: cacheMetricsError,
+    error: _cacheMetricsError,
   } = useCacheMetrics(authReady && !!user && Number(user.permission) === 3)
 
   // Exibir erros

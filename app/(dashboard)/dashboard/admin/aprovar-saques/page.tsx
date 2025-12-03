@@ -1,21 +1,8 @@
 'use client'
 
 import { useState, useMemo, useCallback, memo, useEffect } from 'react'
-import { Card } from '@/components/ui/Card'
-import { Button } from '@/components/ui/Button'
-import { Input } from '@/components/ui/Input'
-import { CurrencyInput } from '@/components/ui/CurrencyInput'
-import { Skeleton } from '@/components/ui/Skeleton'
-import { Switch } from '@/components/ui/Switch'
-import { Tooltip } from '@/components/ui/Tooltip'
-import { Dialog } from '@/components/ui/Dialog'
-import { useDebounce } from '@/hooks/useDebounce'
-import {
-  useWithdrawals,
-  useApproveWithdrawal,
-  useRejectWithdrawal,
-  useWithdrawalStats,
-} from '@/hooks/useWithdrawals'
+
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   ArrowUpRight,
   Calendar,
@@ -25,24 +12,40 @@ import {
   Eye,
   TrendingUp,
   Clock,
+  Settings,
+  Save,
+  Info,
 } from 'lucide-react'
-import { createResetDatesHandler } from '@/lib/dateUtils'
+import { toast } from 'sonner'
+
+import { WithdrawalDetailsModal } from '@/components/modals/WithdrawalDetailsModal'
+import { Button } from '@/components/ui/Button'
+import { Card } from '@/components/ui/Card'
+import { CurrencyInput } from '@/components/ui/CurrencyInput'
+import { Dialog } from '@/components/ui/Dialog'
+import { Input } from '@/components/ui/Input'
+import { Skeleton } from '@/components/ui/Skeleton'
+import { Switch } from '@/components/ui/Switch'
+import { Tooltip } from '@/components/ui/Tooltip'
+import { useAuth } from '@/contexts/AuthContext'
+import { useDebounce } from '@/hooks/useDebounce'
+import {
+  useWithdrawals,
+  useApproveWithdrawal,
+  useRejectWithdrawal,
+  useWithdrawalStats,
+} from '@/hooks/useWithdrawals'
+import { withdrawalsAPI } from '@/lib/api'
+import { USER_PERMISSION } from '@/lib/constants'
+import { formatCurrencyBRL } from '@/lib/format'
 import {
   computeDateRange,
   formatWithdrawalValue,
   formatWithdrawalDate,
   getStatusBadgeClasses,
 } from '@/lib/helpers/withdrawalUtils'
-import { formatCurrencyBRL } from '@/lib/format'
-import { WithdrawalDetailsModal } from '@/components/modals/WithdrawalDetailsModal'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { withdrawalsAPI } from '@/lib/api'
-import { Settings, Save, Info } from 'lucide-react'
-import { useAuth } from '@/contexts/AuthContext'
-import { USER_PERMISSION } from '@/lib/constants'
-import { toast } from 'sonner'
 
-const AprovarSaquesPage = memo(function AprovarSaquesPage() {
+const AprovarSaquesPage = memo(() => {
   const { user } = useAuth()
   const [search, setSearch] = useState('')
   const debouncedSearch = useDebounce(search, 500)
@@ -73,7 +76,6 @@ const AprovarSaquesPage = memo(function AprovarSaquesPage() {
     return !!user && Number(user.permission) === USER_PERMISSION.ADMIN
   }, [user])
 
-  // Configurações (React Query)
   const queryClient = useQueryClient()
   const { data: configData, isLoading: isConfigLoading } = useQuery({
     queryKey: ['withdrawal-config'],
@@ -147,7 +149,9 @@ const AprovarSaquesPage = memo(function AprovarSaquesPage() {
 
   // Processar dados
   const processedData = useMemo(() => {
-    if (!data?.data) return { items: [], totalPages: 1, totalItems: 0 }
+    if (!data?.data) {
+      return { items: [], totalPages: 1, totalItems: 0 }
+    }
 
     return {
       items: data.data.data || [],
@@ -156,7 +160,6 @@ const AprovarSaquesPage = memo(function AprovarSaquesPage() {
     }
   }, [data])
 
-  // Handlers
   const handleApprove = useCallback((id: number) => {
     setConfirmAction({ type: 'approve', id })
   }, [])
@@ -170,16 +173,13 @@ const AprovarSaquesPage = memo(function AprovarSaquesPage() {
     setIsDetailsOpen(true)
   }, [])
 
-  const resetDates = useCallback(
-    createResetDatesHandler(
-      setStartDate,
-      setEndDate,
-      setShowDatePicker,
-      setPeriod,
-      setPage,
-    ),
-    [],
-  )
+  const resetDates = useCallback(() => {
+    setStartDate('')
+    setEndDate('')
+    setShowDatePicker(false)
+    setPeriod(null)
+    setPage(1)
+  }, [setStartDate, setEndDate, setShowDatePicker, setPeriod, setPage])
 
   const canPrev = page > 1
   const canNext = page < processedData.totalPages
@@ -454,20 +454,28 @@ const AprovarSaquesPage = memo(function AprovarSaquesPage() {
               <div className="absolute right-0 top-11 z-10 bg-white border border-gray-200 rounded-lg shadow-md p-3 w-64">
                 <div className="space-y-2">
                   <div>
-                    <label className="block text-xs text-gray-600 mb-1">
+                    <label
+                      htmlFor="start-date-filter"
+                      className="block text-xs text-gray-600 mb-1"
+                    >
                       Data inicial
                     </label>
                     <Input
+                      id="start-date-filter"
                       type="date"
                       value={startDate}
                       onChange={(e) => setStartDate(e.target.value)}
                     />
                   </div>
                   <div>
-                    <label className="block text-xs text-gray-600 mb-1">
+                    <label
+                      htmlFor="end-date-filter"
+                      className="block text-xs text-gray-600 mb-1"
+                    >
                       Data final
                     </label>
                     <Input
+                      id="end-date-filter"
                       type="date"
                       value={endDate}
                       onChange={(e) => setEndDate(e.target.value)}
@@ -522,7 +530,7 @@ const AprovarSaquesPage = memo(function AprovarSaquesPage() {
                   </div>
 
                   <div className="lg:col-span-2">
-                    <label className="sr-only">
+                    <label htmlFor="limite-automatico" className="sr-only">
                       Limite para automático (R$) — deixe vazio para sem limite
                     </label>
                     <div className="flex items-center gap-3 w-full">
@@ -780,7 +788,9 @@ const AprovarSaquesPage = memo(function AprovarSaquesPage() {
                 variant="outline"
                 className="border-red-600 text-red-600 hover:bg-red-50 hover:text-red-700"
                 onClick={async () => {
-                  if (!confirmAction) return
+                  if (!confirmAction) {
+                    return
+                  }
                   try {
                     await rejectMutation.mutateAsync(confirmAction.id)
                     setConfirmAction(null)
@@ -797,7 +807,9 @@ const AprovarSaquesPage = memo(function AprovarSaquesPage() {
                 variant="outline"
                 className="border-green-600 text-green-600 hover:bg-green-50 hover:text-green-700"
                 onClick={async () => {
-                  if (!confirmAction) return
+                  if (!confirmAction) {
+                    return
+                  }
                   try {
                     await approveMutation.mutateAsync(confirmAction.id)
                     setConfirmAction(null)

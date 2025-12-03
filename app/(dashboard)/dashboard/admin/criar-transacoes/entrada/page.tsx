@@ -1,28 +1,7 @@
 'use client'
 
 import { memo, useCallback, useMemo, useState } from 'react'
-import { Card } from '@/components/ui/Card'
-import { Button } from '@/components/ui/Button'
-import { Select } from '@/components/ui/Select'
-import { Input } from '@/components/ui/Input'
-import { CurrencyInput } from '@/components/ui/CurrencyInput'
-import { Dialog } from '@/components/ui/Dialog'
-import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
-import { Badge } from '@/components/ui/Badge'
-import { useDebounce } from '@/hooks/useDebounce'
-import { useAdminUsers } from '@/hooks/useAdminDashboard'
-import { useDeposits } from '@/hooks/useFinancial'
-import { useManualDepositForm } from '@/hooks/useManualDepositForm'
-import { formatCurrencyBRL } from '@/lib/format'
-import { formatTransactionDateTime } from '@/lib/helpers/financialUtils'
-import { USER_PERMISSION } from '@/lib/constants'
-import {
-  QUICK_DEPOSIT_AMOUNTS,
-  DEPOSITS_LIST_CONFIG,
-  DEBOUNCE_DELAYS,
-  MODAL_CONFIG,
-} from '@/lib/constants/manualTransactions'
-import { useAuth } from '@/contexts/AuthContext'
+
 import {
   ClipboardList,
   Info,
@@ -32,6 +11,29 @@ import {
   Search,
   ShieldCheck,
 } from 'lucide-react'
+
+import { Badge } from '@/components/ui/Badge'
+import { Button } from '@/components/ui/Button'
+import { Card } from '@/components/ui/Card'
+import { CurrencyInput } from '@/components/ui/CurrencyInput'
+import { Dialog } from '@/components/ui/Dialog'
+import { Input } from '@/components/ui/Input'
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
+import { Select } from '@/components/ui/Select'
+import { useAuth } from '@/contexts/AuthContext'
+import { useAdminUsers } from '@/hooks/useAdminDashboard'
+import { useDebounce } from '@/hooks/useDebounce'
+import { useDeposits } from '@/hooks/useFinancial'
+import { useManualDepositForm } from '@/hooks/useManualDepositForm'
+import { USER_PERMISSION } from '@/lib/constants'
+import {
+  QUICK_DEPOSIT_AMOUNTS,
+  DEPOSITS_LIST_CONFIG,
+  DEBOUNCE_DELAYS,
+  MODAL_CONFIG,
+} from '@/lib/constants/manualTransactions'
+import { formatCurrencyBRL } from '@/lib/format'
+import { formatTransactionDateTime } from '@/lib/helpers/financialUtils'
 
 const getStatusVariant = (status: string) => {
   const normalized = status.toLowerCase()
@@ -47,7 +49,7 @@ const getStatusVariant = (status: string) => {
   return 'info'
 }
 
-const CriarTransacoesEntradaPage = memo(function CriarTransacoesEntradaPage() {
+const CriarTransacoesEntradaPage = memo(() => {
   const { user, authReady } = useAuth()
   const isAdmin = useMemo(
     () => Number(user?.permission) === USER_PERMISSION.ADMIN,
@@ -70,7 +72,6 @@ const CriarTransacoesEntradaPage = memo(function CriarTransacoesEntradaPage() {
     DEBOUNCE_DELAYS.depositsSearch,
   )
 
-  // Hook customizado para gerenciar o formulário
   const form = useManualDepositForm({
     onSuccess: () => {
       setIsModalOpen(false)

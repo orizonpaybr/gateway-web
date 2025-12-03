@@ -1,12 +1,10 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Card } from '@/components/ui/Card'
-import { Button } from '@/components/ui/Button'
+
 import { Settings } from 'lucide-react'
-import { useAuth } from '@/contexts/AuthContext'
 import { toast } from 'sonner'
-import { useGatewaySettings } from '@/hooks/useGatewaySettings'
+
 import {
   DepositSettingsSection,
   WithdrawalSettingsSection,
@@ -14,6 +12,10 @@ import {
   ReportCustomizationSection,
   SecurityIPsSection,
 } from '@/components/admin/settings'
+import { Button } from '@/components/ui/Button'
+import { Card } from '@/components/ui/Card'
+import { useAuth } from '@/contexts/AuthContext'
+import { useGatewaySettings } from '@/hooks/useGatewaySettings'
 import type {
   GatewaySettings,
   NumericSettingsField,
@@ -44,7 +46,9 @@ export default function ConfiguracoesGeraisPage() {
   }, [settings])
 
   useEffect(() => {
-    if (!authReady) return
+    if (!authReady) {
+      return
+    }
     if (Number(user?.permission) !== 3) {
       toast.error('Acesso negado', {
         description: 'Somente administradores podem acessar esta página.',
@@ -85,7 +89,9 @@ export default function ConfiguracoesGeraisPage() {
         return updated
       })
 
-      if (!localSettings) return
+      if (!localSettings) {
+        return
+      }
 
       const parsed = parseFloat(rawValue)
       const finalValue = isNaN(parsed) || rawValue.trim() === '' ? 0 : parsed
@@ -97,7 +103,9 @@ export default function ConfiguracoesGeraisPage() {
     }
 
   const handleSwitchChange = (field: keyof GatewaySettings) => {
-    if (!localSettings) return
+    if (!localSettings) {
+      return
+    }
     setLocalSettings({
       ...localSettings,
       [field]: !localSettings[field],
@@ -105,7 +113,9 @@ export default function ConfiguracoesGeraisPage() {
   }
 
   const handleAddIP = (ip: string) => {
-    if (!localSettings) return
+    if (!localSettings) {
+      return
+    }
     setLocalSettings({
       ...localSettings,
       global_ips: [...localSettings.global_ips, ip],
@@ -113,7 +123,9 @@ export default function ConfiguracoesGeraisPage() {
   }
 
   const handleRemoveIP = (ip: string) => {
-    if (!localSettings) return
+    if (!localSettings) {
+      return
+    }
     setLocalSettings({
       ...localSettings,
       global_ips: localSettings.global_ips.filter((i) => i !== ip),
@@ -121,7 +133,9 @@ export default function ConfiguracoesGeraisPage() {
   }
 
   const handleSave = async () => {
-    if (!localSettings) return
+    if (!localSettings) {
+      return
+    }
 
     try {
       await updateSettings(localSettings)
@@ -133,7 +147,7 @@ export default function ConfiguracoesGeraisPage() {
   if (isLoading || !localSettings) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary" />
       </div>
     )
   }

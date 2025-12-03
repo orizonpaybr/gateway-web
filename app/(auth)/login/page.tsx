@@ -1,16 +1,16 @@
 'use client'
 
 import { useState } from 'react'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
+import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { toast } from 'sonner'
-import { Input } from '@/components/ui/Input'
-import { Button } from '@/components/ui/Button'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { ArrowRight, HelpCircle } from 'lucide-react'
-import Image from 'next/image'
+import { useForm } from 'react-hook-form'
+import { toast } from 'sonner'
+import { z } from 'zod'
+import { Button } from '@/components/ui/Button'
+import { Input } from '@/components/ui/Input'
 import { useAuth } from '@/contexts/AuthContext'
 
 const loginSchema = z.object({
@@ -46,8 +46,9 @@ export default function LoginPage() {
       })
 
       router.push('/dashboard')
-    } catch (err: any) {
-      const errorMessage = err.message || 'Erro ao fazer login'
+    } catch (err: unknown) {
+      const errorMessage =
+        err instanceof Error ? err.message : 'Erro ao fazer login'
 
       toast.error('Erro no login', {
         description: errorMessage,
@@ -95,7 +96,7 @@ export default function LoginPage() {
               label="SENHA"
               placeholder="Digite sua senha"
               error={errors.password?.message}
-              showPasswordToggle={true}
+              showPasswordToggle
             />
 
             <Button

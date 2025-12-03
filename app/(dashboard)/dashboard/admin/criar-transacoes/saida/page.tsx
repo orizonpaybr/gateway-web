@@ -1,28 +1,7 @@
 'use client'
 
 import { memo, useCallback, useMemo, useState } from 'react'
-import { Card } from '@/components/ui/Card'
-import { Button } from '@/components/ui/Button'
-import { Select } from '@/components/ui/Select'
-import { Input } from '@/components/ui/Input'
-import { CurrencyInput } from '@/components/ui/CurrencyInput'
-import { Dialog } from '@/components/ui/Dialog'
-import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
-import { Badge } from '@/components/ui/Badge'
-import { useDebounce } from '@/hooks/useDebounce'
-import { useAdminUsers } from '@/hooks/useAdminDashboard'
-import { useWithdrawalsFinancial } from '@/hooks/useFinancial'
-import { useManualWithdrawalForm } from '@/hooks/useManualWithdrawalForm'
-import { formatCurrencyBRL } from '@/lib/format'
-import { formatTransactionDateTime } from '@/lib/helpers/financialUtils'
-import { USER_PERMISSION } from '@/lib/constants'
-import {
-  QUICK_WITHDRAWAL_AMOUNTS,
-  WITHDRAWALS_LIST_CONFIG,
-  DEBOUNCE_DELAYS,
-  MODAL_CONFIG,
-} from '@/lib/constants/manualTransactions'
-import { useAuth } from '@/contexts/AuthContext'
+
 import {
   ClipboardList,
   Loader2,
@@ -31,6 +10,29 @@ import {
   Search,
   ShieldCheck,
 } from 'lucide-react'
+
+import { Badge } from '@/components/ui/Badge'
+import { Button } from '@/components/ui/Button'
+import { Card } from '@/components/ui/Card'
+import { CurrencyInput } from '@/components/ui/CurrencyInput'
+import { Dialog } from '@/components/ui/Dialog'
+import { Input } from '@/components/ui/Input'
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
+import { Select } from '@/components/ui/Select'
+import { useAuth } from '@/contexts/AuthContext'
+import { useAdminUsers } from '@/hooks/useAdminDashboard'
+import { useDebounce } from '@/hooks/useDebounce'
+import { useWithdrawalsFinancial } from '@/hooks/useFinancial'
+import { useManualWithdrawalForm } from '@/hooks/useManualWithdrawalForm'
+import { USER_PERMISSION } from '@/lib/constants'
+import {
+  QUICK_WITHDRAWAL_AMOUNTS,
+  WITHDRAWALS_LIST_CONFIG,
+  DEBOUNCE_DELAYS,
+  MODAL_CONFIG,
+} from '@/lib/constants/manualTransactions'
+import { formatCurrencyBRL } from '@/lib/format'
+import { formatTransactionDateTime } from '@/lib/helpers/financialUtils'
 
 const getStatusVariant = (status: string) => {
   const normalized = status.toLowerCase()
@@ -46,7 +48,7 @@ const getStatusVariant = (status: string) => {
   return 'info'
 }
 
-const CriarTransacoesSaidaPage = memo(function CriarTransacoesSaidaPage() {
+const CriarTransacoesSaidaPage = memo(() => {
   const { user, authReady } = useAuth()
   const isAdmin = useMemo(
     () => Number(user?.permission) === USER_PERMISSION.ADMIN,
@@ -69,7 +71,6 @@ const CriarTransacoesSaidaPage = memo(function CriarTransacoesSaidaPage() {
     DEBOUNCE_DELAYS.withdrawalsSearch,
   )
 
-  // Hook customizado para gerenciar o formulário
   const form = useManualWithdrawalForm({
     onSuccess: () => {
       setIsModalOpen(false)
@@ -238,10 +239,14 @@ const CriarTransacoesSaidaPage = memo(function CriarTransacoesSaidaPage() {
           </div>
 
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label
+              htmlFor="withdrawals-search"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
               Pesquisar
             </label>
             <Input
+              id="withdrawals-search"
               placeholder="Buscar por cliente, ID da transação..."
               value={withdrawalsSearch}
               onChange={(e) => setWithdrawalsSearch(e.target.value)}

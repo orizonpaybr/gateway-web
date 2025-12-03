@@ -1,8 +1,10 @@
 'use client'
 
-import { Card } from '@/components/ui/Card'
-import { Button } from '@/components/ui/Button'
 import { BookOpen, Code, ExternalLink, Copy, Key } from 'lucide-react'
+import { toast } from 'sonner'
+
+import { Button } from '@/components/ui/Button'
+import { Card } from '@/components/ui/Card'
 
 export default function ApiDocsPage() {
   const endpoints = [
@@ -66,12 +68,11 @@ const response = await fetch('https://api.horsepay.com/v1/account/balance', {
   }
 });
 
-const data = await response.json();
-console.log(data);`
+const data = await response.json();`
 
   const copyCode = () => {
     navigator.clipboard.writeText(codeExample)
-    alert('Código copiado para a área de transferência!')
+    toast.success('Código copiado para a área de transferência!')
   }
 
   return (
@@ -118,17 +119,17 @@ console.log(data);`
 
         <div className="space-y-3">
           <div>
-            <label className="text-xs font-semibold text-gray-600 uppercase">
+            <div className="text-xs font-semibold text-gray-600 uppercase">
               Header: Authorization
-            </label>
+            </div>
             <div className="bg-gray-900 text-green-400 p-3 rounded-lg font-mono text-sm mt-1">
               Bearer YOUR_CLIENT_KEY
             </div>
           </div>
           <div>
-            <label className="text-xs font-semibold text-gray-600 uppercase">
+            <div className="text-xs font-semibold text-gray-600 uppercase">
               Header: X-Client-Secret
-            </label>
+            </div>
             <div className="bg-gray-900 text-green-400 p-3 rounded-lg font-mono text-sm mt-1">
               YOUR_CLIENT_SECRET
             </div>

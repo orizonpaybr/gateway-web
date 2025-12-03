@@ -1,17 +1,19 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { Card } from '@/components/ui/Card'
-import { Button } from '@/components/ui/Button'
-import { Input } from '@/components/ui/Input'
-import { Switch } from '@/components/ui/Switch'
-import { Skeleton } from '@/components/ui/Skeleton'
-import { useAuth } from '@/contexts/AuthContext'
-import { USER_PERMISSION } from '@/lib/constants'
-import { withdrawalsAPI } from '@/lib/api'
-import { toast } from 'sonner'
-import { Settings, Save, Info, AlertCircle } from 'lucide-react'
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { Settings, Save, Info, AlertCircle } from 'lucide-react'
+import { toast } from 'sonner'
+
+import { Button } from '@/components/ui/Button'
+import { Card } from '@/components/ui/Card'
+import { Input } from '@/components/ui/Input'
+import { Skeleton } from '@/components/ui/Skeleton'
+import { Switch } from '@/components/ui/Switch'
+import { useAuth } from '@/contexts/AuthContext'
+import { withdrawalsAPI } from '@/lib/api'
+import { USER_PERMISSION } from '@/lib/constants'
 
 export default function ConfiguracoesSaquesPage() {
   const { user } = useAuth()
@@ -50,7 +52,6 @@ export default function ConfiguracoesSaquesPage() {
     }
   }, [data])
 
-  // Mutation para atualizar
   const updateMutation = useMutation({
     mutationFn: (data: {
       saque_automatico: boolean
@@ -187,10 +188,14 @@ export default function ConfiguracoesSaquesPage() {
 
                     <div className="space-y-3">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label
+                          htmlFor="limite-config"
+                          className="block text-sm font-medium text-gray-700 mb-2"
+                        >
                           Limite (R$)
                         </label>
                         <Input
+                          id="limite-config"
                           type="text"
                           placeholder="Deixe vazio para processar todos automaticamente"
                           value={limite}

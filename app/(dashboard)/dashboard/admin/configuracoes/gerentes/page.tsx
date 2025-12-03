@@ -1,13 +1,16 @@
 'use client'
 
 import React, { useMemo, useState, useCallback, memo } from 'react'
-import { useAuth } from '@/contexts/AuthContext'
-import { Button } from '@/components/ui/Button'
-import { ManagersTable } from '@/components/admin/managers/ManagersTable'
-import { ManagerEditModal } from '@/components/admin/managers/ManagerEditModal'
+
+import { Plus } from 'lucide-react'
+
 import { ManagerClientsModal } from '@/components/admin/managers/ManagerClientsModal'
+import { ManagerEditModal } from '@/components/admin/managers/ManagerEditModal'
+import { ManagersTable } from '@/components/admin/managers/ManagersTable'
 import { ManagerSummaryCards } from '@/components/admin/managers/ManagerSummaryCards'
+import { Button } from '@/components/ui/Button'
 import { Dialog } from '@/components/ui/Dialog'
+import { useAuth } from '@/contexts/AuthContext'
 import {
   useManagersList,
   useManagersStats,
@@ -16,12 +19,11 @@ import {
   useDeleteManager,
   useManagerClients,
 } from '@/hooks/useManagers'
-import { Manager, CreateManagerData, UpdateManagerData } from '@/lib/api'
+import type { Manager, CreateManagerData, UpdateManagerData } from '@/lib/api'
 import { USER_PERMISSION } from '@/lib/constants'
 import { PAGINATION_CONFIG } from '@/lib/constants/managers'
-import { Plus } from 'lucide-react'
 
-const ManagersPage = memo(function ManagersPage() {
+const ManagersPage = memo(() => {
   const { user, isLoading: authLoading } = useAuth()
   const [filters, setFilters] = useState<{ search?: string }>({})
   const [currentPage, setCurrentPage] = useState(1)
@@ -90,10 +92,6 @@ const ManagersPage = memo(function ManagersPage() {
     [data?.pagination],
   )
 
-  /**
-   * Handlers memorizados para operações CRUD
-   * Memorizados para evitar re-renders desnecessários
-   */
   const handleCreate = useCallback(() => {
     setEditManager(null)
     setIsFormOpen(true)
@@ -143,7 +141,9 @@ const ManagersPage = memo(function ManagersPage() {
   )
 
   const confirmDelete = useCallback(async () => {
-    if (!deleteManager) return
+    if (!deleteManager) {
+      return
+    }
     try {
       await deleteMutation.mutateAsync(deleteManager.id)
       setIsDeleteOpen(false)

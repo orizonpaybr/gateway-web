@@ -1,28 +1,28 @@
 'use client'
 
 import React, { useMemo, useState, useCallback } from 'react'
-import { useAuth } from '@/contexts/AuthContext'
-import { Button } from '@/components/ui/Button'
-import { UsersTable } from '@/components/admin/users/UsersTable'
-import { UserFilters } from '@/components/admin/users/UserFilters'
+
+import { UserAffiliateModal } from '@/components/admin/users/UserAffiliateModal'
 import { UserEditModal } from '@/components/admin/users/UserEditModal'
+import { UserFeesModal } from '@/components/admin/users/UserFeesModal'
+import { UserFilters } from '@/components/admin/users/UserFilters'
+import { UsersTable } from '@/components/admin/users/UsersTable'
+import { UserSummaryCards } from '@/components/admin/users/UserSummaryCards'
+import { UserViewModal } from '@/components/admin/users/UserViewModal'
+import { Button } from '@/components/ui/Button'
 import { Dialog } from '@/components/ui/Dialog'
+import { useAuth } from '@/contexts/AuthContext'
 import {
   useAdminUsersList,
-  useCreateUser,
   useUpdateUser,
   useDeleteUser,
   useApproveUser,
   useToggleBlockUser,
   useToggleWithdrawBlockUser,
   useAdminUser,
+  useUserStats,
 } from '@/hooks/useAdminUsers'
-import { UserViewModal } from '@/components/admin/users/UserViewModal'
-import { UserFeesModal } from '@/components/admin/users/UserFeesModal'
-import { UserAffiliateModal } from '@/components/admin/users/UserAffiliateModal'
-import { UserSummaryCards } from '@/components/admin/users/UserSummaryCards'
-import { useUserStats } from '@/hooks/useAdminUsers'
-import { AdminUser, UpdateUserData } from '@/lib/api'
+import type { AdminUser, UpdateUserData } from '@/lib/api'
 import { USER_PERMISSION } from '@/lib/constants'
 
 export default function AdminUsersPage() {
@@ -69,10 +69,8 @@ export default function AdminUsersPage() {
     isViewOpen || isFeesOpen || isFormOpen || isAffiliateOpen,
   )
 
-  // Memorizar users derivado
   const users = useMemo(() => data?.users || [], [data?.users])
 
-  // Memorizar pagination object
   const pagination = useMemo(
     () =>
       data?.pagination
@@ -90,7 +88,6 @@ export default function AdminUsersPage() {
     [data?.pagination],
   )
 
-  // Handlers memorizados
   const handleApprove = useCallback(
     async (u: AdminUser) => {
       try {
@@ -157,7 +154,7 @@ export default function AdminUsersPage() {
         await updateMutation.mutateAsync({ userId, data })
         setIsFormOpen(false)
         setEditUser(null)
-        setViewUserId(null) // Limpar viewUserId após atualização
+        setViewUserId(null)
       } catch {
         // Error já é tratado pelo hook
       }
@@ -165,14 +162,12 @@ export default function AdminUsersPage() {
     [updateMutation],
   )
 
-  // Handler específico para atualização de taxas
   const handleUpdateFees = useCallback(
     async (userId: number, data: UpdateUserData) => {
       try {
         await updateMutation.mutateAsync({ userId, data })
-        // Fechar modal de taxas após sucesso
         setIsFeesOpen(false)
-        setViewUserId(null) // Limpar viewUserId após atualização
+        setViewUserId(null)
       } catch {
         // Error já é tratado pelo hook (toast será exibido)
       }
@@ -186,7 +181,9 @@ export default function AdminUsersPage() {
   }, [])
 
   const confirmDelete = useCallback(async () => {
-    if (!deleteUser) return
+    if (!deleteUser) {
+      return
+    }
     try {
       await deleteMutation.mutateAsync(deleteUser.id)
       setIsDeleteOpen(false)
@@ -197,7 +194,6 @@ export default function AdminUsersPage() {
     }
   }, [deleteUser, deleteMutation])
 
-  // Handler memorizado para filtros
   const handleFiltersChange = useCallback(
     (newFilters: { search?: string; status?: number | undefined }) => {
       setFilters(newFilters)
@@ -206,7 +202,6 @@ export default function AdminUsersPage() {
     [],
   )
 
-  // Handlers memorizados para modais
   const handleView = useCallback((u: AdminUser) => {
     setViewUserId(u.id)
     setIsViewOpen(true)
@@ -266,7 +261,7 @@ export default function AdminUsersPage() {
         open={isFormOpen}
         onClose={() => {
           setIsFormOpen(false)
-          setViewUserId(null) // Limpar viewUserId ao fechar
+          setViewUserId(null)
           setEditUser(null)
         }}
         // Priorizar viewUserData quando disponível (tem dados completos), senão usar editUser
@@ -312,7 +307,7 @@ export default function AdminUsersPage() {
         open={isFeesOpen}
         onClose={() => {
           setIsFeesOpen(false)
-          setViewUserId(null) // Limpar viewUserId ao fechar
+          setViewUserId(null)
         }}
         user={viewUserData}
         onSubmit={handleUpdateFees}

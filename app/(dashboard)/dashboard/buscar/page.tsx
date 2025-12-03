@@ -1,15 +1,18 @@
 'use client'
 
 import { useState, memo, useCallback } from 'react'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
-import { Card } from '@/components/ui/Card'
-import { Input } from '@/components/ui/Input'
-import { Button } from '@/components/ui/Button'
-import { Search, CheckCircle, XCircle, Clock } from 'lucide-react'
-import { Dialog } from '@/components/ui/Dialog'
+
 import { useRouter } from 'next/navigation'
+
+import { zodResolver } from '@hookform/resolvers/zod'
+import { Search, CheckCircle, XCircle, Clock } from 'lucide-react'
+import { useForm } from 'react-hook-form'
+import { z } from 'zod'
+
+import { Button } from '@/components/ui/Button'
+import { Card } from '@/components/ui/Card'
+import { Dialog } from '@/components/ui/Dialog'
+import { Input } from '@/components/ui/Input'
 import { useAuth } from '@/contexts/AuthContext'
 
 const searchSchema = z.object({
@@ -18,12 +21,22 @@ const searchSchema = z.object({
 
 type SearchFormData = z.infer<typeof searchSchema>
 
-const BuscarPage = memo(function BuscarPage() {
+const BuscarPage = memo(() => {
   const router = useRouter()
   const { authReady } = useAuth()
-  const [searchResult, setSearchResult] = useState<any>(null)
+  const [searchResult, setSearchResult] = useState<{
+    id: string
+    endToEndId: string
+    description: string
+    value: number
+    date: string
+    status: string
+    type: string
+    sender: { name: string; document: string; bank: string }
+    receiver: { name: string; document: string; bank: string }
+  } | null>(null)
   const [isSearching, setIsSearching] = useState(false)
-  const [searchValue, setSearchValue] = useState('')
+  const [_searchValue, setSearchValue] = useState('')
   const [typeModalOpen, setTypeModalOpen] = useState(false)
   const [selectedType, setSelectedType] = useState<'deposito' | 'saque' | null>(
     null,
@@ -37,17 +50,20 @@ const BuscarPage = memo(function BuscarPage() {
     resolver: zodResolver(searchSchema),
   })
 
-  // Memorizar função de busca
   const onSubmit = useCallback(
     async (data: SearchFormData) => {
-      if (!authReady) return
+      if (!authReady) {
+        return
+      }
 
       setIsSearching(true)
       try {
         const params = new URLSearchParams()
         params.append('page', '1')
         params.append('limit', '1')
-        if (selectedType) params.append('tipo', selectedType)
+        if (selectedType) {
+          params.append('tipo', selectedType)
+        }
         params.append('busca', data.transactionId)
 
         const res = await fetch(
@@ -65,7 +81,9 @@ const BuscarPage = memo(function BuscarPage() {
           },
         )
 
-        if (!res.ok) throw new Error('Erro ao buscar transação')
+        if (!res.ok) {
+          throw new Error('Erro ao buscar transação')
+        }
         const json = await res.json()
 
         if (json.success && json.data?.data?.length) {
@@ -99,7 +117,6 @@ const BuscarPage = memo(function BuscarPage() {
     [authReady, selectedType, router],
   )
 
-  // Memorizar função de ícone de status
   const getStatusIcon = useCallback((status: string) => {
     switch (status) {
       case 'concluída':
@@ -113,7 +130,6 @@ const BuscarPage = memo(function BuscarPage() {
     }
   }, [])
 
-  // Memorizar função de formatação de moeda
   const formatCurrency = useCallback((value: number) => {
     return value.toLocaleString('pt-BR', {
       style: 'currency',
@@ -223,45 +239,45 @@ const BuscarPage = memo(function BuscarPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-4">
               <div>
-                <label className="text-xs font-semibold text-gray-600 uppercase">
+                <div className="text-xs font-semibold text-gray-600 uppercase">
                   ID da Transação
-                </label>
+                </div>
                 <p className="text-sm text-gray-900 mt-1 font-mono bg-gray-50 p-2 rounded">
                   {searchResult.id}
                 </p>
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-gray-600 uppercase">
+                <div className="text-xs font-semibold text-gray-600 uppercase">
                   EndToEndID
-                </label>
+                </div>
                 <p className="text-sm text-gray-900 mt-1 font-mono bg-gray-50 p-2 rounded break-all">
                   {searchResult.endToEndId}
                 </p>
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-gray-600 uppercase">
+                <div className="text-xs font-semibold text-gray-600 uppercase">
                   Descrição
-                </label>
+                </div>
                 <p className="text-sm text-gray-900 mt-1">
                   {searchResult.description}
                 </p>
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-gray-600 uppercase">
+                <div className="text-xs font-semibold text-gray-600 uppercase">
                   Valor
-                </label>
+                </div>
                 <p className="text-2xl font-bold text-gray-900 mt-1">
                   {formatCurrency(searchResult.value)}
                 </p>
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-gray-600 uppercase">
+                <div className="text-xs font-semibold text-gray-600 uppercase">
                   Data e Hora
-                </label>
+                </div>
                 <p className="text-sm text-gray-900 mt-1">
                   {searchResult.date}
                 </p>
@@ -275,19 +291,19 @@ const BuscarPage = memo(function BuscarPage() {
                 </h3>
                 <div className="space-y-2">
                   <div>
-                    <label className="text-xs text-gray-600">Nome</label>
+                    <div className="text-xs text-gray-600">Nome</div>
                     <p className="text-sm font-medium text-gray-900">
                       {searchResult.sender.name}
                     </p>
                   </div>
                   <div>
-                    <label className="text-xs text-gray-600">Documento</label>
+                    <div className="text-xs text-gray-600">Documento</div>
                     <p className="text-sm font-medium text-gray-900">
                       {searchResult.sender.document}
                     </p>
                   </div>
                   <div>
-                    <label className="text-xs text-gray-600">Banco</label>
+                    <div className="text-xs text-gray-600">Banco</div>
                     <p className="text-sm font-medium text-gray-900">
                       {searchResult.sender.bank}
                     </p>
@@ -301,19 +317,19 @@ const BuscarPage = memo(function BuscarPage() {
                 </h3>
                 <div className="space-y-2">
                   <div>
-                    <label className="text-xs text-gray-600">Nome</label>
+                    <div className="text-xs text-gray-600">Nome</div>
                     <p className="text-sm font-medium text-gray-900">
                       {searchResult.receiver.name}
                     </p>
                   </div>
                   <div>
-                    <label className="text-xs text-gray-600">Documento</label>
+                    <div className="text-xs text-gray-600">Documento</div>
                     <p className="text-sm font-medium text-gray-900">
                       {searchResult.receiver.document}
                     </p>
                   </div>
                   <div>
-                    <label className="text-xs text-gray-600">Banco</label>
+                    <div className="text-xs text-gray-600">Banco</div>
                     <p className="text-sm font-medium text-gray-900">
                       {searchResult.receiver.bank}
                     </p>

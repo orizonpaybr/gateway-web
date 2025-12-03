@@ -1,12 +1,8 @@
 'use client'
 
 import { useState, useMemo, useCallback, memo } from 'react'
-import { Card } from '@/components/ui/Card'
-import { Button } from '@/components/ui/Button'
-import { Input } from '@/components/ui/Input'
-import { Skeleton } from '@/components/ui/Skeleton'
-import { useDebounce } from '@/hooks/useDebounce'
-import { useDeposits, useDepositsStats } from '@/hooks/useFinancial'
+
+import { format } from 'date-fns'
 import {
   TrendingUp,
   CheckCircle,
@@ -14,24 +10,30 @@ import {
   Download,
   Calendar,
 } from 'lucide-react'
-import { formatCurrencyBRL } from '@/lib/format'
-import { useAuth } from '@/contexts/AuthContext'
-import { USER_PERMISSION } from '@/lib/constants'
-import { format } from 'date-fns'
-import * as XLSX from 'xlsx'
 import { toast } from 'sonner'
-import type { Deposit } from '@/lib/api'
-import { Select } from '@/components/ui/Select'
-import { Dialog } from '@/components/ui/Dialog'
+import * as XLSX from 'xlsx'
+
 import { DepositStatsCard } from '@/components/financial/DepositStatsCard'
 import { DepositStatusBadge } from '@/components/financial/DepositStatusBadge'
+import { Button } from '@/components/ui/Button'
+import { Card } from '@/components/ui/Card'
+import { Dialog } from '@/components/ui/Dialog'
+import { Input } from '@/components/ui/Input'
+import { Select } from '@/components/ui/Select'
+import { Skeleton } from '@/components/ui/Skeleton'
+import { useAuth } from '@/contexts/AuthContext'
+import { useDebounce } from '@/hooks/useDebounce'
 import { useDepositStatusUpdate } from '@/hooks/useDepositStatusUpdate'
+import { useDeposits, useDepositsStats } from '@/hooks/useFinancial'
+import type { Deposit } from '@/lib/api'
+import { USER_PERMISSION } from '@/lib/constants'
+import { formatCurrencyBRL } from '@/lib/format'
 import {
   computeFinancialDateRange,
   formatTransactionDateTime,
 } from '@/lib/helpers/financialUtils'
 
-const EntradasPage = memo(function EntradasPage() {
+const EntradasPage = memo(() => {
   const { user } = useAuth()
   const [search, setSearch] = useState('')
   const debouncedSearch = useDebounce(search, 500)
@@ -54,7 +56,6 @@ const EntradasPage = memo(function EntradasPage() {
     return !!user && Number(user.permission) === USER_PERMISSION.ADMIN
   }, [user])
 
-  // Hook para atualização de status
   const updateStatusMutation = useDepositStatusUpdate()
 
   // Usar helper function existente para calcular range de datas
@@ -130,7 +131,6 @@ const EntradasPage = memo(function EntradasPage() {
     toast.success('Arquivo exportado com sucesso!')
   }, [processedData.items])
 
-  // Constantes memoizadas
   const canPrev = useMemo(() => page > 1, [page])
   const canNext = useMemo(
     () => page < processedData.totalPages,
@@ -141,7 +141,6 @@ const EntradasPage = memo(function EntradasPage() {
     [isLoading, processedData.items.length],
   )
 
-  // Opções de status para o select de ações
   const statusOptions = useMemo(
     () => [
       { value: 'PENDING', label: 'Pendente' },
@@ -174,7 +173,6 @@ const EntradasPage = memo(function EntradasPage() {
     [statusOptions],
   )
 
-  // Handlers memorizados para filtros
   const handlePeriodFilterChange = useCallback((period: string) => {
     setPeriodFilter(period)
     setStartDate('')
@@ -193,7 +191,6 @@ const EntradasPage = memo(function EntradasPage() {
     setPage(1)
   }, [])
 
-  // Handler para abrir dialog de confirmação
   const handleStatusChange = useCallback(
     (depositoId: number, newStatus: string) => {
       const deposito = processedData.items.find((d) => d.id === depositoId)
@@ -206,9 +203,10 @@ const EntradasPage = memo(function EntradasPage() {
     [processedData.items],
   )
 
-  // Handler para confirmar mudança de status
   const handleConfirmStatusChange = useCallback(async () => {
-    if (!confirmStatusChange) return
+    if (!confirmStatusChange) {
+      return
+    }
 
     try {
       await updateStatusMutation.mutateAsync({
@@ -328,10 +326,14 @@ const EntradasPage = memo(function EntradasPage() {
           </div>
 
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label
+              htmlFor="entradas-search"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
               Pesquisar
             </label>
             <Input
+              id="entradas-search"
               placeholder="Buscar registros..."
               value={search}
               onChange={(e) => handleSearchChange(e.target.value)}
@@ -434,10 +436,14 @@ const EntradasPage = memo(function EntradasPage() {
                   <div className="absolute right-0 top-11 z-10 bg-white border border-gray-200 rounded-lg shadow-md p-3 w-64">
                     <div className="space-y-2">
                       <div>
-                        <label className="block text-xs text-gray-600 mb-1">
+                        <label
+                          htmlFor="entradas-start-date"
+                          className="block text-xs text-gray-600 mb-1"
+                        >
                           Data inicial
                         </label>
                         <Input
+                          id="entradas-start-date"
                           type="date"
                           value={tempStartDate}
                           onChange={(e) => {
@@ -446,10 +452,14 @@ const EntradasPage = memo(function EntradasPage() {
                         />
                       </div>
                       <div>
-                        <label className="block text-xs text-gray-600 mb-1">
+                        <label
+                          htmlFor="entradas-end-date"
+                          className="block text-xs text-gray-600 mb-1"
+                        >
                           Data final
                         </label>
                         <Input
+                          id="entradas-end-date"
                           type="date"
                           value={tempEndDate}
                           onChange={(e) => {

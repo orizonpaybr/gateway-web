@@ -1,5 +1,5 @@
-import { Sidebar } from '@/components/dashboard/Sidebar'
 import { Header } from '@/components/dashboard/Header'
+import { Sidebar } from '@/components/dashboard/Sidebar'
 import { TwoFactorSetup } from '@/components/dashboard/TwoFactorSetup'
 import { TwoFactorVerify } from '@/components/dashboard/TwoFactorVerify'
 import { BalanceVisibilityProvider } from '@/contexts/BalanceVisibilityContext'

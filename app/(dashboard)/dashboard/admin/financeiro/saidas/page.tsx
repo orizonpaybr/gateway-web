@@ -1,15 +1,8 @@
 'use client'
 
 import { useState, useMemo, useCallback, memo } from 'react'
-import { Card } from '@/components/ui/Card'
-import { Button } from '@/components/ui/Button'
-import { Input } from '@/components/ui/Input'
-import { Skeleton } from '@/components/ui/Skeleton'
-import { useDebounce } from '@/hooks/useDebounce'
-import {
-  useWithdrawalsFinancial,
-  useWithdrawalsStatsFinancial,
-} from '@/hooks/useFinancial'
+
+import { format } from 'date-fns'
 import {
   TrendingDown,
   CheckCircle,
@@ -18,20 +11,29 @@ import {
   Calendar,
   Clock,
 } from 'lucide-react'
-import { formatCurrencyBRL } from '@/lib/format'
-import { useAuth } from '@/contexts/AuthContext'
-import { USER_PERMISSION } from '@/lib/constants'
-import { format } from 'date-fns'
-import * as XLSX from 'xlsx'
 import { toast } from 'sonner'
+import * as XLSX from 'xlsx'
+
 import { WithdrawalStatsCard } from '@/components/financial/WithdrawalStatsCard'
 import { WithdrawalStatusBadge } from '@/components/financial/WithdrawalStatusBadge'
+import { Button } from '@/components/ui/Button'
+import { Card } from '@/components/ui/Card'
+import { Input } from '@/components/ui/Input'
+import { Skeleton } from '@/components/ui/Skeleton'
+import { useAuth } from '@/contexts/AuthContext'
+import { useDebounce } from '@/hooks/useDebounce'
+import {
+  useWithdrawalsFinancial,
+  useWithdrawalsStatsFinancial,
+} from '@/hooks/useFinancial'
+import { USER_PERMISSION } from '@/lib/constants'
+import { formatCurrencyBRL } from '@/lib/format'
 import {
   computeFinancialDateRange,
   formatTransactionDateTime,
 } from '@/lib/helpers/financialUtils'
 
-const SaidasPage = memo(function SaidasPage() {
+const SaidasPage = memo(() => {
   const { user } = useAuth()
   const [search, setSearch] = useState('')
   const debouncedSearch = useDebounce(search, 500)
@@ -204,7 +206,6 @@ const SaidasPage = memo(function SaidasPage() {
     toast.success('Arquivo exportado com sucesso!')
   }, [processedData.items])
 
-  // Constantes memorizadas
   const canPrev = useMemo(() => page > 1, [page])
   const canNext = useMemo(
     () => page < processedData.totalPages,
@@ -215,7 +216,6 @@ const SaidasPage = memo(function SaidasPage() {
     [tableLoadingState, processedData.items.length],
   )
 
-  // Handlers memorizados para filtros
   const handlePeriodFilterChange = useCallback((period: string) => {
     setPeriodFilter(period)
     setStartDate('')
@@ -285,10 +285,14 @@ const SaidasPage = memo(function SaidasPage() {
           </div>
 
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label
+              htmlFor="saidas-search-input"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
               Pesquisar
             </label>
             <Input
+              id="saidas-search-input"
               placeholder="Buscar por cliente, chave PIX..."
               value={search}
               onChange={(e) => handleSearchChange(e.target.value)}
@@ -391,10 +395,14 @@ const SaidasPage = memo(function SaidasPage() {
                   <div className="absolute right-0 top-11 z-10 bg-white border border-gray-200 rounded-lg shadow-md p-3 w-64">
                     <div className="space-y-2">
                       <div>
-                        <label className="block text-xs text-gray-600 mb-1">
+                        <label
+                          htmlFor="saidas-start-date"
+                          className="block text-xs text-gray-600 mb-1"
+                        >
                           Data inicial
                         </label>
                         <Input
+                          id="saidas-start-date"
                           type="date"
                           value={tempStartDate}
                           onChange={(e) => {
@@ -403,10 +411,14 @@ const SaidasPage = memo(function SaidasPage() {
                         />
                       </div>
                       <div>
-                        <label className="block text-xs text-gray-600 mb-1">
+                        <label
+                          htmlFor="saidas-end-date"
+                          className="block text-xs text-gray-600 mb-1"
+                        >
                           Data final
                         </label>
                         <Input
+                          id="saidas-end-date"
                           type="date"
                           value={tempEndDate}
                           onChange={(e) => {
