@@ -1,8 +1,3 @@
-/**
- * Hook para exportação de dados financeiros
- * Centraliza lógica de exportação
- */
-
 import { useCallback } from 'react'
 import * as XLSX from 'xlsx'
 import { format } from 'date-fns'
@@ -24,21 +19,18 @@ export interface ExportItem {
   data?: string
   email?: string
   telefone?: string | null
-  [key: string]: any
+  [key: string]: unknown
 }
 
-export interface UseFinancialExportOptions {
+export interface UseFinancialExportOptions<T = ExportItem> {
   filename?: string
   sheetName?: string
-  customMapper?: (item: ExportItem) => Record<string, any>
+  customMapper?: (item: T) => Record<string, any>
 }
 
-/**
- * Hook para exportar dados financeiros para XLSX
- */
-export function useFinancialExport<T extends ExportItem>(
+export function useFinancialExport<T = ExportItem>(
   items: T[],
-  options: UseFinancialExportOptions = {},
+  options: UseFinancialExportOptions<T> = {},
 ) {
   const {
     filename = `transacoes_${new Date().toISOString().slice(0, 10)}.xlsx`,
@@ -57,17 +49,20 @@ export function useFinancialExport<T extends ExportItem>(
         return customMapper(item)
       }
 
-      // Mapper padrão
+      // Mapper padrão - só funciona se o item for ExportItem
+      const exportItem = item as unknown as ExportItem
       return {
-        ID: item.id,
-        Tipo: item.tipo ? formatTransactionType(item.tipo) : '',
-        'Cliente ID': item.cliente_id || '',
-        'Transação ID': item.transacao_id || '',
-        'Valor Total': item.valor_total || 0,
-        'Valor Líquido': item.valor_liquido || 0,
-        ...(item.taxa !== undefined && { Taxa: item.taxa }),
-        Status: item.status_legivel || '',
-        Data: item.data ? format(new Date(item.data), 'dd/MM/yyyy HH:mm') : '',
+        ID: exportItem.id,
+        Tipo: exportItem.tipo ? formatTransactionType(exportItem.tipo) : '',
+        'Cliente ID': exportItem.cliente_id || '',
+        'Transação ID': exportItem.transacao_id || '',
+        'Valor Total': exportItem.valor_total || 0,
+        'Valor Líquido': exportItem.valor_liquido || 0,
+        ...(exportItem.taxa !== undefined && { Taxa: exportItem.taxa }),
+        Status: exportItem.status_legivel || '',
+        Data: exportItem.data
+          ? format(new Date(exportItem.data), 'dd/MM/yyyy HH:mm')
+          : '',
       }
     })
 

@@ -23,7 +23,7 @@ export function useGatewaySettings() {
     queryKey: QUERY_KEY,
     queryFn: async (): Promise<GatewaySettings> => {
       const response = await gatewaySettingsAPI.getSettings()
-      return response.data as GatewaySettings
+      return response.data as unknown as GatewaySettings
     },
     staleTime: STALE_TIME,
     gcTime: CACHE_TIME,
@@ -44,10 +44,15 @@ export function useGatewaySettings() {
         queryClient.getQueryData<GatewaySettings>(QUERY_KEY)
 
       // Atualizar cache otimisticamente
-      queryClient.setQueryData<GatewaySettings>(QUERY_KEY, (old) => ({
-        ...old!,
-        ...newSettings,
-      }))
+      queryClient.setQueryData<GatewaySettings>(QUERY_KEY, (old) => {
+        if (!old) {
+          return newSettings as GatewaySettings
+        }
+        return {
+          ...old,
+          ...newSettings,
+        }
+      })
 
       return { previousSettings }
     },

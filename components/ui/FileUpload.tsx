@@ -1,6 +1,8 @@
 import React, { useRef, useState, useEffect } from 'react'
-import { cn } from '@/lib/utils'
+import Image from 'next/image'
 import { Upload, File, X } from 'lucide-react'
+import { toast } from 'sonner'
+import { cn } from '@/lib/utils'
 
 interface FileUploadProps {
   label: string
@@ -37,7 +39,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
 
   const handleFile = (file: File) => {
     if (file.size > maxSize * 1024 * 1024) {
-      alert(`Arquivo muito grande. Máximo permitido: ${maxSize}MB`)
+      toast.error(`Arquivo muito grande. Máximo permitido: ${maxSize}MB`)
       return
     }
 
@@ -95,8 +97,12 @@ export const FileUpload: React.FC<FileUploadProps> = ({
   }
 
   const getFileSize = (size: number) => {
-    if (size < 1024) return `${size} B`
-    if (size < 1024 * 1024) return `${(size / 1024).toFixed(1)} KB`
+    if (size < 1024) {
+      return `${size} B`
+    }
+    if (size < 1024 * 1024) {
+      return `${(size / 1024).toFixed(1)} KB`
+    }
     return `${(size / (1024 * 1024)).toFixed(1)} MB`
   }
 
@@ -115,10 +121,19 @@ export const FileUpload: React.FC<FileUploadProps> = ({
           error && 'border-red-500',
           value && 'border-green-500 bg-green-50',
         )}
+        onClick={handleClick}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault()
+            handleClick()
+          }
+        }}
+        role="button"
+        tabIndex={0}
+        aria-label="Selecionar arquivo"
         onDrop={handleDrop}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
-        onClick={handleClick}
       >
         <input
           ref={fileInputRef}
@@ -131,11 +146,12 @@ export const FileUpload: React.FC<FileUploadProps> = ({
         {value ? (
           <div className="flex items-center justify-center gap-3">
             {imagePreview ? (
-              <div className="w-16 h-16 rounded-lg overflow-hidden border border-gray-200">
-                <img
+              <div className="w-16 h-16 rounded-lg overflow-hidden border border-gray-200 relative">
+                <Image
                   src={imagePreview}
                   alt="Preview"
-                  className="object-cover w-full h-full"
+                  fill
+                  className="object-cover"
                 />
               </div>
             ) : (

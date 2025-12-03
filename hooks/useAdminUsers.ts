@@ -1,20 +1,9 @@
-/**
- * Hooks React Query para gerenciamento de usuários (Admin)
- *
- * Implementa:
- * - Cache inteligente e invalidação
- * - Optimistic updates
- * - Error handling
- * - Mutations com feedback
- * - Performance otimizada
- */
-
 import {
   useMutation,
   useQuery,
   useQueryClient,
-  UseQueryResult,
-  UseMutationResult,
+  type UseQueryResult,
+  type UseMutationResult,
 } from '@tanstack/react-query'
 import {
   adminUsersAPI,
@@ -79,8 +68,8 @@ export function useAdminUsersList(
       }
     },
     enabled,
-    staleTime: 2 * 60 * 1000, // 2 minutos
-    gcTime: 5 * 60 * 1000, // 5 minutos
+    staleTime: 2 * 60 * 1000,
+    gcTime: 5 * 60 * 1000,
     refetchOnWindowFocus: true,
     retry: 2,
   })
@@ -99,7 +88,9 @@ export function useAdminUser(
   return useQuery({
     queryKey: ['admin-user', userId],
     queryFn: async () => {
-      if (!userId) throw new Error('ID do usuário não fornecido')
+      if (!userId) {
+        throw new Error('ID do usuário não fornecido')
+      }
 
       const response = await adminUsersAPI.getUser(userId)
       if (!response.success) {
@@ -108,8 +99,8 @@ export function useAdminUser(
       return response.data.user
     },
     enabled: enabled && userId !== null,
-    staleTime: 3 * 60 * 1000, // 3 minutos
-    gcTime: 10 * 60 * 1000, // 10 minutos
+    staleTime: 3 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
     refetchOnWindowFocus: false,
     retry: 2,
   })
@@ -134,7 +125,7 @@ export function useCreateUser(): UseMutationResult<
       }
       return response.data.user
     },
-    onSuccess: (user, variables) => {
+    onSuccess: (user) => {
       // Invalidar lista de usuários para recarregar
       queryClient.invalidateQueries({ queryKey: ['admin-users-list'] })
 
@@ -191,7 +182,7 @@ export function useUpdateUser(): UseMutationResult<
 
       return { previousUser }
     },
-    onSuccess: (user, variables) => {
+    onSuccess: (user) => {
       // Atualizar cache individual com os dados completos retornados
       queryClient.setQueryData(['admin-user', user.id], user)
 
@@ -450,7 +441,9 @@ export function useManagers(enabled: boolean = true) {
     queryKey: ['admin-managers'],
     queryFn: async () => {
       const res = await adminUsersAPI.getManagers()
-      if (!res.success) throw new Error('Erro ao listar gerentes')
+      if (!res.success) {
+        throw new Error('Erro ao listar gerentes')
+      }
       return res.data.managers
     },
     enabled,
@@ -470,8 +463,9 @@ export function useUserStats(
     queryKey: ['admin-users-stats'],
     queryFn: async () => {
       const res = await adminDashboardAPI.getUserStats()
-      if (!res.success)
+      if (!res.success) {
         throw new Error('Erro ao obter estatísticas de usuários')
+      }
       return res.data
     },
     enabled,
@@ -486,7 +480,9 @@ export function usePixAcquirers(enabled: boolean = true) {
     queryKey: ['admin-pix-acquirers'],
     queryFn: async () => {
       const res = await adminUsersAPI.getPixAcquirers()
-      if (!res.success) throw new Error('Erro ao listar adquirentes')
+      if (!res.success) {
+        throw new Error('Erro ao listar adquirentes')
+      }
       return res.data.acquirers
     },
     enabled,
@@ -525,12 +521,18 @@ export function useSaveAffiliateSettings(): UseMutationResult<
     onSuccess: (user, { userId }) => {
       // Atualizar cache individual
       // Estrutura pode ser AdminUser diretamente ou { user: AdminUser }
-      queryClient.setQueryData(['admin-user', userId], (oldData: any) => {
-        if (!oldData) return user
+      queryClient.setQueryData(['admin-user', userId], (oldData: unknown) => {
+        if (!oldData) {
+          return user
+        }
         // Se oldData já é AdminUser (estrutura direta)
-        if (oldData.id) {
+        if (
+          typeof oldData === 'object' &&
+          oldData !== null &&
+          'id' in oldData
+        ) {
           return {
-            ...oldData,
+            ...(oldData as AdminUser),
             is_affiliate: user.is_affiliate,
             affiliate_percentage: user.affiliate_percentage,
             affiliate_code: user.affiliate_code,
@@ -538,11 +540,15 @@ export function useSaveAffiliateSettings(): UseMutationResult<
           }
         }
         // Se oldData é { user: AdminUser }
-        if (oldData.user) {
+        if (
+          typeof oldData === 'object' &&
+          oldData !== null &&
+          'user' in oldData
+        ) {
           return {
             ...oldData,
             user: {
-              ...oldData.user,
+              ...(oldData as { user: AdminUser }).user,
               is_affiliate: user.is_affiliate,
               affiliate_percentage: user.affiliate_percentage,
               affiliate_code: user.affiliate_code,

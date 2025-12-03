@@ -1,8 +1,9 @@
-import type { Metadata } from 'next'
 import './globals.css'
 import { Toaster } from 'sonner'
 import { Providers } from '@/components/Providers'
 import { ReactQueryProvider } from '@/components/providers/ReactQueryProvider'
+
+import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
   title: 'Orizon Pay - Finance',

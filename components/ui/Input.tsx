@@ -1,6 +1,6 @@
 import React, { useState, memo } from 'react'
-import { cn } from '@/lib/utils'
 import { Eye, EyeOff } from 'lucide-react'
+import { cn } from '@/lib/utils'
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string

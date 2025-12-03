@@ -1,6 +1,6 @@
 'use client'
 
-import { forwardRef, useState, useEffect, memo } from 'react'
+import React, { forwardRef, useState, useEffect, memo } from 'react'
 import InputMask from 'react-input-mask'
 import { cn } from '@/lib/utils'
 import { validateCPF, validateCNPJ } from './DocumentInput'
@@ -17,6 +17,7 @@ interface PixKeyInputProps {
   name?: string
   keyType: 'cpf' | 'cnpj' | 'telefone' | 'email' | 'aleatoria'
   hideLabel?: boolean
+  id?: string
 }
 
 const getPlaceholder = (keyType: string): string => {
@@ -82,6 +83,7 @@ export const PixKeyInput = memo(
         name,
         keyType,
         hideLabel = false,
+        id,
       },
       ref,
     ) => {
@@ -101,13 +103,17 @@ export const PixKeyInput = memo(
         return (
           <div className="space-y-2">
             {!hideLabel && label && (
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor={id}
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 {label}
               </label>
             )}
 
             <div className="relative">
               <input
+                id={id}
                 ref={ref}
                 name={name}
                 type={keyType === 'email' ? 'email' : 'text'}
@@ -144,7 +150,10 @@ export const PixKeyInput = memo(
       return (
         <div className="space-y-2">
           {!hideLabel && label && (
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label
+              htmlFor={id}
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
               {label}
             </label>
           )}
@@ -158,7 +167,7 @@ export const PixKeyInput = memo(
               disabled={disabled}
               maskChar={null}
             >
-              {(inputProps: any) => (
+              {(inputProps: React.InputHTMLAttributes<HTMLInputElement>) => (
                 <input
                   {...inputProps}
                   ref={ref}

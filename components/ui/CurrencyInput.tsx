@@ -1,8 +1,8 @@
 'use client'
 
 import { forwardRef, useState, useEffect, memo, useCallback } from 'react'
-import { cn } from '@/lib/utils'
 import { formatCurrencyInput, cleanCurrency } from '@/lib/format'
+import { cn } from '@/lib/utils'
 
 interface CurrencyInputProps {
   label?: string

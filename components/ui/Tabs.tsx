@@ -1,4 +1,4 @@
-import { memo, ReactNode } from 'react'
+import React, { memo, createContext, useContext, type ReactNode } from 'react'
 
 interface TabsProps {
   defaultValue: string
@@ -51,8 +51,6 @@ const TabsContext = memo<TabsProps>(
 )
 
 TabsContext.displayName = 'TabsContext'
-
-import React, { createContext, useContext } from 'react'
 
 interface TabsContextType {
   activeTab: string

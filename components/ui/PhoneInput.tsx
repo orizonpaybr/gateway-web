@@ -1,6 +1,6 @@
 'use client'
 
-import { forwardRef } from 'react'
+import React, { forwardRef } from 'react'
 import InputMask from 'react-input-mask'
 import { cn } from '@/lib/utils'
 
@@ -52,7 +52,7 @@ export const PhoneInput = forwardRef<HTMLInputElement, PhoneInputProps>(
             disabled={disabled}
             maskChar={null}
           >
-            {(inputProps: any) => (
+            {(inputProps: React.InputHTMLAttributes<HTMLInputElement>) => (
               <input
                 {...inputProps}
                 ref={ref}

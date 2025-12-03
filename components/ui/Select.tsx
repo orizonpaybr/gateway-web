@@ -8,8 +8,10 @@ import React, {
   useMemo,
   memo,
 } from 'react'
-import { cn } from '@/lib/utils'
+
 import { ChevronDown } from 'lucide-react'
+
+import { cn } from '@/lib/utils'
 
 interface SelectProps {
   label?: string
@@ -20,6 +22,7 @@ interface SelectProps {
   className?: string
   placeholder?: string
   disabled?: boolean
+  id?: string
 }
 
 export const Select = memo(
@@ -34,6 +37,7 @@ export const Select = memo(
         className = '',
         placeholder = 'Selecione...',
         disabled = false,
+        id,
       },
       ref,
     ) => {
@@ -46,7 +50,6 @@ export const Select = memo(
         setSelectedValue(value)
       }, [value])
 
-      // Fechar dropdown quando clicar fora
       useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
           if (
@@ -79,13 +82,17 @@ export const Select = memo(
       return (
         <div className="flex flex-col gap-1.5 w-full" ref={ref}>
           {label && (
-            <label className="text-xs font-semibold text-gray-900 uppercase tracking-wider leading-tight h-4">
+            <label
+              htmlFor={id}
+              className="text-xs font-semibold text-gray-900 uppercase tracking-wider leading-tight h-4"
+            >
               {label}
             </label>
           )}
 
           <div className="relative" ref={dropdownRef}>
             <button
+              id={id}
               type="button"
               onClick={() => !disabled && setIsOpen(!isOpen)}
               disabled={disabled}

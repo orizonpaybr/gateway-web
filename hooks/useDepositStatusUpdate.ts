@@ -46,14 +46,19 @@ export function useDepositStatusUpdate() {
 
       // Atualizar cache otimisticamente com os dados retornados
       if (data?.deposit) {
-        queryClient.setQueryData(['financial-deposits'], (oldData: any) => {
-          if (!oldData?.data?.data) return oldData
+        queryClient.setQueryData(['financial-deposits'], (oldData: unknown) => {
+          if (!oldData || typeof oldData !== 'object' || !('data' in oldData))
+            return oldData
+          const typedData = oldData as {
+            data?: { data?: Array<{ id: number; [key: string]: unknown }> }
+          }
+          if (!typedData.data?.data) return oldData
 
           return {
-            ...oldData,
+            ...typedData,
             data: {
-              ...oldData.data,
-              data: oldData.data.data.map((dep: any) =>
+              ...typedData.data,
+              data: typedData.data.data.map((dep) =>
                 dep.id === variables.depositoId ? data.deposit : dep,
               ),
             },

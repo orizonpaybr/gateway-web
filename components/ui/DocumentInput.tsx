@@ -1,7 +1,9 @@
 'use client'
 
-import { forwardRef, useState, useEffect } from 'react'
+import React, { forwardRef, useState, useEffect } from 'react'
+
 import InputMask from 'react-input-mask'
+
 import { cn } from '@/lib/utils'
 
 interface DocumentInputProps {
@@ -20,19 +22,33 @@ interface DocumentInputProps {
 const validateCPF = (cpf: string): boolean => {
   const cleaned = cpf.replace(/[^\d]/g, '')
 
-  if (cleaned.length !== 11 || /^(\d)\1{10}$/.test(cleaned)) return false
+  if (cleaned.length !== 11 || /^(\d)\1{10}$/.test(cleaned)) {
+    return false
+  }
 
   let sum = 0
-  for (let i = 0; i < 9; i++) sum += parseInt(cleaned.charAt(i)) * (10 - i)
+  for (let i = 0; i < 9; i++) {
+    sum += parseInt(cleaned.charAt(i)) * (10 - i)
+  }
   let digit = 11 - (sum % 11)
-  if (digit >= 10) digit = 0
-  if (digit !== parseInt(cleaned.charAt(9))) return false
+  if (digit >= 10) {
+    digit = 0
+  }
+  if (digit !== parseInt(cleaned.charAt(9))) {
+    return false
+  }
 
   sum = 0
-  for (let i = 0; i < 10; i++) sum += parseInt(cleaned.charAt(i)) * (11 - i)
+  for (let i = 0; i < 10; i++) {
+    sum += parseInt(cleaned.charAt(i)) * (11 - i)
+  }
   digit = 11 - (sum % 11)
-  if (digit >= 10) digit = 0
-  if (digit !== parseInt(cleaned.charAt(10))) return false
+  if (digit >= 10) {
+    digit = 0
+  }
+  if (digit !== parseInt(cleaned.charAt(10))) {
+    return false
+  }
 
   return true
 }
@@ -40,7 +56,9 @@ const validateCPF = (cpf: string): boolean => {
 const validateCNPJ = (cnpj: string): boolean => {
   const cleaned = cnpj.replace(/[^\d]/g, '')
 
-  if (cleaned.length !== 14 || /^(\d)\1{13}$/.test(cleaned)) return false
+  if (cleaned.length !== 14 || /^(\d)\1{13}$/.test(cleaned)) {
+    return false
+  }
 
   let size = cleaned.length - 2
   let numbers = cleaned.substring(0, size)
@@ -50,11 +68,15 @@ const validateCNPJ = (cnpj: string): boolean => {
 
   for (let i = size; i >= 1; i--) {
     sum += parseInt(numbers.charAt(size - i)) * pos--
-    if (pos < 2) pos = 9
+    if (pos < 2) {
+      pos = 9
+    }
   }
 
   let result = sum % 11 < 2 ? 0 : 11 - (sum % 11)
-  if (result !== parseInt(digits.charAt(0))) return false
+  if (result !== parseInt(digits.charAt(0))) {
+    return false
+  }
 
   size = size + 1
   numbers = cleaned.substring(0, size)
@@ -63,11 +85,15 @@ const validateCNPJ = (cnpj: string): boolean => {
 
   for (let i = size; i >= 1; i--) {
     sum += parseInt(numbers.charAt(size - i)) * pos--
-    if (pos < 2) pos = 9
+    if (pos < 2) {
+      pos = 9
+    }
   }
 
   result = sum % 11 < 2 ? 0 : 11 - (sum % 11)
-  if (result !== parseInt(digits.charAt(1))) return false
+  if (result !== parseInt(digits.charAt(1))) {
+    return false
+  }
 
   return true
 }
@@ -123,7 +149,7 @@ export const DocumentInput = forwardRef<HTMLInputElement, DocumentInputProps>(
             disabled={disabled}
             maskChar={null}
           >
-            {(inputProps: any) => (
+            {(inputProps: React.InputHTMLAttributes<HTMLInputElement>) => (
               <input
                 {...inputProps}
                 ref={ref}
@@ -161,15 +187,11 @@ export const DocumentInput = forwardRef<HTMLInputElement, DocumentInputProps>(
         {error && <p className="text-xs text-red-500">{error}</p>}
 
         {isValid === true && !error && (
-          <p className="text-xs text-green-600">
-            ✓ {documentType} válido
-          </p>
+          <p className="text-xs text-green-600">✓ {documentType} válido</p>
         )}
 
         {isValid === false && !error && (
-          <p className="text-xs text-red-500">
-            ✗ {documentType} inválido
-          </p>
+          <p className="text-xs text-red-500">✗ {documentType} inválido</p>
         )}
       </div>
     )
@@ -178,7 +200,6 @@ export const DocumentInput = forwardRef<HTMLInputElement, DocumentInputProps>(
 
 DocumentInput.displayName = 'DocumentInput'
 
-// Exportar funções de validação
 export const validateDocument = (doc: string): boolean => {
   const cleaned = doc.replace(/[^\d]/g, '')
   if (cleaned.length === 11) {
