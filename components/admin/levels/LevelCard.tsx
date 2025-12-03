@@ -1,19 +1,10 @@
-/**
- * Card de visualização de Nível
- *
- * Componente reutilizável para exibir informações
- * de um nível de gamificação
- *
- * @module components/admin/levels/LevelCard
- */
-
 import React from 'react'
 import Image from 'next/image'
-import { Card } from '@/components/ui/Card'
-import { Button } from '@/components/ui/Button'
 import { Edit2, TrendingUp, CheckCircle } from 'lucide-react'
-import { formatCurrency } from '@/lib/currency'
+import { Button } from '@/components/ui/Button'
+import { Card } from '@/components/ui/Card'
 import { getLevelIcon } from '@/lib/constants/gamification'
+import { formatCurrency } from '@/lib/currency'
 import type { GamificationLevel } from '@/lib/types/gamification'
 
 interface LevelCardProps {

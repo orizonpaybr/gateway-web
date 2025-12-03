@@ -1,11 +1,10 @@
-import { Label } from '@/components/ui/Label'
-import { Input } from '@/components/ui/Input'
 import { ChevronDown, ChevronUp } from 'lucide-react'
+import { Input } from '@/components/ui/Input'
+import { Label } from '@/components/ui/Label'
 import type {
   GatewaySettings,
   NumericSettingsField,
 } from '@/types/gateway-settings'
-
 interface DepositSettingsSectionProps {
   settings: GatewaySettings
   isExpanded: boolean

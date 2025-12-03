@@ -1,19 +1,11 @@
-/**
- * Formulário de edição de Nível
- *
- * Componente controlado com validação Zod
- *
- * @module components/admin/levels/LevelEditForm
- */
-
 import React, { useState } from 'react'
-import { Card } from '@/components/ui/Card'
-import { Button } from '@/components/ui/Button'
-import { Input } from '@/components/ui/Input'
-import { CurrencyInput } from '@/components/ui/CurrencyInput'
 import { X, Loader2 } from 'lucide-react'
-import { toReais, reaisToCentsString } from '@/lib/currency'
+import { Button } from '@/components/ui/Button'
+import { Card } from '@/components/ui/Card'
+import { CurrencyInput } from '@/components/ui/CurrencyInput'
+import { Input } from '@/components/ui/Input'
 import { isBronzeLevel } from '@/lib/constants/gamification'
+import { toReais, reaisToCentsString } from '@/lib/currency'
 import {
   validateNivelForm,
   type NivelFormData,
@@ -82,10 +74,14 @@ export function LevelEditForm({
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
           <div className="md:col-span-2">
-            <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1.5 md:mb-2">
+            <label
+              htmlFor="level-name"
+              className="block text-xs md:text-sm font-medium text-gray-700 mb-1.5 md:mb-2"
+            >
               Nome do Nível *
             </label>
             <Input
+              id="level-name"
               value={formData.nome}
               onChange={(e) =>
                 setFormData({ ...formData, nome: e.target.value })
@@ -100,10 +96,18 @@ export function LevelEditForm({
 
           {isBronze ? (
             <div>
-              <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1.5 md:mb-2">
+              <label
+                htmlFor="level-min-value"
+                className="block text-xs md:text-sm font-medium text-gray-700 mb-1.5 md:mb-2"
+              >
                 Valor Mínimo (R$)
               </label>
-              <Input value="R$ 0,00" disabled className="bg-gray-50" />
+              <Input
+                id="level-min-value"
+                value="R$ 0,00"
+                disabled
+                className="bg-gray-50"
+              />
               <p className="text-[11px] md:text-xs text-gray-500 mt-1">
                 O nível Bronze sempre inicia em R$ 0,00. O usuário começa no
                 Bronze com saldo zero e progride conforme deposita.

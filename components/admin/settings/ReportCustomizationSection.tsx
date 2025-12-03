@@ -1,8 +1,7 @@
+import { ChevronDown, ChevronUp } from 'lucide-react'
 import { Label } from '@/components/ui/Label'
 import { Switch } from '@/components/ui/Switch'
-import { ChevronDown, ChevronUp } from 'lucide-react'
 import type { GatewaySettings } from '@/types/gateway-settings'
-
 interface ReportCustomizationSectionProps {
   settings: GatewaySettings
   isExpanded: boolean

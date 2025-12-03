@@ -1,12 +1,11 @@
-import { Label } from '@/components/ui/Label'
-import { Input } from '@/components/ui/Input'
-import { Switch } from '@/components/ui/Switch'
 import { ChevronDown, ChevronUp } from 'lucide-react'
+import { Input } from '@/components/ui/Input'
+import { Label } from '@/components/ui/Label'
+import { Switch } from '@/components/ui/Switch'
 import type {
   GatewaySettings,
   NumericSettingsField,
 } from '@/types/gateway-settings'
-
 interface FlexibleTaxSystemSectionProps {
   settings: GatewaySettings
   isExpanded: boolean

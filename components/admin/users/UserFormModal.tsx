@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react'
+import { Button } from '@/components/ui/Button'
 import { Dialog } from '@/components/ui/Dialog'
 import { Input } from '@/components/ui/Input'
-import { Button } from '@/components/ui/Button'
-import { AdminUser, CreateUserData, UpdateUserData } from '@/lib/api'
-
+import type { AdminUser, CreateUserData, UpdateUserData } from '@/lib/api'
 interface UserFormModalProps {
   open: boolean
   onClose: () => void
@@ -37,7 +36,7 @@ export function UserFormModal({
     }
   }, [user])
 
-  const handleChange = (key: string, value: any) =>
+  const handleChange = (key: string, value: unknown) =>
     setForm((p) => ({ ...p, [key]: value }))
 
   const handleSubmit = () => {
@@ -59,7 +58,7 @@ export function UserFormModal({
           <Input
             label="Usuário"
             placeholder="username"
-            value={(form as any).username || ''}
+            value={(form as { username?: string }).username || ''}
             onChange={(e) => handleChange('username', e.target.value)}
           />
         )}
@@ -78,7 +77,7 @@ export function UserFormModal({
           <Input
             label="Senha"
             type="password"
-            value={(form as any).password || ''}
+            value={(form as { password?: string }).password || ''}
             onChange={(e) => handleChange('password', e.target.value)}
           />
         )}

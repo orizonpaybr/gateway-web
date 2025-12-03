@@ -1,11 +1,11 @@
 import { useState } from 'react'
-import { Label } from '@/components/ui/Label'
-import { Input } from '@/components/ui/Input'
-import { Button } from '@/components/ui/Button'
 import { Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
-import { isValidIPv4, maskIPInput } from '@/lib/helpers/ip-utils'
+import { Button } from '@/components/ui/Button'
 import { Dialog } from '@/components/ui/Dialog'
+import { Input } from '@/components/ui/Input'
+import { Label } from '@/components/ui/Label'
+import { isValidIPv4, maskIPInput } from '@/lib/helpers/ip-utils'
 
 interface SecurityIPsSectionProps {
   globalIps: string[]
@@ -30,7 +30,9 @@ export function SecurityIPsSection({
   const handleAddIP = () => {
     const trimmedIp = ipInput.trim()
 
-    if (!trimmedIp) return
+    if (!trimmedIp) {
+      return
+    }
 
     if (!isValidIPv4(trimmedIp)) {
       toast.error('IP inválido', {
@@ -63,7 +65,9 @@ export function SecurityIPsSection({
   }
 
   const handleConfirmDelete = () => {
-    if (!ipToDelete) return
+    if (!ipToDelete) {
+      return
+    }
     onRemoveIP(ipToDelete)
     setIsConfirmOpen(false)
     setIpToDelete(null)

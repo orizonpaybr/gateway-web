@@ -1,16 +1,16 @@
 'use client'
 
 import React, { useState, useEffect, memo } from 'react'
-import { Input } from '@/components/ui/Input'
+
 import { Search } from 'lucide-react'
+
+import { Input } from '@/components/ui/Input'
 
 interface ManagerFiltersProps {
   onChange: (filters: { search?: string }) => void
 }
 
-export const ManagerFilters = memo(function ManagerFilters({
-  onChange,
-}: ManagerFiltersProps) {
+export const ManagerFilters = memo(({ onChange }: ManagerFiltersProps) => {
   const [search, setSearch] = useState('')
 
   useEffect(() => {
