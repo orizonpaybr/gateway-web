@@ -14,8 +14,10 @@ import { DocumentInput, validateDocument } from '@/components/ui/DocumentInput'
 import { FileUpload } from '@/components/ui/FileUpload'
 import { Input } from '@/components/ui/Input'
 import { PhoneInput, validatePhone } from '@/components/ui/PhoneInput'
+import { Select } from '@/components/ui/Select'
 import { useAuth } from '@/contexts/AuthContext'
 import { authAPI } from '@/lib/api'
+import { GENDER_OPTIONS } from '@/types/user'
 
 const step1Schema = z.object({
   name: z
@@ -33,6 +35,9 @@ const step1Schema = z.object({
       'O nome de usuário aceita apenas letras, números, espaços, apóstrofos e hífens.',
     ),
   email: z.string().email('Email inválido'),
+  gender: z.enum(['male', 'female'], {
+    required_error: 'Selecione seu gênero',
+  }),
 })
 
 const step2Schema = z
@@ -323,6 +328,23 @@ export default function CadastroPage() {
                   label="EMAIL"
                   placeholder="email@exemplo.com"
                   error={step1Form.formState.errors.email?.message}
+                />
+
+                <Controller
+                  name="gender"
+                  control={step1Form.control}
+                  render={({ field }) => (
+                    <Select
+                      {...field}
+                      label="GÊNERO"
+                      placeholder="Selecione seu gênero"
+                      options={GENDER_OPTIONS.map((option) => ({
+                        value: option.value,
+                        label: option.label,
+                      }))}
+                      error={step1Form.formState.errors.gender?.message}
+                    />
+                  )}
                 />
 
                 <Button

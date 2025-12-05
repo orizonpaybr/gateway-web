@@ -1,4 +1,10 @@
-// Tipos globais do sistema
+export type {
+  Gender,
+  GenderOption,
+  User as UserProfile,
+  RegisterData,
+} from './user'
+export { GENDER_OPTIONS } from './user'
 
 export interface User {
   id: string

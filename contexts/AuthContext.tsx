@@ -5,28 +5,59 @@ import {
   useContext,
   useState,
   useEffect,
-  useRef,
-  ReactNode,
+  useCallback,
+  type ReactNode,
 } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import { authAPI, accountAPI, RegisterData } from '@/lib/api'
+import { authAPI, accountAPI } from '@/lib/api'
 import { useLocalStorage } from '@/hooks/useLocalStorage'
+import type { User as UserProfile, RegisterData } from '@/types/user'
 
-interface User {
+type User = UserProfile
+interface ProfileResponse {
+  success: boolean
+  data?: {
+    id: string
+    username: string
+    email: string
+    name: string
+    gender?: 'male' | 'female' | null
+    status?: number | string
+    status_text?: string
+    agency?: string
+    balance?: number
+    phone?: string
+    cnpj?: string
+    permission?: number
+    [key: string]: unknown // Para campos adicionais que possam existir
+  }
+  message?: string
+}
+interface UserDataFromAPI {
   id: string
-  name: string
-  email: string
   username: string
+  email: string
+  name: string
+  gender?: 'male' | 'female' | null
   status?: number
   status_text?: string
   agency?: string
   balance?: number
   phone?: string
   cnpj?: string
-  twofa_enabled?: boolean
-  twofa_configured?: boolean
-  permission?: number // 3 = admin, 2 = gerente, 1 = usuario
+  permission?: number
+  [key: string]: unknown
+}
+interface StoredUserData {
+  id: string
+  name: string
+  email: string
+  username: string
+  gender?: 'male' | 'female' | null
+  agency?: string
+  permission?: number
+  [key: string]: unknown // Para campos adicionais que possam existir
 }
 
 interface AuthContextType {
@@ -49,14 +80,24 @@ interface AuthContextType {
       documentoVerso?: File
       selfieDocumento?: File
     },
-  ) => Promise<any>
+  ) => Promise<{
+    success: boolean
+    message: string
+    data?: {
+      user?: UserDataFromAPI
+      token?: string
+      api_token?: string
+      api_secret?: string
+      pending_approval?: boolean
+    }
+  }>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useLocalStorage<User | null>('user', null)
-  const [token, setToken] = useLocalStorage<string | null>('token', null)
+  const [_token, setToken] = useLocalStorage<string | null>('token', null)
   const [isLoading, setIsLoading] = useState(true)
   const [authReady, setAuthReady] = useState(false)
   const [show2FAModal, setShow2FAModal] = useState(false)
@@ -83,17 +124,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }, 100)
 
     return () => clearTimeout(timer)
-  }, []) // ✅ Executar apenas uma vez na montagem
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
-  // Removido useEffect que causava loop infinito
-  // O checkAuth já é executado no useEffect inicial quando há token
-
-  const checkAuth = async () => {
+  const checkAuth = useCallback(async () => {
     try {
-      // Aguardar um pouco mais para garantir que o localStorage está disponível
       await new Promise((resolve) => setTimeout(resolve, 200))
 
-      // Verificar diretamente no localStorage se os dados estão disponíveis
       const storedToken =
         typeof window !== 'undefined' ? localStorage.getItem('token') : null
       const storedUser =
@@ -110,14 +147,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (result.success) {
         try {
-          const profileResult = (await accountAPI.getProfile()) as any
+          const profileResult =
+            (await accountAPI.getProfile()) as ProfileResponse
           if (profileResult.success && profileResult.data) {
             setUser({
               id: profileResult.data.id,
               name: profileResult.data.name,
               email: profileResult.data.email,
               username: profileResult.data.username,
-              status: profileResult.data.status,
+              gender: profileResult.data.gender,
+              status:
+                typeof profileResult.data.status === 'number'
+                  ? profileResult.data.status
+                  : undefined,
               status_text: profileResult.data.status_text,
               agency: profileResult.data.agency,
               balance: profileResult.data.balance,
@@ -127,51 +169,50 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             })
           } else {
             // Usar dados do localStorage se API falhar
-            const userData = JSON.parse(storedUser)
+            const userData = JSON.parse(storedUser) as StoredUserData
             setUser({
               id: userData.id,
               name: userData.name,
               email: userData.email,
               username: userData.username,
+              gender: userData.gender,
               agency: userData.agency,
               permission: userData.permission,
             })
           }
         } catch (profileError) {
           console.error('Erro ao buscar perfil:', profileError)
-          // Usar dados do localStorage como fallback
-          const userData = JSON.parse(storedUser)
+          const userData = JSON.parse(storedUser) as StoredUserData
           setUser({
             id: userData.id,
             name: userData.name,
             email: userData.email,
             username: userData.username,
+            gender: userData.gender,
             agency: userData.agency,
             permission: userData.permission,
           })
         }
       } else {
-        console.log(
-          '❌ checkAuth - Token inválido, mas mantendo dados do localStorage',
-        )
-        // Manter dados do localStorage mesmo se token for inválido
+        // Token inválido, mas mantendo dados do localStorage
         // O usuário pode fazer logout manual se necessário
       }
-    } catch (error) {
-      console.error('Erro ao verificar autenticação:', error)
+    } catch (error: unknown) {
+      // Erro ao verificar autenticação - não limpar dados automaticamente
       // Não limpar dados automaticamente - deixar o usuário fazer logout manual
     } finally {
       setIsLoading(false)
       setAuthReady(true)
     }
-  }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
-  // Helper para extrair dados do usuário
-  const extractUserData = (userData: any): User => ({
+  const extractUserData = (userData: UserDataFromAPI): User => ({
     id: userData.id,
     name: userData.name,
     email: userData.email,
     username: userData.username,
+    gender: userData.gender,
     status: userData.status,
     status_text: userData.status_text,
     permission: userData.permission,
@@ -244,8 +285,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         description: 'Até logo!',
         duration: 2000,
       })
-    } catch (error) {
-      console.error('Erro ao fazer logout:', error)
+    } catch (error: unknown) {
+      // Erro ao fazer logout
 
       toast.error('Erro no logout', {
         description: 'Houve um problema ao sair da conta',

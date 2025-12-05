@@ -675,7 +675,7 @@ export const Sidebar = memo(() => {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <AnimatedAvatar
-                name={isHydrated ? user?.name || '' : ''}
+                gender={isHydrated ? user?.gender : null}
                 size="md"
               />
               <div className="flex flex-col">

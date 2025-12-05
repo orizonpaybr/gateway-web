@@ -2,9 +2,18 @@
 
 import React, { memo, useMemo } from 'react'
 import Image from 'next/image'
-import { detectGenderByName } from '@/lib/genderUtils'
+import type { Gender } from '@/types/user'
+
+/**
+ * Props do componente AnimatedAvatar
+ *
+ * @interface AnimatedAvatarProps
+ * @property {Gender | null} [gender]
+ * @property {'sm' | 'md' | 'lg'} [size]
+ * @property {string} [className]
+ */
 interface AnimatedAvatarProps {
-  name: string
+  gender?: Gender | null
   size?: 'sm' | 'md' | 'lg'
   className?: string
 }
@@ -45,26 +54,43 @@ const FemaleAvatar = memo(() => (
 
 FemaleAvatar.displayName = 'FemaleAvatar'
 
-// Tamanhos pré-definidos para evitar recálculos
+/**
+ * Tamanhos pré-definidos para evitar recálculos (Performance)
+ * @const SIZE_CLASSES
+ */
 const SIZE_CLASSES = {
   sm: 'w-8 h-8',
   md: 'w-10 h-10',
   lg: 'w-12 h-12',
 } as const
 
+/**
+ * Componente de Avatar Animado
+ *
+ * @description Exibe avatar masculino ou feminino baseado no gênero do usuário
+ * @performance Utiliza React.memo e useMemo para otimização
+ * @param {AnimatedAvatarProps} props - Props do componente
+ * @returns {JSX.Element} Avatar do usuário
+ *
+ * @example
+ * ```tsx
+ * <AnimatedAvatar gender="female" size="md" />
+ * <AnimatedAvatar gender="male" size="lg" className="border" />
+ * ```
+ */
 export const AnimatedAvatar = memo<AnimatedAvatarProps>(
-  ({ name, size = 'md', className = '' }) => {
-    // Memorizar a determinação do gênero para evitar recálculos desnecessários
-    const gender = useMemo(() => detectGenderByName(name), [name])
+  ({ gender, size = 'md', className = '' }) => {
+    const selectedGender = useMemo(() => {
+      return gender ?? 'male'
+    }, [gender])
 
-    // Memorizar as classes CSS para evitar recálculos
     const containerClasses = useMemo(() => {
       return `${SIZE_CLASSES[size]} ${className}`
     }, [size, className])
 
     return (
       <div className={containerClasses}>
-        {gender === 'female' ? <FemaleAvatar /> : <MaleAvatar />}
+        {selectedGender === 'female' ? <FemaleAvatar /> : <MaleAvatar />}
       </div>
     )
   },
