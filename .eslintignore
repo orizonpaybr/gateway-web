@@ -47,10 +47,10 @@ next-env.d.ts
 *.swo
 *~
 
-# Cypress
-cypress/downloads/
-cypress/screenshots/
-cypress/videos/
+# Playwright
+test-results/
+playwright-report/
+playwright/.cache/
 
 # Public assets that don't need linting
 public/
