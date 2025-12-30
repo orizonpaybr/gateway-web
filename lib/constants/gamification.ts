@@ -18,16 +18,16 @@ export type LevelName = (typeof LEVEL_NAMES)[keyof typeof LEVEL_NAMES]
  */
 export const LEVEL_COLORS = {
   [LEVEL_NAMES.BRONZE]: {
-    bg: 'bg-amber-600',
-    text: 'text-amber-600',
-    border: 'border-amber-600',
-    ring: 'ring-amber-600',
+    bg: 'bg-amber-800',
+    text: 'text-amber-800',
+    border: 'border-amber-800',
+    ring: 'ring-amber-800',
   },
   [LEVEL_NAMES.PRATA]: {
-    bg: 'bg-gray-400',
-    text: 'text-gray-400',
-    border: 'border-gray-400',
-    ring: 'ring-gray-400',
+    bg: 'bg-slate-400',
+    text: 'text-slate-400',
+    border: 'border-slate-400',
+    ring: 'ring-slate-400',
   },
   [LEVEL_NAMES.OURO]: {
     bg: 'bg-yellow-500',

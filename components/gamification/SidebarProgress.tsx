@@ -3,7 +3,6 @@
 import React, { memo, useMemo } from 'react'
 import Link from 'next/link'
 import { Skeleton } from '@/components/ui/Skeleton'
-import { getLevelColorClass } from '@/lib/constants/gamification'
 import { formatCurrency } from '@/lib/currency'
 import type { SidebarProgressProps } from '@/lib/types/gamification'
 import { cn } from '@/lib/utils'
@@ -85,16 +84,32 @@ export const SidebarProgress = memo<SidebarProgressProps>(
       )
     }
 
+    const getLevelColor = (level: string | null) => {
+      const normalizedLevel = level?.trim().toLowerCase() || 'bronze'
+
+      switch (true) {
+        case normalizedLevel.includes('bronze'):
+          return 'bg-amber-800'
+        case normalizedLevel.includes('prata'):
+          return 'bg-slate-400'
+        case normalizedLevel.includes('ouro'):
+          return 'bg-yellow-500'
+        case normalizedLevel.includes('safira'):
+          return 'bg-blue-500'
+        case normalizedLevel.includes('diamante'):
+          return 'bg-purple-600'
+        default:
+          return 'bg-amber-800'
+      }
+    }
+
+    const levelColorClass = getLevelColor(currentLevel)
+
     return (
       <div className="bg-white rounded-lg p-5 space-y-3 shadow-sm border border-gray-100">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div
-              className={cn(
-                'w-3 h-3 rounded-full',
-                getLevelColorClass(currentLevel),
-              )}
-            />
+            <div className={cn('w-3 h-3 rounded-full', levelColorClass)} />
             <span className="text-sm font-semibold text-gray-900">
               {currentLevel || 'Bronze'}
             </span>
@@ -112,7 +127,7 @@ export const SidebarProgress = memo<SidebarProgressProps>(
             <div
               className={cn(
                 'h-full transition-all duration-300',
-                getLevelColorClass(currentLevel),
+                levelColorClass,
               )}
               style={{ width: `${progressData.progress}%` }}
             />

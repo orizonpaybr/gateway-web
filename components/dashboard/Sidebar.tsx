@@ -64,7 +64,7 @@ const mainMenuItems: MenuItem[] = [
   {
     icon: PixIcon,
     label: 'Pix',
-    href: '/dashboard/pix',
+    href: '/dashboard/pix/chave',
     hasSubmenu: true,
     submenu: [
       { label: 'Depositar', href: '/dashboard/pix/depositar' },
