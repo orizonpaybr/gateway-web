@@ -2,6 +2,8 @@ import './globals.css'
 import { Toaster } from 'sonner'
 import { Providers } from '@/components/Providers'
 import { ReactQueryProvider } from '@/components/providers/ReactQueryProvider'
+import { ErrorBoundaryWrapper } from '@/components/ErrorBoundary'
+import '@/lib/monitoring'
 
 import type { Metadata } from 'next'
 
@@ -23,21 +25,23 @@ export default function RootLayout({
   return (
     <html lang="pt-BR">
       <body>
-        <Providers>
-          <ReactQueryProvider>
-            {children}
-            <Toaster
-              position="bottom-right"
-              richColors
-              toastOptions={{
-                style: {
-                  background: '#FFFFFF',
-                  border: '1px solid #EBEBEB',
-                },
-              }}
-            />
-          </ReactQueryProvider>
-        </Providers>
+        <ErrorBoundaryWrapper>
+          <Providers>
+            <ReactQueryProvider>
+              {children}
+              <Toaster
+                position="bottom-right"
+                richColors
+                toastOptions={{
+                  style: {
+                    background: '#FFFFFF',
+                    border: '1px solid #EBEBEB',
+                  },
+                }}
+              />
+            </ReactQueryProvider>
+          </Providers>
+        </ErrorBoundaryWrapper>
       </body>
     </html>
   )
