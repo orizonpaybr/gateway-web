@@ -108,10 +108,14 @@ export default function CadastroPage() {
 
   const step1Form = useForm<Step1FormData>({
     resolver: zodResolver(step1Schema),
+    mode: 'onChange',
+    reValidateMode: 'onChange',
   })
 
   const step2Form = useForm<Step2FormData>({
     resolver: zodResolver(step2Schema),
+    mode: 'onChange',
+    reValidateMode: 'onChange',
     defaultValues: {
       password: '',
       confirmPassword: '',
@@ -335,7 +339,17 @@ export default function CadastroPage() {
                   control={step1Form.control}
                   render={({ field }) => (
                     <Select
-                      {...field}
+                      value={field.value || ''}
+                      onChange={(value) => {
+                        field.onChange(value)
+                        Promise.resolve().then(() => {
+                          step1Form.trigger('gender').then(() => {
+                            step1Form.trigger()
+                          })
+                        })
+                      }}
+                      onBlur={field.onBlur}
+                      name={field.name}
                       label="GÊNERO"
                       placeholder="Selecione seu gênero"
                       options={GENDER_OPTIONS.map((option) => ({
@@ -351,7 +365,7 @@ export default function CadastroPage() {
                   type="submit"
                   fullWidth
                   icon={<ArrowRight size={18} />}
-                  disabled={isValidating}
+                  disabled={isValidating || !step1Form.formState.isValid}
                 >
                   {isValidating ? 'Validando...' : 'Próximo'}
                 </Button>
@@ -431,7 +445,7 @@ export default function CadastroPage() {
                     type="submit"
                     fullWidth
                     icon={<ArrowRight size={18} />}
-                    disabled={isValidating}
+                    disabled={isValidating || !step2Form.formState.isValid}
                   >
                     {isValidating ? 'Validando...' : 'Próximo'}
                   </Button>
