@@ -71,7 +71,7 @@ export const Dialog = memo(
         />
         <div
           className={cn(
-            'relative bg-white rounded-xl shadow-xl w-full mx-4 p-5 my-6 sm:my-0 max-h-[92vh] overflow-y-auto',
+            'relative bg-white rounded-xl shadow-xl w-full mx-4 p-5 my-6 sm:my-0 max-h-[92vh] overflow-y-auto overflow-x-hidden',
             sizeToMaxWidth[size],
             className,
           )}
