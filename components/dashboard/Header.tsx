@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/Button'
 import { useBalanceVisibility } from '@/contexts/BalanceVisibilityContext'
 import { useMobileMenu } from '@/contexts/MobileMenuContext'
 import { useNotifications } from '@/hooks/useNotifications'
-import { useDashboardStats } from '@/hooks/useReactQuery'
+import { useDashboardStats, useAccountData } from '@/hooks/useReactQuery'
 import { formatCurrencyBRL } from '@/lib/format'
 
 const pageTitles: Record<string, string> = {
@@ -16,7 +16,6 @@ const pageTitles: Record<string, string> = {
   '/dashboard/jornada': 'Dashboard Orizon',
   '/dashboard/buscar': 'Dashboard Orizon',
   '/dashboard/extrato': 'Dashboard Orizon',
-  '/dashboard/pix': 'Dashboard Orizon',
   '/dashboard/qr-codes': 'Dashboard Orizon',
   '/dashboard/infracoes': 'Dashboard Orizon',
   '/dashboard/pendentes': 'Dashboard Orizon',
@@ -48,6 +47,26 @@ export const Header = memo(() => {
 
   const isHomePage = pathname === '/dashboard'
   const { data: stats } = useDashboardStats()
+  const { data: accountData } = useAccountData()
+  // Verificar se usuário está pendente (status_text === 'Pendente' ou status_numeric = 5)
+  // Não mostrar badge para inativos (status = 0) ou aprovados (status = 1)
+  const account =
+    accountData && typeof accountData === 'object' && 'data' in accountData
+      ? (
+          accountData as {
+            data?: {
+              status_text?: string
+              status_numeric?: number
+              status?: string
+            }
+          }
+        ).data
+      : null
+  const isPending = account
+    ? account.status_text === 'Pendente' ||
+      account.status_numeric === 5 ||
+      account.status === 'pending'
+    : false
   const twoFaEnabled =
     typeof window !== 'undefined' &&
     sessionStorage.getItem('2fa_verified') === 'true'
@@ -170,6 +189,11 @@ export const Header = memo(() => {
       </div>
 
       <div className="flex items-center gap-2">
+        {isPending && (
+          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 border border-yellow-200">
+            Pendente
+          </span>
+        )}
         <div className="relative" ref={dropdownRef}>
           <Button
             variant="ghost"
