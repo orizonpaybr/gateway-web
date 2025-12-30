@@ -2,20 +2,32 @@ import { format } from 'date-fns'
 
 /**
  * Obtém classes CSS para badge de status financeiro
+ * Padroniza as cores dos badges em todas as páginas de extrato
  */
 export function getFinancialStatusBadgeClasses(status: string): string {
-  const statusLower = status.toLowerCase()
+  const statusUpper = status.toUpperCase()
 
-  if (statusLower.includes('paid') || statusLower.includes('complete')) {
-    return 'text-green-600 bg-green-50'
+  switch (statusUpper) {
+    case 'COMPLETED':
+    case 'PAID_OUT':
+    case 'PAGO':
+    case 'CONCLUÍDA':
+    case 'CONCLUIDA':
+      return 'bg-green-100 text-green-700'
+    case 'PENDING':
+    case 'WAITING_FOR_APPROVAL':
+    case 'PENDENTE':
+    case 'AGUARDANDO':
+      return 'bg-yellow-100 text-yellow-700'
+    case 'CANCELLED':
+    case 'CANCELED':
+    case 'REJECTED':
+    case 'CANCELADA':
+    case 'REJEITADA':
+      return 'bg-red-100 text-red-700'
+    default:
+      return 'bg-gray-100 text-gray-700'
   }
-  if (statusLower.includes('pending') || statusLower.includes('aguardando')) {
-    return 'text-yellow-600 bg-yellow-50'
-  }
-  if (statusLower.includes('cancel') || statusLower.includes('reject')) {
-    return 'text-red-600 bg-red-50'
-  }
-  return 'text-gray-600 bg-gray-50'
 }
 
 /**

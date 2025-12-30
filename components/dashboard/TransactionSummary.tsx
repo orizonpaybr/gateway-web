@@ -1,6 +1,6 @@
 'use client'
 
-import { memo, useState, useEffect } from 'react'
+import { memo, useMemo, useCallback } from 'react'
 import {
   BarChart3,
   Receipt,
@@ -13,9 +13,8 @@ import {
 } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
 import { Skeleton } from '@/components/ui/Skeleton'
-import { useAuth } from '@/contexts/AuthContext'
 import { useBalanceVisibility } from '@/contexts/BalanceVisibilityContext'
-import { dashboardAPI } from '@/lib/api'
+import { useTransactionSummary } from '@/hooks/useReactQuery'
 import { formatCurrencyBRL } from '@/lib/format'
 export interface TransactionSummaryData {
   quantidadeTransacoes: {
@@ -62,50 +61,34 @@ const defaultData: TransactionSummaryData = {
 
 export const TransactionSummary = memo(
   ({ period = 'hoje', embedded = false }: TransactionSummaryProps) => {
-    const [isLoading, setIsLoading] = useState(true)
-    const [data, setData] = useState<TransactionSummaryData>(defaultData)
-
-    // Usar AuthContext para token
-    const { user, authReady } = useAuth()
-
     const { isBalanceHidden } = useBalanceVisibility()
 
-    useEffect(() => {
-      const fetchData = async () => {
-        if (!authReady || !user) {
-          setIsLoading(false)
-          return
-        }
-        setIsLoading(true)
-        try {
-          const response = await dashboardAPI.getTransactionSummary(period)
-          if (response.success) {
-            setData(response.data)
-          }
-        } catch (error) {
-          console.error(
-            '❌ TransactionSummary - Erro ao buscar resumo de transações:',
-            error,
-          )
-        } finally {
-          setIsLoading(false)
-        }
+    // Usar React Query hook para dados otimizados com cache
+    const { data: response, isLoading, error } = useTransactionSummary(period)
+
+    // Memorizar dados para evitar recálculos
+    const data = useMemo<TransactionSummaryData>(() => {
+      if (!response?.data) {
+        return defaultData
       }
+      return response.data
+    }, [response])
 
-      // Aguardar um pouco para garantir que o token está disponível
-      const timer = setTimeout(() => {
-        fetchData()
-      }, 150)
+    // Memorizar funções de formatação
+    const formatCurrency = useCallback(
+      (value: number) => formatCurrencyBRL(value, { hide: isBalanceHidden }),
+      [isBalanceHidden],
+    )
 
-      return () => {
-        clearTimeout(timer)
-      }
-    }, [period, user, authReady])
-    const formatCurrency = (value: number) =>
-      formatCurrencyBRL(value, { hide: isBalanceHidden })
-
-    const formatPercent = (value: number) => {
+    const formatPercent = useCallback((value: number) => {
       return `${value.toFixed(2)}%`
+    }, [])
+
+    if (error) {
+      console.error(
+        'TransactionSummary - Erro ao buscar resumo de transações:',
+        error,
+      )
     }
 
     const content = (
@@ -384,3 +367,5 @@ export const TransactionSummary = memo(
     return embedded ? content : <Card className="p-6">{content}</Card>
   },
 )
+
+TransactionSummary.displayName = 'TransactionSummary'
