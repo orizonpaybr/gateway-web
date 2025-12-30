@@ -9,13 +9,12 @@ import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
 import { Skeleton } from '@/components/ui/Skeleton'
-import { useDebounce } from '@/hooks/useDebounce'
+import { useTableFilter, useSearchFilter } from '@/hooks/useTableFilter'
 import { useTransactions } from '@/hooks/useReactQuery'
 import { createPaginationFilters } from '@/lib/dateUtils'
 
 const PendentesPage = memo(() => {
   const [search, setSearch] = useState('')
-  const debouncedSearch = useDebounce(search, 500)
   const [period, setPeriod] = useState<'hoje' | '7d' | '30d' | 'custom' | null>(
     null,
   )
@@ -27,31 +26,47 @@ const PendentesPage = memo(() => {
   const [detailsId, setDetailsId] = useState<string | number | null>(null)
   const [isDetailsOpen, setIsDetailsOpen] = useState(false)
 
+  const hasPeriodFilter = !!(period || startDate || endDate)
+  const { backendSearch } = useSearchFilter(search, hasPeriodFilter)
+
   const filters = useMemo(() => {
     const base = createPaginationFilters(
       page,
       perPage,
-      debouncedSearch,
+      backendSearch,
       period,
       startDate,
       endDate,
     )
     return { ...base, status: 'PENDING' }
-  }, [page, perPage, debouncedSearch, period, startDate, endDate])
+  }, [page, perPage, backendSearch, period, startDate, endDate])
 
+  // React Query hook
   const { data, isLoading } = useTransactions(filters)
+
+  const allItems = data?.data?.data || []
+  const filteredItems = useTableFilter(allItems, search, {
+    descricaoField: 'descricao',
+    valorField: 'valor_liquido',
+  })
+
+  const hasActiveSearch = search.trim() && !hasPeriodFilter
 
   const processedData = useMemo(() => {
     if (!data?.data) {
       return { items: [], totalPages: 1, totalItems: 0 }
     }
 
+    const totalItems = hasActiveSearch
+      ? filteredItems.length
+      : data.data.total || 0
+
     return {
-      items: data.data.data || [],
+      items: filteredItems,
       totalPages: data.data.last_page || 1,
-      totalItems: data.data.total || 0,
+      totalItems,
     }
-  }, [data])
+  }, [filteredItems, data?.data, hasActiveSearch])
 
   const resetDates = useCallback(() => {
     setStartDate('')
@@ -61,9 +76,9 @@ const PendentesPage = memo(() => {
     setPage(1)
   }, [setStartDate, setEndDate, setShowDatePicker, setPeriod, setPage])
 
-  const canPrev = page > 1
-  const canNext = page < processedData.totalPages
-  const hasData = processedData.items.length > 0
+  const canPrev = hasActiveSearch ? false : page > 1
+  const canNext = hasActiveSearch ? false : page < processedData.totalPages
+  const hasData = !isLoading && processedData.items.length > 0
 
   return (
     <div className="p-4 md:p-6 space-y-4">

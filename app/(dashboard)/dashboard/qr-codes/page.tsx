@@ -1,79 +1,70 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 
 import { QrCode, Search, CheckCircle, Clock, XCircle } from 'lucide-react'
 
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
+import { Skeleton } from '@/components/ui/Skeleton'
+import { useQRCodes } from '@/hooks/useReactQuery'
+import { useDebounce } from '@/hooks/useDebounce'
+import { formatCurrencyBRL } from '@/lib/format'
+import { formatDateForDisplay } from '@/lib/dateUtils'
 
 export default function QRCodesPage() {
   const [searchTerm, setSearchTerm] = useState('')
+  const debouncedSearch = useDebounce(searchTerm, 500)
   const [filterStatus, setFilterStatus] = useState<
     'all' | 'pending' | 'paid' | 'expired'
   >('all')
+  const [page, setPage] = useState(1)
+  const perPage = 20
 
-  const qrCodes = [
-    {
-      id: '1',
-      reference: 'REF-2025-001',
-      value: 250.0,
-      status: 'paid',
-      createdAt: '07/10/2025 10:30',
-      paidAt: '07/10/2025 11:15',
-    },
-    {
-      id: '2',
-      reference: 'REF-2025-002',
-      value: 1500.0,
-      status: 'pending',
-      createdAt: '07/10/2025 09:20',
-      paidAt: null,
-    },
-    {
-      id: '3',
-      reference: 'REF-2025-003',
-      value: 780.0,
-      status: 'paid',
-      createdAt: '06/10/2025 16:45',
-      paidAt: '06/10/2025 17:00',
-    },
-    {
-      id: '4',
-      reference: 'REF-2025-004',
-      value: 320.0,
-      status: 'expired',
-      createdAt: '05/10/2025 14:20',
-      paidAt: null,
-    },
-    {
-      id: '5',
-      reference: 'REF-2025-005',
-      value: 4200.0,
-      status: 'pending',
-      createdAt: '05/10/2025 11:10',
-      paidAt: null,
-    },
-    {
-      id: '6',
-      reference: 'REF-2025-006',
-      value: 650.0,
-      status: 'paid',
-      createdAt: '04/10/2025 13:30',
-      paidAt: '04/10/2025 13:35',
-    },
-  ]
+  // Buscar dados da API
+  const { data, isLoading } = useQRCodes({
+    page,
+    limit: perPage,
+    busca: debouncedSearch,
+  })
 
-  const filteredQRCodes = qrCodes
-    .filter((qr) =>
-      filterStatus === 'all' ? true : qr.status === filterStatus,
-    )
-    .filter((qr) =>
-      searchTerm
-        ? qr.reference.toLowerCase().includes(searchTerm.toLowerCase())
-        : true,
-    )
+  const processedData = useMemo(() => {
+    if (!data?.data) {
+      return { items: [], totalPages: 1, totalItems: 0 }
+    }
+
+    return {
+      items: data.data.data || [],
+      totalPages: data.data.last_page || 1,
+      totalItems: data.data.total || 0,
+    }
+  }, [data])
+
+  const filteredQRCodes = useMemo(() => {
+    if (!processedData.items) {
+      return []
+    }
+
+    return processedData.items.filter((qr: { status?: string }) => {
+      if (filterStatus === 'all') {
+        return true
+      }
+
+      const status = qr.status?.toLowerCase() || ''
+      if (filterStatus === 'paid') {
+        return status === 'ativo' || status === 'pago'
+      }
+      if (filterStatus === 'pending') {
+        return status === 'pendente'
+      }
+      if (filterStatus === 'expired') {
+        return status === 'expirado' || status === 'inativo'
+      }
+
+      return true
+    })
+  }, [processedData.items, filterStatus])
 
   const getStatusConfig = (status: string) => {
     switch (status) {
@@ -104,12 +95,30 @@ export default function QRCodesPage() {
     }
   }
 
-  const stats = {
-    total: qrCodes.length,
-    paid: qrCodes.filter((q) => q.status === 'paid').length,
-    pending: qrCodes.filter((q) => q.status === 'pending').length,
-    expired: qrCodes.filter((q) => q.status === 'expired').length,
-  }
+  const stats = useMemo(() => {
+    if (!processedData.items) {
+      return { total: 0, paid: 0, pending: 0, expired: 0 }
+    }
+
+    return {
+      total: processedData.totalItems,
+      paid: processedData.items.filter((q: { status?: string }) => {
+        return (
+          q.status?.toLowerCase() === 'ativo' ||
+          q.status?.toLowerCase() === 'pago'
+        )
+      }).length,
+      pending: processedData.items.filter((q: { status?: string }) => {
+        return q.status?.toLowerCase() === 'pendente'
+      }).length,
+      expired: processedData.items.filter((q: { status?: string }) => {
+        return (
+          q.status?.toLowerCase() === 'expirado' ||
+          q.status?.toLowerCase() === 'inativo'
+        )
+      }).length,
+    }
+  }, [processedData])
 
   return (
     <div className="space-y-6">
@@ -211,59 +220,91 @@ export default function QRCodesPage() {
               </tr>
             </thead>
             <tbody>
-              {filteredQRCodes.length === 0 ? (
+              {isLoading ? (
+                Array.from({ length: 5 }).map((_, i) => (
+                  <tr key={i} className="border-b border-gray-100">
+                    <td colSpan={6} className="py-3 px-4">
+                      <Skeleton className="h-4 w-full" />
+                    </td>
+                  </tr>
+                ))
+              ) : filteredQRCodes.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="py-8 text-center text-gray-500">
                     Nenhum QR Code encontrado
                   </td>
                 </tr>
               ) : (
-                filteredQRCodes.map((qr) => {
-                  const statusConfig = getStatusConfig(qr.status)
-                  const StatusIcon = statusConfig.icon
+                filteredQRCodes.map(
+                  (qr: {
+                    id: number
+                    referencia?: string
+                    name_produto?: string
+                    valor?: string | number
+                    produto_valor?: string | number
+                    status?: string
+                    created_at?: string
+                    paid_at?: string
+                  }) => {
+                    const status = qr.status?.toLowerCase() || ''
+                    const statusKey =
+                      status === 'ativo' || status === 'pago'
+                        ? 'paid'
+                        : status === 'pendente'
+                        ? 'pending'
+                        : status === 'expirado' || status === 'inativo'
+                        ? 'expired'
+                        : 'pending'
 
-                  return (
-                    <tr
-                      key={qr.id}
-                      className="border-b border-gray-100 hover:bg-gray-50"
-                    >
-                      <td className="py-3 px-4">
-                        <span className="text-sm font-medium text-gray-900">
-                          {qr.reference}
-                        </span>
-                      </td>
-                      <td className="py-3 px-4">
-                        <span className="text-sm font-semibold text-gray-900">
-                          {qr.value.toLocaleString('pt-BR', {
-                            style: 'currency',
-                            currency: 'BRL',
-                          })}
-                        </span>
-                      </td>
-                      <td className="py-3 px-4">
-                        <div className="flex items-center gap-2">
-                          <StatusIcon size={16} />
-                          <span
-                            className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${statusConfig.className}`}
-                          >
-                            {statusConfig.label}
+                    const statusConfig = getStatusConfig(statusKey)
+                    const StatusIcon = statusConfig.icon
+
+                    return (
+                      <tr
+                        key={qr.id}
+                        className="border-b border-gray-100 hover:bg-gray-50"
+                      >
+                        <td className="py-3 px-4">
+                          <span className="text-sm font-medium text-gray-900">
+                            {qr.referencia || qr.name_produto || `QR-${qr.id}`}
                           </span>
-                        </div>
-                      </td>
-                      <td className="py-3 px-4 text-sm text-gray-600">
-                        {qr.createdAt}
-                      </td>
-                      <td className="py-3 px-4 text-sm text-gray-600">
-                        {qr.paidAt || '-'}
-                      </td>
-                      <td className="py-3 px-4 text-right">
-                        <Button variant="ghost" size="sm">
-                          Ver Detalhes
-                        </Button>
-                      </td>
-                    </tr>
-                  )
-                })
+                        </td>
+                        <td className="py-3 px-4">
+                          <span className="text-sm font-semibold text-gray-900">
+                            {formatCurrencyBRL(
+                              parseFloat(
+                                String(qr.valor || qr.produto_valor || 0),
+                              ),
+                            )}
+                          </span>
+                        </td>
+                        <td className="py-3 px-4">
+                          <div className="flex items-center gap-2">
+                            <StatusIcon size={16} />
+                            <span
+                              className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${statusConfig.className}`}
+                            >
+                              {statusConfig.label}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="py-3 px-4 text-sm text-gray-600">
+                          {qr.created_at
+                            ? formatDateForDisplay(qr.created_at)
+                            : '-'}
+                        </td>
+                        <td className="py-3 px-4 text-sm text-gray-600">
+                          {qr.paid_at ? formatDateForDisplay(qr.paid_at) : '-'}
+                        </td>
+                        <td className="py-3 px-4 text-right">
+                          <Button variant="ghost" size="sm">
+                            Ver Detalhes
+                          </Button>
+                        </td>
+                      </tr>
+                    )
+                  },
+                )
               )}
             </tbody>
           </table>
@@ -272,13 +313,26 @@ export default function QRCodesPage() {
         {filteredQRCodes.length > 0 && (
           <div className="mt-4 pt-4 border-t border-gray-200 flex justify-between items-center">
             <p className="text-sm text-gray-600">
-              Exibindo {filteredQRCodes.length} de {qrCodes.length} QR Codes
+              Exibindo {filteredQRCodes.length} de {processedData.totalItems} QR
+              Codes
             </p>
             <div className="flex gap-2">
-              <Button variant="outline" size="sm">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={page === 1}
+              >
                 Anterior
               </Button>
-              <Button variant="outline" size="sm">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() =>
+                  setPage((p) => Math.min(processedData.totalPages, p + 1))
+                }
+                disabled={page >= processedData.totalPages}
+              >
                 Próximo
               </Button>
             </div>
