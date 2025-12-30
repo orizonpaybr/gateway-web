@@ -13,7 +13,6 @@ import {
   List,
 } from 'lucide-react'
 
-import { NotificationBanner } from '@/components/dashboard/NotificationBanner'
 import { PixIcon } from '@/components/icons/PixIcon'
 import { createLazyComponent } from '@/components/optimized/LazyComponent'
 import { Button } from '@/components/ui/Button'
@@ -116,13 +115,12 @@ export default function DashboardPage() {
     ]
   }, [stats, formatCurrency])
 
-  // Memorizar ações rápidas
   const quickActions = useMemo(
     () => [
       {
         icon: PixIcon,
         label: 'Pix com Chave',
-        onClick: () => router.push('/dashboard/pix'),
+        onClick: () => router.push('/dashboard/pix/depositar'),
       },
       {
         icon: Search,
@@ -140,9 +138,8 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <NotificationBanner />
       <div className="p-4 md:p-6 space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-4 gap-4">
           {statsDisplay.map((stat) => {
             const Icon = stat.icon
             return (
