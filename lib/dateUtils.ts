@@ -73,16 +73,44 @@ export const createPaginationFilters = (
   endDate: string,
   tipo?: string,
 ) => {
-  const { inicio, fim } = period
-    ? computeDateRange(period, startDate, endDate)
-    : { inicio: undefined, fim: undefined }
+  // Se period é null e não há datas customizadas, não enviar filtros de data
+  const hasDateFilter = period !== null || (startDate && endDate)
 
-  return {
+  const { inicio, fim } =
+    hasDateFilter && period
+      ? computeDateRange(period, startDate, endDate)
+      : { inicio: undefined, fim: undefined }
+
+  const filters: {
+    page: number
+    limit: number
+    busca?: string
+    data_inicio?: string
+    data_fim?: string
+    tipo?: string
+    periodo?: 'hoje' | '7d' | '30d' | 'custom'
+  } = {
     page,
     limit: perPage,
     busca: debouncedSearch ? normalize(debouncedSearch) : undefined,
-    data_inicio: inicio,
-    data_fim: fim,
-    ...(tipo && { tipo }),
   }
+
+  // Apenas adicionar filtros de data se houver período ou datas customizadas
+  if (hasDateFilter) {
+    if (inicio) {
+      filters.data_inicio = inicio
+    }
+    if (fim) {
+      filters.data_fim = fim
+    }
+    if (period) {
+      filters.periodo = period
+    }
+  }
+
+  if (tipo) {
+    filters.tipo = tipo
+  }
+
+  return filters
 }
