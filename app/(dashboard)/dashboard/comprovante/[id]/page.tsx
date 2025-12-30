@@ -114,13 +114,10 @@ const ComprovantePage = memo(() => {
 
   if (isLoading) {
     return (
-      <div className="space-y-6">
-        <div className="flex items-center gap-4">
-          <Skeleton className="h-10 w-10" />
-          <div className="flex-1">
-            <Skeleton className="h-8 w-64 mb-2" />
-            <Skeleton className="h-4 w-48" />
-          </div>
+      <div className="space-y-6 px-4 md:px-6 pt-4 md:pt-6 pb-6">
+        <div className="flex items-center gap-4 mb-4">
+          <Skeleton className="h-10 w-20" />
+          <Skeleton className="h-6 w-48" />
         </div>
         <Card className="p-6">
           <Skeleton className="h-64 w-full" />
@@ -134,8 +131,8 @@ const ComprovantePage = memo(() => {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-3">
+    <div className="space-y-6 px-4 md:px-6 pt-4 md:pt-6 pb-6">
+      <div className="flex items-center gap-4 mb-4">
         <Button
           variant="primary"
           size="sm"
@@ -144,7 +141,7 @@ const ComprovantePage = memo(() => {
         >
           Voltar
         </Button>
-        <h1 className="text-lg font-semibold text-gray-900">
+        <h1 className="text-lg md:text-xl font-semibold text-gray-900">
           Comprovante {transaction.tipo === 'deposito' ? 'Depósito' : 'Saque'}
         </h1>
       </div>

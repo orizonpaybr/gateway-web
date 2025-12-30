@@ -10,21 +10,21 @@ import {
   RotateCcw,
   Calendar,
 } from 'lucide-react'
-import { toast } from 'sonner'
-import * as XLSX from 'xlsx'
 
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
 import { Skeleton } from '@/components/ui/Skeleton'
-import { useDebounce } from '@/hooks/useDebounce'
-import { useExtrato, useExtratoSummary } from '@/hooks/useReactQuery'
+import { useTableFilter, useSearchFilter } from '@/hooks/useTableFilter'
+import { useTableExport } from '@/hooks/useTableExport'
+import { useExtrato } from '@/hooks/useReactQuery'
+import { extratoAPI } from '@/lib/api'
 import { createPaginationFilters, formatDateForExport } from '@/lib/dateUtils'
 import { formatCurrencyBRL } from '@/lib/format'
+import { getFinancialStatusBadgeClasses } from '@/lib/helpers/financialUtils'
 
 const ExtratoPage = memo(() => {
   const [search, setSearch] = useState('')
-  const debouncedSearch = useDebounce(search, 500)
   const [period, setPeriod] = useState<'hoje' | '7d' | '30d' | 'custom' | null>(
     null,
   )
@@ -37,11 +37,14 @@ const ExtratoPage = memo(() => {
     'all',
   )
 
+  const hasPeriodFilter = !!(period || startDate || endDate)
+  const { backendSearch } = useSearchFilter(search, hasPeriodFilter)
+
   const filters = useMemo(() => {
     const baseFilters = createPaginationFilters(
       page,
       perPage,
-      debouncedSearch,
+      backendSearch,
       period,
       startDate,
       endDate,
@@ -59,39 +62,64 @@ const ExtratoPage = memo(() => {
       data_fim?: string
       tipo?: 'entrada' | 'saida'
     }
-  }, [page, perPage, debouncedSearch, period, startDate, endDate, filterType])
+  }, [page, perPage, backendSearch, period, startDate, endDate, filterType])
 
   const { data, isLoading, error: _error } = useExtrato(filters)
-  const { data: summaryData } = useExtratoSummary({
-    periodo: period || 'hoje',
-    data_inicio: startDate,
-    data_fim: endDate,
+
+  const allItems = data?.data?.data || []
+  const filteredItems = useTableFilter(allItems, search, {
+    valorField: 'valor_liquido',
+    searchFields: ['transaction_id', 'end_to_end'],
   })
+
+  // Se há busca ativa sem período, não usar paginação (mostrar todos os resultados filtrados)
+  const hasActiveSearch = search.trim() && !hasPeriodFilter
 
   const processedData = useMemo(() => {
     if (!data?.data) {
-      return { items: [], totalPages: 1, totalItems: 0 }
+      return { items: [], totalPages: 1, totalItems: 0, resumo: {} }
     }
+
+    const totalItems = hasActiveSearch
+      ? filteredItems.length
+      : data.data.total || 0
 
     return {
-      items: data.data.data || [],
+      items: filteredItems,
       totalPages: data.data.last_page || 1,
-      totalItems: data.data.total || 0,
+      totalItems,
       resumo: data.data.resumo || {},
     }
-  }, [data])
+  }, [filteredItems, data?.data, hasActiveSearch])
 
-  const handleExport = useCallback(() => {
-    if (processedData.items.length === 0) {
-      toast.error('Nenhuma transação para exportar')
-      return
+  const fetchAllDataForExport = useCallback(async () => {
+    const exportFilters = {
+      page: 1,
+      limit: 10000,
+      periodo: period || undefined,
+      data_inicio: startDate || undefined,
+      data_fim: endDate || undefined,
+      busca: backendSearch || undefined,
+      tipo: filterType !== 'all' ? filterType : undefined,
     }
 
-    const exportData = processedData.items.map((transacao) => ({
+    const response = await extratoAPI.list(exportFilters)
+    if (!response.success || !response.data) {
+      return []
+    }
+
+    return response.data.data || []
+  }, [period, startDate, endDate, backendSearch, filterType])
+
+  // Hook de exportação centralizado
+  const { handleExport, isExporting } = useTableExport({
+    filename: `extrato_${new Date().toISOString().slice(0, 10)}.xlsx`,
+    sheetName: 'Extrato',
+    fetchAllData: fetchAllDataForExport,
+    dataMapper: (transacao) => ({
       ID: transacao.id,
       'Transaction ID': transacao.transaction_id,
       Tipo: transacao.tipo === 'entrada' ? 'Entrada' : 'Saída',
-      Descrição: transacao.descricao,
       Valor: transacao.valor,
       'Valor Líquido': transacao.valor_liquido,
       Taxa: transacao.taxa,
@@ -101,14 +129,9 @@ const ExtratoPage = memo(() => {
       Documento: transacao.documento,
       Adquirente: transacao.adquirente,
       'End-to-End ID': transacao.end_to_end || '',
-    }))
-
-    const ws = XLSX.utils.json_to_sheet(exportData)
-    const wb = XLSX.utils.book_new()
-    XLSX.utils.book_append_sheet(wb, ws, 'Extrato')
-    XLSX.writeFile(wb, `extrato_${new Date().toISOString().slice(0, 10)}.xlsx`)
-    toast.success('Arquivo exportado com sucesso!')
-  }, [processedData.items])
+    }),
+    emptyMessage: 'Nenhuma transação para exportar',
+  })
 
   const resetDates = useCallback(() => {
     setStartDate('')
@@ -118,12 +141,36 @@ const ExtratoPage = memo(() => {
     setPage(1)
   }, [setStartDate, setEndDate, setShowDatePicker, setPeriod, setPage])
 
-  const canPrev = page > 1
-  const canNext = page < processedData.totalPages
+  const canPrev = hasActiveSearch ? false : page > 1
+  const canNext = hasActiveSearch ? false : page < processedData.totalPages
   const hasData = !isLoading && processedData.items.length > 0
 
-  const totalEntradas = summaryData?.data?.resumo?.total_entradas_liquidas || 0
-  const totalSaidas = summaryData?.data?.resumo?.total_saidas_liquidas || 0
+  const totalEntradas = useMemo(() => {
+    if (hasActiveSearch) {
+      return filteredItems
+        .filter((item) => item.tipo === 'entrada')
+        .reduce((sum, item) => sum + (item.valor_liquido || 0), 0)
+    }
+    return data?.data?.resumo?.total_entradas_liquidas ?? 0
+  }, [
+    filteredItems,
+    hasActiveSearch,
+    data?.data?.resumo?.total_entradas_liquidas,
+  ])
+
+  const totalSaidas = useMemo(() => {
+    if (hasActiveSearch) {
+      return filteredItems
+        .filter((item) => item.tipo === 'saida')
+        .reduce((sum, item) => sum + (item.valor_liquido || 0), 0)
+    }
+    return data?.data?.resumo?.total_saidas_liquidas ?? 0
+  }, [
+    filteredItems,
+    hasActiveSearch,
+    data?.data?.resumo?.total_saidas_liquidas,
+  ])
+
   const saldoPeriodo = totalEntradas - totalSaidas
 
   return (
@@ -141,8 +188,13 @@ const ExtratoPage = memo(() => {
             size="sm"
             icon={<Download size={16} />}
             onClick={handleExport}
+            disabled={isExporting}
           >
-            <span className="hidden sm:inline">Exportar Extrato</span>
+            {isExporting ? (
+              'Exportando...'
+            ) : (
+              <span className="hidden sm:inline">Exportar</span>
+            )}
           </Button>
         </div>
       </div>
@@ -199,11 +251,10 @@ const ExtratoPage = memo(() => {
         <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
           <div className="flex items-center gap-2 w-full xl:w-auto">
             <Input
-              placeholder="Buscar por descrição, EndToEndID ou valor..."
+              placeholder="Buscar por valor ou EndToEndID..."
               value={search}
               onChange={(e) => {
                 setSearch(e.target.value)
-                setPage(1)
               }}
               className="w-full xl:w-72"
             />
@@ -395,13 +446,13 @@ const ExtratoPage = memo(() => {
                       TIPO
                     </th>
                     <th className="text-left py-3 px-3 text-xs font-semibold text-gray-600 uppercase">
-                      DESCRIÇÃO
-                    </th>
-                    <th className="text-left py-3 px-3 text-xs font-semibold text-gray-600 uppercase">
                       VALOR
                     </th>
                     <th className="text-left py-3 px-3 text-xs font-semibold text-gray-600 uppercase">
                       DATA/HORA
+                    </th>
+                    <th className="text-left py-3 px-3 text-xs font-semibold text-gray-600 uppercase">
+                      STATUS
                     </th>
                   </tr>
                 </thead>
@@ -441,26 +492,6 @@ const ExtratoPage = memo(() => {
                           </span>
                         </td>
                         <td className="py-3 px-3">
-                          <div className="flex items-center gap-3">
-                            <div
-                              className={`p-2 rounded-lg ${
-                                transacao.tipo === 'entrada'
-                                  ? 'bg-green-100 text-green-600'
-                                  : 'bg-red-100 text-red-600'
-                              }`}
-                            >
-                              {transacao.tipo === 'entrada' ? (
-                                <ArrowDownLeft size={16} />
-                              ) : (
-                                <ArrowUpRight size={16} />
-                              )}
-                            </div>
-                            <span className="text-sm font-medium text-gray-900">
-                              {transacao.descricao}
-                            </span>
-                          </div>
-                        </td>
-                        <td className="py-3 px-3">
                           <span className="text-sm font-semibold text-gray-900">
                             {transacao.tipo === 'entrada' ? '+' : '-'}
                             {formatCurrencyBRL(transacao.valor_liquido)}
@@ -472,6 +503,15 @@ const ExtratoPage = memo(() => {
                             'pt-BR',
                             { hour: '2-digit', minute: '2-digit' },
                           )}
+                        </td>
+                        <td className="py-3 px-3">
+                          <span
+                            className={`inline-flex px-3 py-1 text-xs font-medium rounded-full ${getFinancialStatusBadgeClasses(
+                              transacao.status_legivel || transacao.status,
+                            )}`}
+                          >
+                            {transacao.status_legivel || transacao.status}
+                          </span>
                         </td>
                       </tr>
                     ))

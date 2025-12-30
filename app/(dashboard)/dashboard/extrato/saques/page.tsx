@@ -9,20 +9,19 @@ import {
   Calendar,
   RotateCcw,
 } from 'lucide-react'
-import { toast } from 'sonner'
-import * as XLSX from 'xlsx'
-
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
 import { Skeleton } from '@/components/ui/Skeleton'
-import { useDebounce } from '@/hooks/useDebounce'
+import { useTableFilter, useSearchFilter } from '@/hooks/useTableFilter'
+import { useTableExport } from '@/hooks/useTableExport'
 import { useTransactions } from '@/hooks/useReactQuery'
+import { transactionsAPI } from '@/lib/api'
 import { createPaginationFilters, formatDateForExport } from '@/lib/dateUtils'
+import { getFinancialStatusBadgeClasses } from '@/lib/helpers/financialUtils'
 
 export default function SaquesPage() {
   const [search, setSearch] = useState('')
-  const debouncedSearch = useDebounce(search, 500)
   const [period, setPeriod] = useState<'hoje' | '7d' | '30d' | 'custom' | null>(
     null,
   )
@@ -32,40 +31,74 @@ export default function SaquesPage() {
   const [page, setPage] = useState(1)
   const perPage = 20
 
+  const hasPeriodFilter = !!(period || startDate || endDate)
+  const { backendSearch } = useSearchFilter(search, hasPeriodFilter)
+
   const filters = useMemo(() => {
     return createPaginationFilters(
       page,
       perPage,
-      debouncedSearch,
+      backendSearch,
       period,
       startDate,
       endDate,
       'saque',
     )
-  }, [page, perPage, debouncedSearch, period, startDate, endDate])
+  }, [page, perPage, backendSearch, period, startDate, endDate])
 
   // React Query hook
   const { data, isLoading, error: _error } = useTransactions(filters)
+
+  // Filtrar items usando o hook centralizado
+  const allItems = data?.data?.data || []
+  const filteredItems = useTableFilter(allItems, search, {
+    descricaoField: 'descricao',
+    valorField: 'valor_liquido',
+    searchFields: ['transaction_id', 'nome_cliente'],
+  })
+
+  const hasActiveSearch = search.trim() && !hasPeriodFilter
 
   const processedData = useMemo(() => {
     if (!data?.data) {
       return { items: [], totalPages: 1, totalItems: 0 }
     }
 
+    const totalItems = hasActiveSearch
+      ? filteredItems.length
+      : data.data.total || 0
+
     return {
-      items: data.data.data || [],
+      items: filteredItems,
       totalPages: data.data.last_page || 1,
-      totalItems: data.data.total || 0,
+      totalItems,
     }
-  }, [data])
+  }, [filteredItems, data?.data, hasActiveSearch])
 
-  const handleExport = useCallback(() => {
-    if (processedData.items.length === 0) {
-      toast.error('Nenhum saque para exportar')
-      return
+  const fetchAllDataForExport = useCallback(async () => {
+    const exportFilters = {
+      page: 1,
+      limit: 10000,
+      tipo: 'saque' as const,
+      busca: backendSearch || undefined,
+      data_inicio: startDate || undefined,
+      data_fim: endDate || undefined,
     }
 
-    const exportData = processedData.items.map((saque) => ({
+    const response = await transactionsAPI.list(exportFilters)
+    if (!response.success || !response.data) {
+      return []
+    }
+
+    return response.data.data || []
+  }, [backendSearch, startDate, endDate])
+
+  // Hook de exportação centralizado
+  const { handleExport, isExporting } = useTableExport({
+    filename: `saques_${new Date().toISOString().slice(0, 10)}.xlsx`,
+    sheetName: 'Saques',
+    fetchAllData: fetchAllDataForExport,
+    dataMapper: (saque) => ({
       ID: saque.id,
       'Transaction ID': saque.transaction_id,
       'Nome Cliente': saque.nome_cliente,
@@ -77,14 +110,9 @@ export default function SaquesPage() {
       Data: formatDateForExport(saque.data),
       Adquirente: saque.adquirente,
       Descrição: saque.descricao,
-    }))
-
-    const ws = XLSX.utils.json_to_sheet(exportData)
-    const wb = XLSX.utils.book_new()
-    XLSX.utils.book_append_sheet(wb, ws, 'Saques')
-    XLSX.writeFile(wb, `saques_${new Date().toISOString().slice(0, 10)}.xlsx`)
-    toast.success('Arquivo exportado com sucesso!')
-  }, [processedData.items])
+    }),
+    emptyMessage: 'Nenhum saque para exportar',
+  })
 
   const resetDates = useCallback(() => {
     setStartDate('')
@@ -94,8 +122,8 @@ export default function SaquesPage() {
     setPage(1)
   }, [setStartDate, setEndDate, setShowDatePicker, setPeriod, setPage])
 
-  const canPrev = page > 1
-  const canNext = page < processedData.totalPages
+  const canPrev = hasActiveSearch ? false : page > 1
+  const canNext = hasActiveSearch ? false : page < processedData.totalPages
   const hasData = !isLoading && processedData.items.length > 0
 
   return (
@@ -113,8 +141,13 @@ export default function SaquesPage() {
             size="sm"
             icon={<Download size={16} />}
             onClick={handleExport}
+            disabled={isExporting}
           >
-            <span className="hidden sm:inline">Exportar</span>
+            {isExporting ? (
+              'Exportando...'
+            ) : (
+              <span className="hidden sm:inline">Exportar</span>
+            )}
           </Button>
         </div>
       </div>
@@ -123,7 +156,7 @@ export default function SaquesPage() {
         <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
           <div className="flex items-center gap-2 w-full xl:w-auto">
             <Input
-              placeholder="Buscar..."
+              placeholder="Buscar por descrição, valor ou Transaction ID"
               value={search}
               onChange={(e) => {
                 setSearch(e.target.value)
@@ -320,7 +353,7 @@ export default function SaquesPage() {
                           {new Date(saque.data).toLocaleDateString('pt-BR')}
                         </td>
                         <td className="py-3 px-3">
-                          <span className="text-sm font-semibold text-red-600">
+                          <span className="text-sm font-semibold text-gray-900">
                             -
                             {saque.valor_liquido.toLocaleString('pt-BR', {
                               style: 'currency',
@@ -330,14 +363,11 @@ export default function SaquesPage() {
                         </td>
                         <td className="py-3 px-3">
                           <span
-                            className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
-                              saque.status === 'COMPLETED' ||
-                              saque.status === 'PAID_OUT'
-                                ? 'bg-green-100 text-green-700'
-                                : saque.status === 'PENDING'
-                                ? 'bg-yellow-100 text-yellow-700'
-                                : 'bg-gray-100 text-gray-700'
-                            }`}
+                            className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getFinancialStatusBadgeClasses(
+                              saque.status_legivel ||
+                                saque.status ||
+                                'pendente',
+                            )}`}
                           >
                             {saque.status_legivel || 'pendente'}
                           </span>
