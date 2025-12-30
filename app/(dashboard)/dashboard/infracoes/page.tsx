@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 
 import { Download, Search, AlertTriangle } from 'lucide-react'
 import { toast } from 'sonner'
@@ -8,61 +8,91 @@ import { toast } from 'sonner'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
+import { Skeleton } from '@/components/ui/Skeleton'
+import { usePixInfracoes } from '@/hooks/useReactQuery'
+import { useDebounce } from '@/hooks/useDebounce'
+import { formatCurrencyBRL } from '@/lib/format'
+import { formatDateForDisplay } from '@/lib/dateUtils'
 
 export default function InfracoesPage() {
   const [searchTerm, setSearchTerm] = useState('')
+  const debouncedSearch = useDebounce(searchTerm, 500)
+  const [page, setPage] = useState(1)
+  const perPage = 20
 
-  const infracoes = [
-    {
-      id: '1',
-      description: 'Chargeback identificado',
-      value: 250.0,
-      date: '05/10/2025 14:20',
-      endToEnd: 'E1234567820251005142045',
-      status: 'ativa',
-    },
-    {
-      id: '2',
-      description: 'Transação suspeita de fraude',
-      value: 1200.0,
-      date: '03/10/2025 10:15',
-      endToEnd: 'E1234567820251003101532',
-      status: 'ativa',
-    },
-    {
-      id: '3',
-      description: 'Valor retornado por contestação',
-      value: 450.0,
-      date: '01/10/2025 16:30',
-      endToEnd: 'E1234567820251001163045',
-      status: 'resolvida',
-    },
-    {
-      id: '4',
-      description: 'Bloqueio preventivo',
-      value: 800.0,
-      date: '28/09/2025 11:45',
-      endToEnd: 'E1234567820250928114512',
-      status: 'em_analise',
-    },
-  ]
+  // Buscar dados da API
+  const { data, isLoading } = usePixInfracoes({
+    page,
+    per_page: perPage,
+    search: debouncedSearch,
+  })
 
-  const filteredInfracoes = infracoes.filter((infracao) =>
-    searchTerm
-      ? infracao.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        infracao.endToEnd.includes(searchTerm)
-      : true,
-  )
+  const processedData = useMemo(() => {
+    if (!data?.data) {
+      return { items: [], totalPages: 1, totalItems: 0 }
+    }
 
-  const stats = {
-    total: infracoes.length,
-    ativas: infracoes.filter((i) => i.status === 'ativa').length,
-    resolvidas: infracoes.filter((i) => i.status === 'resolvida').length,
-    emAnalise: infracoes.filter((i) => i.status === 'em_analise').length,
-    valorTotal: infracoes
-      .filter((i) => i.status === 'ativa')
-      .reduce((acc, i) => acc + i.value, 0),
-  }
+    return {
+      items: data.data.data || [],
+      totalPages: data.data.last_page || 1,
+      totalItems: data.data.total || 0,
+    }
+  }, [data])
+
+  const filteredInfracoes = useMemo(() => {
+    if (!processedData.items) {
+      return []
+    }
+
+    return processedData.items.filter(
+      (infracao: { descricao?: string; end_to_end?: string }) => {
+        if (searchTerm) {
+          return (
+            (infracao.descricao || '')
+              .toLowerCase()
+              .includes(searchTerm.toLowerCase()) ||
+            (infracao.end_to_end || '').includes(searchTerm)
+          )
+        }
+        return true
+      },
+    )
+  }, [processedData.items, searchTerm])
+
+  const stats = useMemo(() => {
+    if (!processedData.items) {
+      return { total: 0, ativas: 0, resolvidas: 0, emAnalise: 0, valorTotal: 0 }
+    }
+
+    const ativas = processedData.items.filter((i: { status?: string }) => {
+      return i.status?.toLowerCase() === 'ativa'
+    })
+
+    return {
+      total: processedData.totalItems,
+      ativas: ativas.length,
+      resolvidas: processedData.items.filter((i: { status?: string }) => {
+        return i.status?.toLowerCase() === 'resolvida'
+      }).length,
+      emAnalise: processedData.items.filter((i: { status?: string }) => {
+        return (
+          i.status?.toLowerCase() === 'em_analise' ||
+          i.status?.toLowerCase() === 'em análise'
+        )
+      }).length,
+      valorTotal: ativas.reduce(
+        (
+          acc: number,
+          i: {
+            valor?: string | number
+          },
+        ) => {
+          return acc + parseFloat(String(i.valor || 0))
+        },
+        0,
+      ),
+    }
+  }, [processedData])
 
   const getStatusConfig = (status: string) => {
     switch (status) {
@@ -176,62 +206,83 @@ export default function InfracoesPage() {
               </tr>
             </thead>
             <tbody>
-              {filteredInfracoes.length === 0 ? (
+              {isLoading ? (
+                Array.from({ length: 5 }).map((_, i) => (
+                  <tr key={i} className="border-b border-gray-100">
+                    <td colSpan={6} className="py-3 px-4">
+                      <Skeleton className="h-4 w-full" />
+                    </td>
+                  </tr>
+                ))
+              ) : filteredInfracoes.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="py-8 text-center text-gray-500">
                     Nenhuma infração encontrada
                   </td>
                 </tr>
               ) : (
-                filteredInfracoes.map((infracao) => {
-                  const statusConfig = getStatusConfig(infracao.status)
+                filteredInfracoes.map(
+                  (infracao: {
+                    id: number
+                    descricao?: string
+                    valor?: string | number
+                    data_criacao?: string
+                    date?: string
+                    end_to_end?: string
+                    endToEnd?: string
+                    status?: string
+                  }) => {
+                    const status = infracao.status?.toLowerCase() || ''
+                    const statusConfig = getStatusConfig(status)
 
-                  return (
-                    <tr
-                      key={infracao.id}
-                      className="border-b border-gray-100 hover:bg-gray-50"
-                    >
-                      <td className="py-3 px-4">
-                        <div className="flex items-center gap-3">
-                          <div className="p-2 rounded-lg bg-red-100 text-red-600">
-                            <AlertTriangle size={16} />
+                    return (
+                      <tr
+                        key={infracao.id}
+                        className="border-b border-gray-100 hover:bg-gray-50"
+                      >
+                        <td className="py-3 px-4">
+                          <div className="flex items-center gap-3">
+                            <div className="p-2 rounded-lg bg-red-100 text-red-600">
+                              <AlertTriangle size={16} />
+                            </div>
+                            <span className="text-sm font-medium text-gray-900">
+                              {infracao.descricao || 'Infração PIX'}
+                            </span>
                           </div>
-                          <span className="text-sm font-medium text-gray-900">
-                            {infracao.description}
+                        </td>
+                        <td className="py-3 px-4">
+                          <span className="text-sm font-semibold text-red-600">
+                            {formatCurrencyBRL(
+                              parseFloat(String(infracao.valor || 0)),
+                            )}
                           </span>
-                        </div>
-                      </td>
-                      <td className="py-3 px-4">
-                        <span className="text-sm font-semibold text-red-600">
-                          {infracao.value.toLocaleString('pt-BR', {
-                            style: 'currency',
-                            currency: 'BRL',
-                          })}
-                        </span>
-                      </td>
-                      <td className="py-3 px-4 text-sm text-gray-600">
-                        {infracao.date}
-                      </td>
-                      <td className="py-3 px-4">
-                        <span className="text-xs font-mono text-gray-600">
-                          {infracao.endToEnd}
-                        </span>
-                      </td>
-                      <td className="py-3 px-4">
-                        <span
-                          className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${statusConfig.className}`}
-                        >
-                          {statusConfig.label}
-                        </span>
-                      </td>
-                      <td className="py-3 px-4 text-right">
-                        <Button variant="ghost" size="sm">
-                          Ver Detalhes
-                        </Button>
-                      </td>
-                    </tr>
-                  )
-                })
+                        </td>
+                        <td className="py-3 px-4 text-sm text-gray-600">
+                          {formatDateForDisplay(
+                            infracao.data_criacao || infracao.date || '',
+                          )}
+                        </td>
+                        <td className="py-3 px-4">
+                          <span className="text-xs font-mono text-gray-600">
+                            {infracao.end_to_end || infracao.endToEnd || '-'}
+                          </span>
+                        </td>
+                        <td className="py-3 px-4">
+                          <span
+                            className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${statusConfig.className}`}
+                          >
+                            {statusConfig.label}
+                          </span>
+                        </td>
+                        <td className="py-3 px-4 text-right">
+                          <Button variant="ghost" size="sm">
+                            Ver Detalhes
+                          </Button>
+                        </td>
+                      </tr>
+                    )
+                  },
+                )
               )}
             </tbody>
           </table>
@@ -240,14 +291,26 @@ export default function InfracoesPage() {
         {filteredInfracoes.length > 0 && (
           <div className="mt-4 pt-4 border-t border-gray-200 flex justify-between items-center">
             <p className="text-sm text-gray-600">
-              Exibindo {filteredInfracoes.length} de {infracoes.length}{' '}
+              Exibindo {filteredInfracoes.length} de {processedData.totalItems}{' '}
               infrações
             </p>
             <div className="flex gap-2">
-              <Button variant="outline" size="sm">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={page === 1}
+              >
                 Anterior
               </Button>
-              <Button variant="outline" size="sm">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() =>
+                  setPage((p) => Math.min(processedData.totalPages, p + 1))
+                }
+                disabled={page >= processedData.totalPages}
+              >
                 Próximo
               </Button>
             </div>

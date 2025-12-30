@@ -88,7 +88,7 @@ const PixInfracoesPage = memo(() => {
     setStartDate('')
     setEndDate('')
     setShowDatePicker(false)
-    setPeriod('hoje')
+    setPeriod(null)
     setPage(1)
   }, [])
 
@@ -189,7 +189,7 @@ const PixInfracoesPage = memo(() => {
         <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
           <div className="flex items-center gap-2 w-full xl:w-auto">
             <Input
-              placeholder="Buscar..."
+              placeholder="Buscar por EndToEndID..."
               value={search}
               onChange={(e) => {
                 setSearch(e.target.value)
@@ -325,6 +325,9 @@ const PixInfracoesPage = memo(() => {
           <table className="w-full">
             <thead>
               <tr className="border-b border-gray-200">
+                <th className="hidden md:table-cell text-left py-3 px-3 text-xs font-semibold text-gray-600 uppercase">
+                  End to End
+                </th>
                 <th className="text-left py-3 px-3 text-xs font-semibold text-gray-600 uppercase">
                   Status
                 </th>
@@ -337,9 +340,6 @@ const PixInfracoesPage = memo(() => {
                 <th className="text-left py-3 px-3 text-xs font-semibold text-gray-600 uppercase">
                   Valor
                 </th>
-                <th className="hidden md:table-cell text-left py-3 px-3 text-xs font-semibold text-gray-600 uppercase">
-                  End to End
-                </th>
                 <th className="text-left py-3 px-3 text-xs font-semibold text-gray-600 uppercase">
                   Ações
                 </th>
@@ -349,6 +349,9 @@ const PixInfracoesPage = memo(() => {
               {isLoading ? (
                 Array.from({ length: perPage }).map((_, index) => (
                   <tr key={index} className="border-b border-gray-100">
+                    <td className="hidden md:table-cell py-3 px-4">
+                      <Skeleton className="h-4 w-32" />
+                    </td>
                     <td className="py-3 px-4">
                       <Skeleton className="h-6 w-20" />
                     </td>
@@ -362,9 +365,6 @@ const PixInfracoesPage = memo(() => {
                       <Skeleton className="h-4 w-20" />
                     </td>
                     <td className="py-3 px-4">
-                      <Skeleton className="h-4 w-32" />
-                    </td>
-                    <td className="py-3 px-4">
                       <Skeleton className="h-8 w-8" />
                     </td>
                   </tr>
@@ -375,6 +375,9 @@ const PixInfracoesPage = memo(() => {
                     key={infracao.id}
                     className="border-b border-gray-100 hover:bg-gray-50"
                   >
+                    <td className="hidden md:table-cell py-3 px-3 text-sm text-gray-600 font-mono break-all">
+                      {infracao.end_to_end || '-'}
+                    </td>
                     <td className="py-3 px-3">
                       <span
                         className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(
@@ -392,9 +395,6 @@ const PixInfracoesPage = memo(() => {
                     </td>
                     <td className="py-3 px-3 text-sm font-medium text-gray-900">
                       {formatCurrency(infracao.valor)}
-                    </td>
-                    <td className="hidden md:table-cell py-3 px-3 text-sm text-gray-600 font-mono break-all">
-                      {infracao.end_to_end}
                     </td>
                     <td className="py-3 px-3">
                       <Button
