@@ -3,7 +3,6 @@
 import { memo, useMemo } from 'react'
 import {
   Bell,
-  Smartphone,
   Check,
   AlertCircle,
   DollarSign,
@@ -99,82 +98,6 @@ export const ConfiguracoesNotificacoesTab = memo(() => {
     <div className="space-y-6">
       <Card>
         <div className="flex items-center gap-3 mb-6 flex-wrap">
-          <div className="p-3 rounded-lg bg-blue-100 text-blue-600 shrink-0">
-            <Bell size={24} />
-          </div>
-          <div className="min-w-0 flex-1">
-            <h2 className="text-lg font-semibold text-gray-900">
-              Notificações Push
-            </h2>
-            <p className="text-sm text-gray-600">
-              Controle principal das notificações no seu dispositivo
-            </p>
-          </div>
-        </div>
-
-        <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200 gap-4 flex-wrap">
-          <div className="flex items-center gap-3 min-w-0 flex-1">
-            <Smartphone className="text-blue-600 flex-shrink-0" size={20} />
-            <div className="min-w-0">
-              <p className="font-medium text-gray-900 break-words">
-                Habilitar Notificações Push
-              </p>
-              <p className="text-sm text-gray-600 break-words">
-                {preferences?.push_enabled
-                  ? 'Você receberá notificações no seu dispositivo'
-                  : 'Notificações desabilitadas - você não receberá alertas'}
-              </p>
-            </div>
-          </div>
-          <Switch
-            checked={preferences?.push_enabled ?? false}
-            onCheckedChange={() => togglePreference('push_enabled')}
-            disabled={isUpdating || !hasCredentials}
-            className="shrink-0"
-          />
-        </div>
-
-        {!hasCredentials && (
-          <div className="mt-4 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-            <div className="flex gap-3">
-              <AlertCircle
-                className="text-yellow-600 flex-shrink-0 mt-0.5"
-                size={20}
-              />
-              <div className="text-sm text-yellow-800">
-                <p className="font-semibold mb-1">Credenciais ausentes</p>
-                <p>
-                  Faça login e garanta que o backend retorne{' '}
-                  <span className="font-mono">api_token</span> e{' '}
-                  <span className="font-mono">api_secret</span> para habilitar
-                  as notificações.
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {hasCredentials && !preferences?.push_enabled && (
-          <div className="mt-4 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-            <div className="flex gap-3">
-              <AlertCircle
-                className="text-yellow-600 flex-shrink-0 mt-0.5"
-                size={20}
-              />
-              <div className="text-sm text-yellow-800">
-                <p className="font-semibold mb-1">Notificações Desabilitadas</p>
-                <p>
-                  Você não receberá nenhuma notificação push enquanto esta opção
-                  estiver desabilitada.
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
-      </Card>
-
-      <Card>
-        <div className="flex items-center gap-3 mb-6 flex-wrap">
           <div className="p-3 rounded-lg bg-purple-100 text-purple-600 shrink-0">
             <Check size={24} />
           </div>
@@ -192,8 +115,7 @@ export const ConfiguracoesNotificacoesTab = memo(() => {
           {notificationTypes.map((type) => {
             const Icon = type.icon
             const isEnabled = preferences?.[type.key] ?? true
-            const isDisabled =
-              !preferences?.push_enabled || isUpdating || !hasCredentials
+            const isDisabled = isUpdating || !hasCredentials
 
             return (
               <div
@@ -231,11 +153,11 @@ export const ConfiguracoesNotificacoesTab = memo(() => {
             <Info className="text-blue-600 flex-shrink-0 mt-0.5" size={20} />
             <div className="text-sm text-blue-800 min-w-0 flex-1">
               <p className="font-semibold mb-1 break-words">
-                Sobre as Notificações Push
+                Sobre as Notificações
               </p>
               <ul className="list-disc list-inside space-y-1 break-words">
                 <li>
-                  As notificações são enviadas instantaneamente quando eventos
+                  As notificações são exibidas dentro do gateway quando eventos
                   importantes acontecem.
                 </li>
                 <li>
@@ -247,8 +169,8 @@ export const ConfiguracoesNotificacoesTab = memo(() => {
                   proteção da conta.
                 </li>
                 <li>
-                  As preferências são sincronizadas em todos os seus
-                  dispositivos.
+                  Todas as notificações ficam disponíveis na seção de
+                  notificações do dashboard.
                 </li>
                 <li>Você pode alterar suas preferências a qualquer momento.</li>
               </ul>

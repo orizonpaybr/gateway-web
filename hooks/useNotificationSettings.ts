@@ -104,7 +104,6 @@ export function useNotificationSettings() {
   const toggleMutation = useMutation({
     mutationFn: async (
       type:
-        | 'push_enabled'
         | 'notify_transactions'
         | 'notify_deposits'
         | 'notify_withdrawals'
@@ -190,7 +189,6 @@ export function useNotificationSettings() {
   const togglePreference = useCallback(
     (
       type:
-        | 'push_enabled'
         | 'notify_transactions'
         | 'notify_deposits'
         | 'notify_withdrawals'
