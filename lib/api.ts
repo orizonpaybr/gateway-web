@@ -9,17 +9,17 @@ export const BASE_URL = API_URL
 export const gatewaySettingsAPI = {
   getSettings: async (): Promise<{
     success: boolean
-    data: Record<string, any>
+    data: Record<string, unknown>
   }> => {
     return apiRequest('/admin/settings')
   },
 
   updateSettings: async (
-    payload: Record<string, any>,
+    payload: Record<string, unknown>,
   ): Promise<{
     success: boolean
     message: string
-    data: Record<string, any>
+    data: Record<string, unknown>
   }> => {
     return apiRequest('/admin/settings', {
       method: 'PUT',
@@ -69,7 +69,9 @@ export async function apiRequest<T>(
         if (typeof window !== 'undefined') {
           window.dispatchEvent(new Event('auth-unauthorized'))
         }
-      } catch {}
+      } catch {
+        // Ignorar erros ao limpar autenticação
+      }
     }
 
     const errorPayload = await response.json().catch(() => ({}))
@@ -95,16 +97,9 @@ interface AuthResponse {
   errors?: Record<string, string[]>
 }
 
-// Interface para dados de registro
-export interface RegisterData {
-  username: string
-  name: string
-  email: string
-  telefone: string
-  cpf_cnpj: string
-  password: string
-  ref?: string
-}
+// Interface para dados de registro - importada de types/user.ts
+import type { RegisterData as RegisterDataType } from '@/types/user'
+export type RegisterData = RegisterDataType
 
 // Helper para armazenar dados de autenticação
 const storeAuthData = (data: AuthData): void => {
@@ -241,7 +236,9 @@ export const authAPI = {
     }
 
     // Armazenar tokens se disponíveis
-    result.data && storeAuthData(result.data)
+    if (result.data) {
+      storeAuthData(result.data)
+    }
 
     return result
   },
@@ -251,12 +248,14 @@ export const authAPI = {
    */
   verifyToken: async (): Promise<{
     success: boolean
-    data?: { user: any }
+    data?: { user: Record<string, unknown> }
   }> => {
     const token = localStorage.getItem('token')
 
     // Early return se não há token
-    if (!token) return { success: false }
+    if (!token) {
+      return { success: false }
+    }
 
     try {
       return await apiRequest('/auth/verify', { method: 'GET' })
@@ -376,13 +375,27 @@ export const transactionsAPI = {
     }
   }> => {
     const params = new URLSearchParams()
-    if (filters?.page) params.append('page', filters.page.toString())
-    if (filters?.limit) params.append('limit', filters.limit.toString())
-    if (filters?.tipo) params.append('tipo', filters.tipo)
-    if (filters?.status) params.append('status', filters.status)
-    if (filters?.busca) params.append('busca', filters.busca)
-    if (filters?.data_inicio) params.append('data_inicio', filters.data_inicio)
-    if (filters?.data_fim) params.append('data_fim', filters.data_fim)
+    if (filters?.page) {
+      params.append('page', filters.page.toString())
+    }
+    if (filters?.limit) {
+      params.append('limit', filters.limit.toString())
+    }
+    if (filters?.tipo) {
+      params.append('tipo', filters.tipo)
+    }
+    if (filters?.status) {
+      params.append('status', filters.status)
+    }
+    if (filters?.busca) {
+      params.append('busca', filters.busca)
+    }
+    if (filters?.data_inicio) {
+      params.append('data_inicio', filters.data_inicio)
+    }
+    if (filters?.data_fim) {
+      params.append('data_fim', filters.data_fim)
+    }
 
     return apiRequest(`/transactions?${params.toString()}`)
   },
@@ -485,7 +498,7 @@ export interface PixDepositResponse {
 }
 
 export const pixAPI = {
-  transfer: async (data: any) => {
+  transfer: async (_data: Record<string, unknown>) => {
     // return apiRequest('/pix/transfer', {
     //   method: 'POST',
     //   body: JSON.stringify(data),
@@ -644,12 +657,24 @@ export const pixAPI = {
     }
   }> => {
     const params = new URLSearchParams()
-    if (filters?.page) params.append('page', filters.page.toString())
-    if (filters?.limit) params.append('limit', filters.limit.toString())
-    if (filters?.status) params.append('status', filters.status)
-    if (filters?.busca) params.append('busca', filters.busca)
-    if (filters?.data_inicio) params.append('data_inicio', filters.data_inicio)
-    if (filters?.data_fim) params.append('data_fim', filters.data_fim)
+    if (filters?.page) {
+      params.append('page', filters.page.toString())
+    }
+    if (filters?.limit) {
+      params.append('limit', filters.limit.toString())
+    }
+    if (filters?.status) {
+      params.append('status', filters.status)
+    }
+    if (filters?.busca) {
+      params.append('busca', filters.busca)
+    }
+    if (filters?.data_inicio) {
+      params.append('data_inicio', filters.data_inicio)
+    }
+    if (filters?.data_fim) {
+      params.append('data_fim', filters.data_fim)
+    }
 
     return apiRequest(`/pix/infracoes?${params.toString()}`)
   },
@@ -718,12 +743,24 @@ export const qrCodeAPI = {
     }
   }> => {
     const params = new URLSearchParams()
-    if (filters?.page) params.append('page', filters.page.toString())
-    if (filters?.limit) params.append('limit', filters.limit.toString())
-    if (filters?.status) params.append('status', filters.status)
-    if (filters?.busca) params.append('busca', filters.busca)
-    if (filters?.data_inicio) params.append('data_inicio', filters.data_inicio)
-    if (filters?.data_fim) params.append('data_fim', filters.data_fim)
+    if (filters?.page) {
+      params.append('page', filters.page.toString())
+    }
+    if (filters?.limit) {
+      params.append('limit', filters.limit.toString())
+    }
+    if (filters?.status) {
+      params.append('status', filters.status)
+    }
+    if (filters?.busca) {
+      params.append('busca', filters.busca)
+    }
+    if (filters?.data_inicio) {
+      params.append('data_inicio', filters.data_inicio)
+    }
+    if (filters?.data_fim) {
+      params.append('data_fim', filters.data_fim)
+    }
 
     return apiRequest(`/qrcodes?${params.toString()}`)
   },
@@ -781,13 +818,27 @@ export const extratoAPI = {
     }
   }> => {
     const params = new URLSearchParams()
-    if (filters?.page) params.append('page', filters.page.toString())
-    if (filters?.limit) params.append('limit', filters.limit.toString())
-    if (filters?.periodo) params.append('periodo', filters.periodo)
-    if (filters?.data_inicio) params.append('data_inicio', filters.data_inicio)
-    if (filters?.data_fim) params.append('data_fim', filters.data_fim)
-    if (filters?.busca) params.append('busca', filters.busca)
-    if (filters?.tipo) params.append('tipo', filters.tipo)
+    if (filters?.page) {
+      params.append('page', filters.page.toString())
+    }
+    if (filters?.limit) {
+      params.append('limit', filters.limit.toString())
+    }
+    if (filters?.periodo) {
+      params.append('periodo', filters.periodo)
+    }
+    if (filters?.data_inicio) {
+      params.append('data_inicio', filters.data_inicio)
+    }
+    if (filters?.data_fim) {
+      params.append('data_fim', filters.data_fim)
+    }
+    if (filters?.busca) {
+      params.append('busca', filters.busca)
+    }
+    if (filters?.tipo) {
+      params.append('tipo', filters.tipo)
+    }
 
     return apiRequest(`/extrato?${params.toString()}`)
   },
@@ -817,9 +868,15 @@ export const extratoAPI = {
   }> => {
     const params = new URLSearchParams()
     params.append('limit', '1') // Apenas para obter o resumo
-    if (filters?.periodo) params.append('periodo', filters.periodo)
-    if (filters?.data_inicio) params.append('data_inicio', filters.data_inicio)
-    if (filters?.data_fim) params.append('data_fim', filters.data_fim)
+    if (filters?.periodo) {
+      params.append('periodo', filters.periodo)
+    }
+    if (filters?.data_inicio) {
+      params.append('data_inicio', filters.data_inicio)
+    }
+    if (filters?.data_fim) {
+      params.append('data_fim', filters.data_fim)
+    }
 
     return apiRequest(`/extrato?${params.toString()}`)
   },
@@ -841,7 +898,7 @@ export const accountAPI = {
     return apiRequest('/user/profile')
   },
 
-  updateProfile: async (data: any) => {
+  updateProfile: async (_data: Record<string, unknown>) => {
     // return apiRequest('/account/profile', {
     //   method: 'PUT',
     //   body: JSON.stringify(data),
@@ -1066,13 +1123,27 @@ export const withdrawalsAPI = {
     }
   }> => {
     const params = new URLSearchParams()
-    if (filters?.page) params.append('page', filters.page.toString())
-    if (filters?.limit) params.append('limit', filters.limit.toString())
-    if (filters?.status) params.append('status', filters.status)
-    if (filters?.tipo) params.append('tipo', filters.tipo)
-    if (filters?.busca) params.append('busca', filters.busca)
-    if (filters?.data_inicio) params.append('data_inicio', filters.data_inicio)
-    if (filters?.data_fim) params.append('data_fim', filters.data_fim)
+    if (filters?.page) {
+      params.append('page', filters.page.toString())
+    }
+    if (filters?.limit) {
+      params.append('limit', filters.limit.toString())
+    }
+    if (filters?.status) {
+      params.append('status', filters.status)
+    }
+    if (filters?.tipo) {
+      params.append('tipo', filters.tipo)
+    }
+    if (filters?.busca) {
+      params.append('busca', filters.busca)
+    }
+    if (filters?.data_inicio) {
+      params.append('data_inicio', filters.data_inicio)
+    }
+    if (filters?.data_fim) {
+      params.append('data_fim', filters.data_fim)
+    }
 
     return apiRequest(`/admin/withdrawals?${params.toString()}`)
   },
@@ -1306,14 +1377,30 @@ export const financialAPI = {
     }
   }> => {
     const params = new URLSearchParams()
-    if (filters?.page) params.append('page', filters.page.toString())
-    if (filters?.limit) params.append('limit', filters.limit.toString())
-    if (filters?.status) params.append('status', filters.status)
-    if (filters?.meio) params.append('meio', filters.meio)
-    if (filters?.tipo) params.append('tipo', filters.tipo)
-    if (filters?.busca) params.append('busca', filters.busca)
-    if (filters?.data_inicio) params.append('data_inicio', filters.data_inicio)
-    if (filters?.data_fim) params.append('data_fim', filters.data_fim)
+    if (filters?.page) {
+      params.append('page', filters.page.toString())
+    }
+    if (filters?.limit) {
+      params.append('limit', filters.limit.toString())
+    }
+    if (filters?.status) {
+      params.append('status', filters.status)
+    }
+    if (filters?.meio) {
+      params.append('meio', filters.meio)
+    }
+    if (filters?.tipo) {
+      params.append('tipo', filters.tipo)
+    }
+    if (filters?.busca) {
+      params.append('busca', filters.busca)
+    }
+    if (filters?.data_inicio) {
+      params.append('data_inicio', filters.data_inicio)
+    }
+    if (filters?.data_fim) {
+      params.append('data_fim', filters.data_fim)
+    }
 
     return apiRequest(`/admin/financial/transactions?${params.toString()}`)
   },
@@ -1341,12 +1428,21 @@ export const financialAPI = {
     }
   }> => {
     const params = new URLSearchParams()
-    if (filters?.page) params.append('page', filters.page.toString())
-    if (filters?.limit) params.append('limit', filters.limit.toString())
-    if (filters?.busca) params.append('busca', filters.busca)
-    if (filters?.tipo_usuario)
+    if (filters?.page) {
+      params.append('page', filters.page.toString())
+    }
+    if (filters?.limit) {
+      params.append('limit', filters.limit.toString())
+    }
+    if (filters?.busca) {
+      params.append('busca', filters.busca)
+    }
+    if (filters?.tipo_usuario) {
       params.append('tipo_usuario', filters.tipo_usuario)
-    if (filters?.ordenar) params.append('ordenar', filters.ordenar)
+    }
+    if (filters?.ordenar) {
+      params.append('ordenar', filters.ordenar)
+    }
 
     return apiRequest(`/admin/financial/wallets?${params.toString()}`)
   },
@@ -1372,13 +1468,27 @@ export const financialAPI = {
     }
   }> => {
     const params = new URLSearchParams()
-    if (filters?.page) params.append('page', filters.page.toString())
-    if (filters?.limit) params.append('limit', filters.limit.toString())
-    if (filters?.status) params.append('status', filters.status)
-    if (filters?.meio) params.append('meio', filters.meio)
-    if (filters?.busca) params.append('busca', filters.busca)
-    if (filters?.data_inicio) params.append('data_inicio', filters.data_inicio)
-    if (filters?.data_fim) params.append('data_fim', filters.data_fim)
+    if (filters?.page) {
+      params.append('page', filters.page.toString())
+    }
+    if (filters?.limit) {
+      params.append('limit', filters.limit.toString())
+    }
+    if (filters?.status) {
+      params.append('status', filters.status)
+    }
+    if (filters?.meio) {
+      params.append('meio', filters.meio)
+    }
+    if (filters?.busca) {
+      params.append('busca', filters.busca)
+    }
+    if (filters?.data_inicio) {
+      params.append('data_inicio', filters.data_inicio)
+    }
+    if (filters?.data_fim) {
+      params.append('data_fim', filters.data_fim)
+    }
 
     return apiRequest(`/admin/financial/deposits?${params.toString()}`)
   },
@@ -1427,12 +1537,24 @@ export const financialAPI = {
     }
   }> => {
     const params = new URLSearchParams()
-    if (filters?.page) params.append('page', filters.page.toString())
-    if (filters?.limit) params.append('limit', filters.limit.toString())
-    if (filters?.status) params.append('status', filters.status)
-    if (filters?.busca) params.append('busca', filters.busca)
-    if (filters?.data_inicio) params.append('data_inicio', filters.data_inicio)
-    if (filters?.data_fim) params.append('data_fim', filters.data_fim)
+    if (filters?.page) {
+      params.append('page', filters.page.toString())
+    }
+    if (filters?.limit) {
+      params.append('limit', filters.limit.toString())
+    }
+    if (filters?.status) {
+      params.append('status', filters.status)
+    }
+    if (filters?.busca) {
+      params.append('busca', filters.busca)
+    }
+    if (filters?.data_inicio) {
+      params.append('data_inicio', filters.data_inicio)
+    }
+    if (filters?.data_fim) {
+      params.append('data_fim', filters.data_fim)
+    }
 
     return apiRequest(`/admin/financial/withdrawals?${params.toString()}`)
   },
@@ -1596,7 +1718,7 @@ export interface NotificationItem {
   type: string
   title: string
   body: string
-  data?: Record<string, any>
+  data?: Record<string, unknown>
   read_at?: string | null
   created_at: string
 }
@@ -1670,7 +1792,6 @@ export async function getNotificationsStats(
 export interface NotificationPreferences {
   id?: number
   user_id: string
-  push_enabled: boolean
   notify_transactions: boolean
   notify_deposits: boolean
   notify_withdrawals: boolean
@@ -1725,7 +1846,6 @@ export async function toggleNotificationPreference(
   token: string,
   secret: string,
   type:
-    | 'push_enabled'
     | 'notify_transactions'
     | 'notify_deposits'
     | 'notify_withdrawals'
@@ -2116,18 +2236,27 @@ export const adminDashboardAPI = {
   }> {
     const queryParams = new URLSearchParams()
 
-    if (params?.status !== undefined)
+    if (params?.status !== undefined) {
       queryParams.append('status', params.status.toString())
-    if (params?.search) queryParams.append('search', params.search)
-    if (params?.per_page)
+    }
+    if (params?.search) {
+      queryParams.append('search', params.search)
+    }
+    if (params?.per_page) {
       queryParams.append('per_page', params.per_page.toString())
-    if (params?.page) queryParams.append('page', params.page.toString())
-    if (params?.order_by) queryParams.append('order_by', params.order_by)
-    if (params?.order_direction)
+    }
+    if (params?.page) {
+      queryParams.append('page', params.page.toString())
+    }
+    if (params?.order_by) {
+      queryParams.append('order_by', params.order_by)
+    }
+    if (params?.order_direction) {
       queryParams.append('order_direction', params.order_direction)
+    }
 
     const query = queryParams.toString()
-    return apiRequest(`/admin/dashboard/users${query ? '?' + query : ''}`)
+    return apiRequest(`/admin/dashboard/users${query ? `?${query}` : ''}`)
   },
 
   /**
@@ -2147,13 +2276,19 @@ export const adminDashboardAPI = {
   }> {
     const queryParams = new URLSearchParams()
 
-    if (params?.type) queryParams.append('type', params.type)
-    if (params?.status) queryParams.append('status', params.status)
-    if (params?.limit) queryParams.append('limit', params.limit.toString())
+    if (params?.type) {
+      queryParams.append('type', params.type)
+    }
+    if (params?.status) {
+      queryParams.append('status', params.status)
+    }
+    if (params?.limit) {
+      queryParams.append('limit', params.limit.toString())
+    }
 
     const query = queryParams.toString()
     return apiRequest(
-      `/admin/dashboard/transactions${query ? '?' + query : ''}`,
+      `/admin/dashboard/transactions${query ? `?${query}` : ''}`,
     )
   },
 
@@ -2529,13 +2664,18 @@ export const adminUsersAPI = {
   }> {
     const queryParams = new URLSearchParams()
 
-    if (params?.search) queryParams.append('search', params.search)
-    if (params?.per_page)
+    if (params?.search) {
+      queryParams.append('search', params.search)
+    }
+    if (params?.per_page) {
       queryParams.append('per_page', params.per_page.toString())
-    if (params?.page) queryParams.append('page', params.page.toString())
+    }
+    if (params?.page) {
+      queryParams.append('page', params.page.toString())
+    }
 
     const query = queryParams.toString()
-    return apiRequest(`/admin/users-managers${query ? '?' + query : ''}`)
+    return apiRequest(`/admin/users-managers${query ? `?${query}` : ''}`)
   },
 
   /**
@@ -2618,6 +2758,60 @@ export const adminUsersAPI = {
     })
     return apiRequest(`/admin/dashboard/users?${queryParams.toString()}`)
   },
+
+  /**
+   * Listar adquirentes com filtros e paginação
+   */
+  async listAcquirers(params?: {
+    search?: string
+    status?: number | string | null
+    per_page?: number
+    page?: number
+  }): Promise<{
+    success: boolean
+    data: {
+      acquirers: Acquirer[]
+      pagination: {
+        current_page: number
+        per_page: number
+        total: number
+        last_page: number
+      }
+    }
+  }> {
+    const queryParams = new URLSearchParams()
+
+    if (params?.search) {
+      queryParams.append('search', params.search)
+    }
+    if (params?.status !== undefined && params?.status !== null) {
+      queryParams.append('status', params.status.toString())
+    }
+    if (params?.per_page) {
+      queryParams.append('per_page', params.per_page.toString())
+    }
+    if (params?.page) {
+      queryParams.append('page', params.page.toString())
+    }
+
+    const query = queryParams.toString()
+    return apiRequest(`/admin/acquirers${query ? `?${query}` : ''}`)
+  },
+
+  /**
+   * Alternar status do adquirente (ativar/desativar)
+   */
+  async toggleAcquirerStatus(acquirerId: number): Promise<{
+    success: boolean
+    data: {
+      message: string
+      acquirer: Acquirer
+    }
+  }> {
+    return apiRequest(`/admin/acquirers/${acquirerId}/toggle-status`, {
+      method: 'POST',
+    })
+  },
 }
 
 // Alias de compatibilidade para código legado
@@ -2685,4 +2879,18 @@ export interface UpdateManagerData {
   telefone?: string
   gerente_percentage?: number
   status?: number
+}
+
+// ==================== Interfaces de Adquirentes ====================
+
+export interface Acquirer {
+  id: number
+  adquirente: string
+  status: boolean | number
+  url: string
+  referencia: string
+  is_default: boolean | number
+  is_default_card_billet: boolean | number
+  created_at?: string
+  updated_at?: string
 }
