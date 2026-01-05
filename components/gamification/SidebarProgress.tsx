@@ -23,6 +23,7 @@ export const SidebarProgress = memo<SidebarProgressProps>(
           remainingAmount: 0,
           nextLevelName: 'Prata',
           formattedMin: 'R$ 0,00',
+          formattedCurrent: formatCurrency(totalDeposited),
           formattedTarget: 'R$ 100.000,00',
           formattedRemaining: 'R$ 100.000,00',
         }
@@ -48,6 +49,7 @@ export const SidebarProgress = memo<SidebarProgressProps>(
         remainingAmount,
         nextLevelName,
         formattedMin: formatCurrency(min),
+        formattedCurrent: formatCurrency(totalDeposited),
         formattedTarget: formatCurrency(max),
         formattedRemaining: formatCurrency(remainingAmount),
       }
@@ -134,7 +136,7 @@ export const SidebarProgress = memo<SidebarProgressProps>(
           </div>
 
           <div className="flex justify-between items-center text-xs text-gray-600">
-            <span>{progressData.formattedMin}</span>
+            <span>{progressData.formattedCurrent}</span>
             <span>{progressData.formattedTarget}</span>
           </div>
 
