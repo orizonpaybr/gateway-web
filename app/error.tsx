@@ -6,15 +6,6 @@ import { AlertCircle, RefreshCw, Home } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 
-interface WindowWithAPM extends Window {
-  __APM__?: {
-    captureException: (
-      error: Error,
-      options?: { extra?: Record<string, unknown> },
-    ) => void
-  }
-}
-
 export default function GlobalError({
   error,
   reset,
@@ -26,23 +17,6 @@ export default function GlobalError({
 
   useEffect(() => {
     console.error('GlobalError capturou um erro:', error)
-
-    if (typeof window !== 'undefined') {
-      const windowWithAPM = window as WindowWithAPM
-      if (windowWithAPM.__APM__) {
-        try {
-          windowWithAPM.__APM__.captureException(error, {
-            extra: {
-              digest: error.digest,
-              message: error.message,
-              stack: error.stack,
-            },
-          })
-        } catch (e) {
-          console.warn('Erro ao enviar para APM:', e)
-        }
-      }
-    }
   }, [error])
 
   const handleGoHome = () => {

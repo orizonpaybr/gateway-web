@@ -6,15 +6,6 @@ import { AlertCircle, RefreshCw, Home } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 
-interface WindowWithAPM extends Window {
-  __APM__?: {
-    captureException: (
-      error: Error,
-      options?: { extra?: Record<string, unknown> },
-    ) => void
-  }
-}
-
 interface Props {
   children: ReactNode
   fallback?: ReactNode
@@ -56,21 +47,6 @@ export class ErrorBoundary extends Component<Props, State> {
 
     if (this.props.onError) {
       this.props.onError(error, errorInfo)
-    }
-
-    if (typeof window !== 'undefined') {
-      const windowWithAPM = window as WindowWithAPM
-      if (windowWithAPM.__APM__) {
-        try {
-          windowWithAPM.__APM__.captureException(error, {
-            extra: {
-              componentStack: errorInfo.componentStack,
-            },
-          })
-        } catch (e) {
-          console.warn('Erro ao enviar para APM:', e)
-        }
-      }
     }
   }
 

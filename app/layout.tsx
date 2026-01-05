@@ -3,7 +3,6 @@ import { Toaster } from 'sonner'
 import { Providers } from '@/components/Providers'
 import { ReactQueryProvider } from '@/components/providers/ReactQueryProvider'
 import { ErrorBoundaryWrapper } from '@/components/ErrorBoundary'
-import '@/lib/monitoring'
 
 import type { Metadata } from 'next'
 
