@@ -26,6 +26,7 @@ gateway-web/
 ### Backend (Laravel/PHP)
 
 O backend já possui toda a estrutura necessária:
+
 - **Endpoint**: `POST /api/pix/generate-qr` (existente em `UserController@generatePixQR`)
 - **Tabelas**: `solicitacoes`, `depositos_api`
 - **Callbacks**: Sistema automático de callbacks dos adquirentes
@@ -49,24 +50,29 @@ No **Sidebar**, dentro do menu "Pix", há um novo item:
 Ao acessar `/dashboard/pix/depositar`, o usuário encontra:
 
 #### Informações Exibidas:
+
 - **Saldo Disponível**: Exibe o saldo atual da conta
 - **Como Funciona**: Passo a passo visual do processo
 - **Valores Sugeridos**: Botões rápidos com valores pré-definidos (R$ 50, R$ 100, R$ 200, R$ 500, R$ 1.000)
 - **Informações Importantes**: Tempo de processamento, segurança e disponibilidade
 
 #### Ações Disponíveis:
+
 - Clicar em um valor sugerido ou no botão "Gerar QR Code PIX"
 - Abre o modal de depósito
 
 ### 3. Modal de Depósito (PixDepositModal)
 
 #### Etapa 1: Formulário
+
 - **Valor do Depósito**: Campo com máscara de moeda brasileira
 - **Descrição (Opcional)**: Campo de texto livre
 - **Validações**: Valor mínimo configur��vel (padrão: R$ 1,00)
 
 #### Etapa 2: QR Code Gerado
+
 Após submeter o formulário:
+
 1. **Chamada à API**: `POST /api/pix/generate-qr`
 2. **Geração do QR Code**: Sistema usa o adquirente padrão do usuário
 3. **Exibição**:
@@ -76,12 +82,14 @@ Após submeter o formulário:
    - Botões de ação (Copiar/Cancelar)
 
 #### Etapa 3: Aguardando Pagamento
+
 - **Polling Automático**: Verifica status a cada 5 segundos
 - **Status Visual**: Badge amarelo "Aguardando Pagamento"
 - **Atualização Manual**: Botão para forçar verificação
 - **Indicador**: Exibe status atual da transação
 
 #### Etapa 4: Pagamento Confirmado
+
 - **Badge Verde**: "Pagamento Confirmado!"
 - **Mensagem**: Confirmação do valor creditado
 - **Auto-fechamento**: Modal fecha automaticamente após 3 segundos
@@ -95,23 +103,26 @@ Hook otimizado com React Query para gerenciar o ciclo de vida do depósito:
 
 ```typescript
 const {
-  depositData,        // Dados do QR Code gerado
-  isGenerating,       // Estado de carregamento
-  isPolling,          // Se está verificando status
-  isPaid,             // Se o depósito foi pago
-  depositStatus,      // Status atual da transação
-  generateDeposit,    // Função para gerar QR Code
-  cancelDeposit,      // Função para cancelar
-  checkStatus,        // Função para verificar status manualmente
-  error,              // Erros da operação
+  depositData, // Dados do QR Code gerado
+  isGenerating, // Estado de carregamento
+  isPolling, // Se está verificando status
+  isPaid, // Se o depósito foi pago
+  depositStatus, // Status atual da transação
+  generateDeposit, // Função para gerar QR Code
+  cancelDeposit, // Função para cancelar
+  checkStatus, // Função para verificar status manualmente
+  error, // Erros da operação
 } = usePixDeposit({
   enablePolling: true,
   pollingInterval: 5000,
-  onSuccess: (data) => { /* callback */ },
+  onSuccess: (data) => {
+    /* callback */
+  },
 })
 ```
 
 **Features:**
+
 - ✅ Polling automático configurável
 - ✅ Invalidação automática de cache
 - ✅ Tratamento de erros
@@ -124,7 +135,7 @@ const {
 Modal completo e responsivo:
 
 ```typescript
-<PixDepositModal 
+<PixDepositModal
   isOpen={boolean}
   onClose={function}
   minAmount={number}  // Valor mínimo (padrão: 1)
@@ -132,6 +143,7 @@ Modal completo e responsivo:
 ```
 
 **Features:**
+
 - ✅ Formulário com validação
 - ✅ Máscara de moeda
 - ✅ Exibição de QR Code
@@ -146,6 +158,7 @@ Modal completo e responsivo:
 Página dedicada com UX otimizada:
 
 **Features:**
+
 - ✅ Exibição de saldo atual
 - ✅ Tutorial visual (4 passos)
 - ✅ Valores sugeridos (quick actions)
@@ -277,6 +290,7 @@ Armazena todas as solicitações de depósito:
 ### Callbacks Automáticos
 
 Cada adquirente possui seu controller de callback:
+
 - `PixupController@callbackDeposit`
 - `BSPayController@callbackDeposit`
 - `XDPagController@callbackDeposit`
@@ -284,13 +298,13 @@ Cada adquirente possui seu controller de callback:
 - E outros...
 
 Quando um pagamento é confirmado:
+
 1. Atualiza status em `solicitacoes`
 2. Incrementa saldo do usuário
 3. Registra transação em `transactions`
 4. Processa splits (se configurado)
 5. Processa comissão de gerente (se existir)
 6. Envia notificação push (via Observer)
-7. Integra com Utmify (se configurado)
 
 ## 🎨 UX/UI Design
 
@@ -435,6 +449,7 @@ console.log('Status updated:', depositStatus)
 ### Problema: QR Code não gera
 
 **Solução**:
+
 1. Verificar se adquirente está configurado
 2. Verificar logs do backend
 3. Verificar credenciais do adquirente
@@ -443,6 +458,7 @@ console.log('Status updated:', depositStatus)
 ### Problema: Polling não funciona
 
 **Solução**:
+
 1. Verificar se transaction ID está correto
 2. Verificar endpoint `/api/transactions/{id}`
 3. Verificar cache do React Query
@@ -451,6 +467,7 @@ console.log('Status updated:', depositStatus)
 ### Problema: Saldo não atualiza
 
 **Solução**:
+
 1. Verificar se callback foi recebido
 2. Verificar logs do adquirente
 3. Verificar status na tabela `solicitacoes`
@@ -480,12 +497,14 @@ console.log('Status updated:', depositStatus)
 ## 🎉 Conclusão
 
 A implementação está completa e funcional! O usuário agora pode:
+
 - Depositar saldo via PIX de forma simples
 - Acompanhar o status em tempo real
 - Receber confirmação automática
 - Ter uma experiência fluida e intuitiva
 
 Tudo foi implementado seguindo:
+
 - ✅ Padrões do projeto
 - ✅ Clean Code
 - ✅ DRY (Don't Repeat Yourself)
@@ -497,4 +516,3 @@ Tudo foi implementado seguindo:
 ---
 
 **Desenvolvido com ❤️ seguindo as melhores práticas**
-

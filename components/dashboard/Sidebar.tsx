@@ -18,7 +18,6 @@ import {
   ChevronUp,
   ExternalLink,
   X,
-  Activity,
   LayoutDashboard,
   Users,
   DollarSign,
@@ -27,7 +26,6 @@ import {
 import { DocumentIcon } from '@/components/icons/DocumentIcon'
 import { PixIcon } from '@/components/icons/PixIcon'
 import { WhatsAppIcon } from '@/components/icons/WhatsAppIcon'
-import { UtmifyModal } from '@/components/modals/UtmifyModal'
 import { AnimatedAvatar } from '@/components/ui/AnimatedAvatar'
 import { Button } from '@/components/ui/Button'
 import { useAuth } from '@/contexts/AuthContext'
@@ -108,7 +106,6 @@ export const Sidebar = memo(() => {
   const [isHydrated, setIsHydrated] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
   const { isMobileMenuOpen, closeMobileMenu } = useMobileMenu()
-  const [isUtmifyModalOpen, setIsUtmifyModalOpen] = useState(false)
 
   // Hook otimizado para gamificação da Sidebar
   const {
@@ -328,28 +325,6 @@ export const Sidebar = memo(() => {
                 </li>
               )
             })}
-
-            <li>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                  setIsUtmifyModalOpen(true)
-                  if (isMobile) {
-                    closeMobileMenu()
-                  }
-                }}
-                className={cn(
-                  'flex items-center justify-between w-full px-4 py-3 rounded-lg text-sm font-medium',
-                  'text-gray-700 hover:bg-gray-100',
-                )}
-              >
-                <div className="flex items-center gap-3">
-                  <Activity size={18} className="text-purple-600" />
-                  <span>Integração Utmify</span>
-                </div>
-              </Button>
-            </li>
 
             {authReady && Number(user?.permission) === 3 && (
               <>
@@ -705,11 +680,6 @@ export const Sidebar = memo(() => {
           </div>
         </div>
       </aside>
-
-      <UtmifyModal
-        isOpen={isUtmifyModalOpen}
-        onClose={() => setIsUtmifyModalOpen(false)}
-      />
     </>
   )
 })
