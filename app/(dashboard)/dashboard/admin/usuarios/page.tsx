@@ -40,10 +40,11 @@ export default function AdminUsersPage() {
   const [isFeesOpen, setIsFeesOpen] = useState(false)
   const [isAffiliateOpen, setIsAffiliateOpen] = useState(false)
 
-  const isAdmin = useMemo(
+  const isAdminOrManager = useMemo(
     () =>
       !!user &&
-      Number(user.permission) === USER_PERMISSION.ADMIN &&
+      (Number(user.permission) === USER_PERMISSION.ADMIN ||
+        Number(user.permission) === USER_PERMISSION.MANAGER) &&
       !authLoading,
     [user, authLoading],
   )
@@ -54,10 +55,10 @@ export default function AdminUsersPage() {
       per_page: 20,
       page: currentPage,
     },
-    isAdmin,
+    isAdminOrManager,
   )
 
-  const { data: userStats, isLoading: statsLoading } = useUserStats(isAdmin)
+  const { data: userStats, isLoading: statsLoading } = useUserStats(isAdminOrManager)
 
   const approveMutation = useApproveUser()
   const toggleBlockMutation = useToggleBlockUser()
