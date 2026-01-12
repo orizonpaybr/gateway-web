@@ -1,6 +1,6 @@
 'use client'
 
-import { memo, useState, useCallback } from 'react'
+import { memo, useState, useCallback, useEffect } from 'react'
 
 import { Settings } from 'lucide-react'
 
@@ -8,13 +8,29 @@ import { ConfiguracoesContaTab } from '@/components/dashboard/ConfiguracoesConta
 import { ConfiguracoesIntegracaoTab } from '@/components/dashboard/ConfiguracoesIntegracaoTab'
 import { ConfiguracoesNotificacoesTab } from '@/components/dashboard/ConfiguracoesNotificacoesTab'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/Tabs'
+import { useAuth } from '@/contexts/AuthContext'
+import { USER_STATUS } from '@/lib/constants'
 
 const ConfiguracoesPage = memo(() => {
+  const { user } = useAuth()
   const [activeTab, setActiveTab] = useState('conta')
+  const isPending = user?.status === USER_STATUS.PENDING
 
   const handleTabChange = useCallback((value: string) => {
+    // Se o usuário tentar acessar a aba de integração e estiver pendente, redirecionar para conta
+    if (value === 'integracao' && isPending) {
+      setActiveTab('conta')
+      return
+    }
     setActiveTab(value)
-  }, [])
+  }, [isPending])
+
+  // Garantir que se o usuário estiver pendente e a aba ativa for integração, mude para conta
+  useEffect(() => {
+    if (isPending && activeTab === 'integracao') {
+      setActiveTab('conta')
+    }
+  }, [isPending, activeTab])
 
   return (
     <div className="p-4 md:p-6 space-y-6">
@@ -39,7 +55,9 @@ const ConfiguracoesPage = memo(() => {
       >
         <TabsList className="w-full sm:w-auto">
           <TabsTrigger value="conta">CONTA</TabsTrigger>
-          <TabsTrigger value="integracao">INTEGRAÇÃO</TabsTrigger>
+          {!isPending && (
+            <TabsTrigger value="integracao">INTEGRAÇÃO</TabsTrigger>
+          )}
           <TabsTrigger value="notificacoes">NOTIFICAÇÕES</TabsTrigger>
         </TabsList>
 
@@ -47,9 +65,11 @@ const ConfiguracoesPage = memo(() => {
           <ConfiguracoesContaTab />
         </TabsContent>
 
-        <TabsContent value="integracao">
-          <ConfiguracoesIntegracaoTab />
-        </TabsContent>
+        {!isPending && (
+          <TabsContent value="integracao">
+            <ConfiguracoesIntegracaoTab />
+          </TabsContent>
+        )}
 
         <TabsContent value="notificacoes">
           <ConfiguracoesNotificacoesTab />
