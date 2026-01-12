@@ -1,4 +1,4 @@
-# Guia de Configuração - HorsePay
+# Guia de Configuração - Orizon Pay
 
 ## 📋 Pré-requisitos
 
@@ -19,13 +19,17 @@ yarn install
 Crie um arquivo `.env.local` na raiz do projeto:
 
 ```env
-# API Configuration
-NEXT_PUBLIC_API_URL=https://api.horsepay.com
-NEXT_PUBLIC_API_VERSION=v1
+# Configurações da API Backend Laravel
+NEXT_PUBLIC_API_URL=https://playgameoficial.com.br/api
 
-# Environment
+# URL do Frontend (para redirects)
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+
+# Ambiente de execução
 NEXT_PUBLIC_ENV=development
 ```
+
+> **Nota**: Não é necessário configurar `JWT_SECRET` no frontend. O backend Laravel gerencia toda a validação de tokens.
 
 ### 3. Executar em Desenvolvimento
 
@@ -42,6 +46,89 @@ yarn build
 yarn start
 ```
 
+## 🔧 Comandos Disponíveis
+
+```bash
+# Desenvolvimento
+yarn dev
+
+# Build de produção
+yarn build
+
+# Executar produção
+yarn start
+
+# Verificar erros TypeScript
+yarn tsc --noEmit
+
+# Verificar problemas de lint
+yarn lint
+
+# Limpar cache e reinstalar
+rm -rf .next node_modules yarn.lock
+yarn install
+```
+
+## 🔐 Autenticação
+
+### Como Funciona
+
+1. **Login**: Usuário faz login → Backend retorna token
+2. **Armazenamento**: Token é salvo no `localStorage`
+3. **Requisições**: Token é enviado no header `Authorization: Bearer {token}`
+4. **Validação**: Backend valida token em cada requisição
+
+### Fluxo de Autenticação
+
+```
+Frontend                Backend
+   |                       |
+   |--POST /api/auth/login->|
+   |   {username, password} |
+   |                       |
+   |<--{token, user}-------|
+   |                       |
+   |--Armazena no          |
+   |  localStorage         |
+   |                       |
+   |--GET /api/balance---->|
+   |  Headers:             |
+   |  Authorization:       |
+   |  Bearer {token}       |
+   |                       |
+   |<--{data}--------------|
+```
+
+### Autenticação 2FA
+
+Se o usuário tiver 2FA ativado:
+
+1. Login retorna `requires_2fa: true` e `temp_token`
+2. Modal de 2FA é exibido
+3. Usuário digita PIN
+4. Backend valida e retorna token final
+5. Token é armazenado e componentes recarregam dados
+
+## 🎨 Configuração Visual
+
+### Cores Orizon
+
+As cores estão configuradas no `tailwind.config.ts`:
+
+- **Primary**: `#007BC7` (Azul Orizon)
+- **Primary Hover**: `#006BA8`
+- **Dark**: `#0C243B`
+- **Secondary**: `#009EE0`
+- **Accent**: `#FF8A00` (Laranja)
+- **Background**: `#FFFFFF`
+
+### Logo
+
+A logo está localizada em `/public/LOGO-ORIZON-AZUL-PRETA.png` e é usada em:
+- Página de login
+- Página de cadastro
+- Sidebar do dashboard
+
 ## 📁 Estrutura de Pastas
 
 ```
@@ -55,71 +142,11 @@ gateway-web/
 ├── components/          # Componentes React
 │   ├── ui/             # Componentes de UI
 │   └── dashboard/      # Componentes do dashboard
-├── lib/                # Utilitários
+├── contexts/            # Contextos React
+├── hooks/               # Hooks customizados
+├── lib/                # Utilitários e API
 ├── types/              # Definições de tipos TypeScript
-├── public/             # Arquivos estáticos
-└── ...configs          # Arquivos de configuração
-```
-
-## 🔧 Configurações Importantes
-
-### Tailwind CSS
-
-O projeto usa Tailwind CSS com configuração personalizada em `tailwind.config.ts`:
-
-- Cores primárias customizadas
-- Tema estendido
-- Utilitários personalizados
-
-### TypeScript
-
-Configuração strict habilitada para maior segurança de tipos.
-
-### Formulários
-
-Todos os formulários usam:
-
-- **React Hook Form** para gerenciamento
-- **Zod** para validação de esquemas
-
-## 🎯 Próximas Etapas
-
-1. **Integrar com Backend**
-
-   - Configurar cliente HTTP (axios/fetch)
-   - Implementar serviços de API
-   - Adicionar interceptors para autenticação
-
-2. **Autenticação Real**
-
-   - Implementar login com JWT
-   - Proteção de rotas
-   - Refresh token
-
-3. **Estado Global** (opcional)
-
-   - Considerar Zustand ou Context API
-   - Gerenciar estado do usuário
-   - Cache de dados
-
-4. **Gráficos**
-   - Integrar Recharts nos dashboards
-   - Adicionar dados reais
-
-## 📝 Scripts Disponíveis
-
-```bash
-# Desenvolvimento
-yarn dev
-
-# Build
-yarn build
-
-# Produção
-yarn start
-
-# Lint
-yarn lint
+└── public/             # Arquivos estáticos
 ```
 
 ## 🐛 Troubleshooting
@@ -146,10 +173,48 @@ yarn tsc --noEmit
 yarn dev
 ```
 
-## 📞 Suporte
+### Token desaparece após F5
 
-Para dúvidas sobre a implementação, consulte:
+O sistema implementa persistência automática de token. Se o problema persistir:
 
-- README.md
-- Documentação do Next.js: https://nextjs.org/docs
-- Documentação do Tailwind: https://tailwindcss.com/docs
+1. Verifique se o token está sendo salvo no `localStorage`
+2. Verifique o console do navegador para erros
+3. Verifique se o backend está retornando o token corretamente
+
+### Erro 401 (Unauthorized)
+
+1. Verifique se o token está sendo enviado no header
+2. Verifique se o token não expirou (tokens expiram em 24h)
+3. Faça logout e login novamente
+
+### Página em branco
+
+1. Verifique o console do navegador
+2. Verifique o terminal onde o `yarn dev` está rodando
+3. Verifique se todas as dependências foram instaladas
+
+## 🔍 Verificações de Configuração
+
+### Verificar se está tudo configurado:
+
+1. ✅ Arquivo `.env.local` existe
+2. ✅ `NEXT_PUBLIC_API_URL` está configurado
+3. ✅ Dependências instaladas (`yarn install`)
+4. ✅ Servidor de desenvolvimento rodando (`yarn dev`)
+5. ✅ Backend Laravel está acessível
+
+## 📝 Notas Importantes
+
+1. **SSR Compatibility**: Todos os hooks são compatíveis com SSR
+2. **Token Storage**: Tokens são armazenados no `localStorage` (apenas lado cliente)
+3. **CORS**: Backend deve estar configurado para aceitar requisições do frontend
+4. **HTTPS em Produção**: Use HTTPS em produção para segurança
+
+## 🆘 Suporte
+
+Para dúvidas sobre configuração:
+
+- Consulte [DEVELOPER_GUIDE.md](./DEVELOPER_GUIDE.md) para detalhes técnicos
+- Consulte [README.md](./README.md) para visão geral
+- Verifique os logs do console do navegador
+- Verifique os logs do terminal
