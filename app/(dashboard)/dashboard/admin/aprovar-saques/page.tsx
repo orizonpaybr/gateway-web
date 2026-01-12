@@ -71,7 +71,12 @@ const AprovarSaquesPage = memo(() => {
     id: number
   } | null>(null)
 
-  // Verificar se é admin (precisa vir antes de usar em React Query 'enabled')
+  // Verificar se é admin ou gerente (precisa vir antes de usar em React Query 'enabled')
+  const isAdminOrManager = useMemo(() => {
+    return !!user && (Number(user.permission) === USER_PERMISSION.ADMIN || Number(user.permission) === USER_PERMISSION.MANAGER)
+  }, [user])
+
+  // Verificar se é admin (apenas para configurações)
   const isAdmin = useMemo(() => {
     return !!user && Number(user.permission) === USER_PERMISSION.ADMIN
   }, [user])
@@ -140,8 +145,8 @@ const AprovarSaquesPage = memo(() => {
   ])
 
   // Buscar dados
-  const { data, isLoading } = useWithdrawals(filters, isAdmin)
-  const { data: stats } = useWithdrawalStats('hoje', isAdmin)
+  const { data, isLoading } = useWithdrawals(filters, isAdminOrManager)
+  const { data: stats } = useWithdrawalStats('hoje', isAdminOrManager)
 
   // Mutations
   const approveMutation = useApproveWithdrawal()
@@ -284,16 +289,18 @@ const AprovarSaquesPage = memo(() => {
               }}
               className="w-full sm:max-w-md"
             />
-            <div className="w-full sm:w-auto flex justify-end">
-              <Button
-                variant="outline"
-                size="sm"
-                icon={<Settings size={14} />}
-                onClick={() => setShowConfig((v) => !v)}
-              >
-                Configurar
-              </Button>
-            </div>
+            {isAdmin && (
+              <div className="w-full sm:w-auto flex justify-end">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  icon={<Settings size={14} />}
+                  onClick={() => setShowConfig((v) => !v)}
+                >
+                  Configurar
+                </Button>
+              </div>
+            )}
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
