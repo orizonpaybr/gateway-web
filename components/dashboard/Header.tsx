@@ -48,7 +48,7 @@ export const Header = memo(() => {
   const isHomePage = pathname === '/dashboard'
   const { data: stats } = useDashboardStats()
   const { data: accountData } = useAccountData()
-  // Verificar se usuário está pendente (status_text === 'Pendente' ou status_numeric = 5)
+  // Verificar se usuário está pendente (status_text === 'Pendente' ou status_numeric = 2)
   // Não mostrar badge para inativos (status = 0) ou aprovados (status = 1)
   const account =
     accountData && typeof accountData === 'object' && 'data' in accountData
@@ -64,7 +64,7 @@ export const Header = memo(() => {
       : null
   const isPending = account
     ? account.status_text === 'Pendente' ||
-      account.status_numeric === 5 ||
+      account.status_numeric === 2 ||
       account.status === 'pending'
     : false
   const twoFaEnabled =

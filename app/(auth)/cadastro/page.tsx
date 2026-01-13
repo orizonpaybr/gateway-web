@@ -232,7 +232,7 @@ export default function CadastroPage() {
       const response = await registerUser(fullData, documents)
 
       const isPendingApproval =
-        response.data?.pending_approval || response.data?.user?.status === 5
+        response.data?.pending_approval || response.data?.user?.status === 2
 
       toast.success(
         isPendingApproval ? 'Cadastro realizado!' : 'Conta criada com sucesso!',

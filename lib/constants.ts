@@ -2,7 +2,7 @@
 export const USER_STATUS = {
   INACTIVE: 0,
   ACTIVE: 1,
-  PENDING: 5,
+  PENDING: 2,
 } as const
 
 export type UserStatus = (typeof USER_STATUS)[keyof typeof USER_STATUS]

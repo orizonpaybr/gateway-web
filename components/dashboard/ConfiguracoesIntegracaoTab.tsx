@@ -10,9 +10,10 @@ import { Input } from '@/components/ui/Input'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import { useAuth } from '@/contexts/AuthContext'
 import { integrationAPI, twoFactorAPI } from '@/lib/api'
+import { USER_STATUS } from '@/lib/constants'
 
 export const ConfiguracoesIntegracaoTab = memo(() => {
-  const { authReady } = useAuth()
+  const { authReady, user } = useAuth()
   const [novoIP, setNovoIP] = useState('')
   const [isAddingIP, setIsAddingIP] = useState(false)
   const queryClient = useQueryClient()
@@ -239,6 +240,27 @@ export const ConfiguracoesIntegracaoTab = memo(() => {
     }
   }, [removeIPMutation])
 
+  // Verificar se usuário está pendente
+  const isPending = user?.status === USER_STATUS.PENDING
+
+  if (isPending) {
+    return (
+      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
+        <div className="flex items-start gap-3">
+          <AlertCircle className="text-yellow-600 shrink-0 mt-0.5" size={20} />
+          <div>
+            <h3 className="text-yellow-800 font-semibold mb-1">
+              Acesso Restrito
+            </h3>
+            <p className="text-yellow-700 text-sm">
+              Sua conta está pendente de aprovação. Você não pode acessar as configurações de integração até que sua conta seja aprovada.
+            </p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   if (isLoadingCredentials || isLoadingIPs) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -248,6 +270,30 @@ export const ConfiguracoesIntegracaoTab = memo(() => {
   }
 
   if (credentialsError || ipsError) {
+    // Verificar se o erro é devido ao status pendente (403)
+    const errorMessage = credentialsError?.message || ipsError?.message || ''
+    const isPendingError = errorMessage.includes('pendente') || 
+                          (credentialsError as any)?.response?.status === 403 ||
+                          (ipsError as any)?.response?.status === 403
+
+    if (isPendingError) {
+      return (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
+          <div className="flex items-start gap-3">
+            <AlertCircle className="text-yellow-600 shrink-0 mt-0.5" size={20} />
+            <div>
+              <h3 className="text-yellow-800 font-semibold mb-1">
+                Acesso Restrito
+              </h3>
+              <p className="text-yellow-700 text-sm">
+                Sua conta está pendente de aprovação. Você não pode acessar as configurações de integração até que sua conta seja aprovada.
+              </p>
+            </div>
+          </div>
+        </div>
+      )
+    }
+
     return (
       <div className="bg-red-50 border border-red-200 rounded-lg p-4">
         <p className="text-red-800">
