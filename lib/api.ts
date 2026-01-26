@@ -1915,16 +1915,12 @@ export interface AdminUser {
   gerente_id?: number
   banido?: boolean
   saque_bloqueado?: boolean
-  // Taxas personalizadas
+  // Taxas fixas (em centavos)
   taxas_personalizadas_ativas?: boolean
-  taxa_percentual_deposito?: number
   taxa_fixa_deposito?: number
-  valor_minimo_deposito?: number
-  taxa_percentual_pix?: number
-  taxa_minima_pix?: number
   taxa_fixa_pix?: number
-  valor_minimo_saque?: number
   limite_mensal_pf?: number
+  observacoes_taxas?: string | null
   // Afiliados
   is_affiliate?: boolean
   affiliate_percentage?: number
@@ -1948,14 +1944,6 @@ export interface AdminUser {
   adquirente_override?: boolean
   preferred_adquirente_card_billet?: string
   adquirente_card_billet_override?: boolean
-  // Campos de taxas adicionais
-  taxa_saque_api?: number
-  taxa_saque_crypto?: number
-  sistema_flexivel_ativo?: boolean
-  valor_minimo_flexivel?: number
-  taxa_fixa_baixos?: number
-  taxa_percentual_altos?: number
-  observacoes_taxas?: string | null
 }
 
 export interface CreateUserData {
@@ -2006,29 +1994,17 @@ export interface UpdateUserData {
   complemento?: string | null
   media_faturamento?: number
   gerente_id?: number
-  // Taxas personalizadas
+  // Taxas fixas (em centavos)
   taxas_personalizadas_ativas?: boolean
-  taxa_percentual_deposito?: number
   taxa_fixa_deposito?: number
-  valor_minimo_deposito?: number
-  taxa_percentual_pix?: number
-  taxa_minima_pix?: number
   taxa_fixa_pix?: number
-  valor_minimo_saque?: number
   limite_mensal_pf?: number
+  observacoes_taxas?: string | null
   // Campos de adquirente
   preferred_adquirente?: string
   adquirente_override?: boolean
   preferred_adquirente_card_billet?: string
   adquirente_card_billet_override?: boolean
-  // Campos de taxas adicionais
-  taxa_saque_api?: number
-  taxa_saque_crypto?: number
-  sistema_flexivel_ativo?: boolean
-  valor_minimo_flexivel?: number
-  taxa_fixa_baixos?: number
-  taxa_percentual_altos?: number
-  observacoes_taxas?: string | null
 }
 
 export interface AdjustBalanceData {
@@ -2465,26 +2441,15 @@ export const adminUsersAPI = {
   },
 
   /**
-   * Obter taxas padrão do sistema
+   * Obter taxas padrão do sistema (apenas taxas fixas em centavos)
    */
   async getDefaultFees(): Promise<{
     success: boolean
     data: {
       fees: {
-        taxa_percentual_deposito: number
         taxa_fixa_deposito: number
-        valor_minimo_deposito: number
-        taxa_percentual_pix: number
-        taxa_minima_pix: number
         taxa_fixa_pix: number
-        valor_minimo_saque: number
         limite_mensal_pf: number
-        taxa_saque_api: number
-        taxa_saque_crypto: number
-        sistema_flexivel_ativo: boolean
-        valor_minimo_flexivel: number
-        taxa_fixa_baixos: number
-        taxa_percentual_altos: number
       }
     }
   }> {

@@ -39,34 +39,22 @@ interface AccountData {
     taxes?: {
       deposit?: {
         fixed?: number
-        percent?: number
-        after_limit_fixed?: number
-        after_limit_percent?: number
       }
       withdraw?: {
         dashboard?: {
           fixed?: number
-          percent?: number
-          after_limit_fixed?: number
-          after_limit_percent?: number
         }
         api?: {
           fixed?: number
-          percent?: number
-          after_limit_fixed?: number
-          after_limit_percent?: number
         }
       }
       affiliate?: {
         fixed?: number
-        percent?: number
       }
     }
     limits?: {
-      deposit_min?: number
       withdraw_min?: number
       retention_value?: number
-      retention_percent?: number
     }
     features?: {
       saque_automatico?: boolean
@@ -196,26 +184,6 @@ const ContaPage = memo(() => {
                 color="green"
                 size="lg"
               />
-              <Info
-                label="Taxa Percentual"
-                value={`${taxes?.deposit?.percent ?? 0}%`}
-                color="green"
-                size="lg"
-              />
-              <Info
-                label="Taxa Fixa (após limite)"
-                value={formatCurrencyBRL(
-                  taxes?.deposit?.after_limit_fixed ?? 0,
-                )}
-                color="green"
-                size="lg"
-              />
-              <Info
-                label="Taxa % (após limite)"
-                value={`${taxes?.deposit?.after_limit_percent ?? 0}%`}
-                color="green"
-                size="lg"
-              />
             </div>
             <div className="h-6" />
             <h3 className="text-sm font-semibold text-gray-700 mb-3 inline-flex items-center gap-2">
@@ -236,28 +204,6 @@ const ContaPage = memo(() => {
                     color="red"
                     size="lg"
                   />
-                  <Info
-                    label="Taxa Percentual"
-                    value={`${taxes?.withdraw?.dashboard?.percent ?? 0}%`}
-                    color="red"
-                    size="lg"
-                  />
-                  <Info
-                    label="Taxa Fixa (após limite)"
-                    value={formatCurrencyBRL(
-                      taxes?.withdraw?.dashboard?.after_limit_fixed ?? 0,
-                    )}
-                    color="red"
-                    size="lg"
-                  />
-                  <Info
-                    label="Taxa % (após limite)"
-                    value={`${
-                      taxes?.withdraw?.dashboard?.after_limit_percent ?? 0
-                    }%`}
-                    color="red"
-                    size="lg"
-                  />
                 </div>
               </div>
               <div className="space-y-2">
@@ -271,59 +217,13 @@ const ContaPage = memo(() => {
                     color="red"
                     size="lg"
                   />
-                  <Info
-                    label="Taxa Percentual"
-                    value={`${taxes?.withdraw?.api?.percent ?? 0}%`}
-                    color="red"
-                    size="lg"
-                  />
-                  <Info
-                    label="Taxa Fixa (após limite)"
-                    value={formatCurrencyBRL(
-                      taxes?.withdraw?.api?.after_limit_fixed ?? 0,
-                    )}
-                    color="red"
-                    size="lg"
-                  />
-                  <Info
-                    label="Taxa % (após limite)"
-                    value={`${taxes?.withdraw?.api?.after_limit_percent ?? 0}%`}
-                    color="red"
-                    size="lg"
-                  />
                 </div>
               </div>
             </div>
             <div className="h-6" />
             <h3 className="text-sm font-semibold text-gray-700 mb-3 inline-flex items-center gap-2">
-              <BadgePercent size={16} className="text-purple-600" /> Taxas de
-              Afiliado
             </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-              <Info
-                label="Taxa Fixa"
-                value={formatCurrencyBRL(taxes?.affiliate?.fixed ?? 0)}
-                color="indigo"
-                size="lg"
-              />
-              <Info
-                label="Taxa Percentual"
-                value={`${taxes?.affiliate?.percent ?? 0}%`}
-                color="indigo"
-                size="lg"
-              />
-            </div>
-            <div className="h-6" />
-            <h3 className="text-sm font-semibold text-gray-700 mb-3 inline-flex items-center gap-2">
-              <BadgePercent size={16} className="text-blue-600" /> Limites e
-              Retenção
-            </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-sm">
-              <Info
-                label="Depósito Mínimo"
-                value={formatCurrencyBRL(limits?.deposit_min ?? 0)}
-                color="indigo"
-              />
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 text-sm">
               <Info
                 label="Saque Mínimo"
                 value={formatCurrencyBRL(limits?.withdraw_min ?? 0)}
@@ -332,11 +232,6 @@ const ContaPage = memo(() => {
               <Info
                 label="Retenção"
                 value={formatCurrencyBRL(limits?.retention_value ?? 0)}
-                color="indigo"
-              />
-              <Info
-                label="Taxa de Retenção"
-                value={`${limits?.retention_percent ?? 0}%`}
                 color="indigo"
               />
             </div>

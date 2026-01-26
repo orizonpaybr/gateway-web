@@ -8,7 +8,6 @@ import { toast } from 'sonner'
 import {
   DepositSettingsSection,
   WithdrawalSettingsSection,
-  FlexibleTaxSystemSection,
   ReportCustomizationSection,
   SecurityIPsSection,
 } from '@/components/admin/settings'
@@ -32,7 +31,6 @@ export default function ConfiguracoesGeraisPage() {
   const [expandedSections, setExpandedSections] = useState<string[]>([
     'deposito',
     'saque',
-    'flexivel',
     'relatorios',
   ])
   const [editingValues, setEditingValues] = useState<
@@ -188,16 +186,6 @@ export default function ConfiguracoesGeraisPage() {
             getDisplayValue={getNumericDisplayedValue}
             handleChange={handleNumericChange}
             handleBlur={handleNumericBlur}
-          />
-
-          <FlexibleTaxSystemSection
-            settings={localSettings}
-            isExpanded={expandedSections.includes('flexivel')}
-            onToggle={() => toggleSection('flexivel')}
-            getDisplayValue={getNumericDisplayedValue}
-            handleChange={handleNumericChange}
-            handleBlur={handleNumericBlur}
-            onSwitchChange={handleSwitchChange}
           />
         </div>
       </Card>

@@ -44,48 +44,7 @@ export function WithdrawalSettingsSection({
 
       {isExpanded && (
         <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-            <div>
-              <Label
-                htmlFor="taxa_percentual_pix"
-                className="min-h-[40px] leading-tight flex items-end pb-1"
-              >
-                Taxa Percentual PIX (%)
-              </Label>
-              <Input
-                id="taxa_percentual_pix"
-                type="text"
-                inputMode="decimal"
-                value={getDisplayValue('taxa_percentual_pix')}
-                onChange={handleChange('taxa_percentual_pix')}
-                onBlur={handleBlur('taxa_percentual_pix')}
-              />
-              <p className="text-sm text-gray-500 mt-1">
-                Taxa percentual aplicada sobre o valor do saque PIX
-              </p>
-            </div>
-
-            <div>
-              <Label
-                htmlFor="taxa_minima_pix"
-                className="min-h-[40px] leading-tight flex items-end pb-1"
-              >
-                Taxa Mínima PIX (R$)
-              </Label>
-              <Input
-                id="taxa_minima_pix"
-                type="text"
-                inputMode="decimal"
-                value={getDisplayValue('taxa_minima_pix')}
-                onChange={handleChange('taxa_minima_pix')}
-                onBlur={handleBlur('taxa_minima_pix')}
-              />
-              <p className="text-sm text-gray-500 mt-1">
-                Valor mínimo de taxa para saques PIX (sempre aplicado se maior
-                que percentual)
-              </p>
-            </div>
-
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
             <div>
               <Label
                 htmlFor="taxa_fixa_pix"
@@ -102,33 +61,10 @@ export function WithdrawalSettingsSection({
                 onBlur={handleBlur('taxa_fixa_pix')}
               />
               <p className="text-sm text-gray-500 mt-1">
-                Taxa fixa adicional aplicada sobre saques PIX (sempre somada à
-                taxa principal)
+                Taxa fixa aplicada sobre cada saque PIX (valor em centavos)
               </p>
             </div>
 
-            <div>
-              <Label
-                htmlFor="valor_minimo_saque"
-                className="min-h-[40px] leading-tight flex items-end pb-1"
-              >
-                Valor Mínimo de Saque (R$)
-              </Label>
-              <Input
-                id="valor_minimo_saque"
-                type="text"
-                inputMode="decimal"
-                value={getDisplayValue('valor_minimo_saque')}
-                onChange={handleChange('valor_minimo_saque')}
-                onBlur={handleBlur('valor_minimo_saque')}
-              />
-              <p className="text-sm text-gray-500 mt-1">
-                Valor mínimo que o usuário pode sacar
-              </p>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 mt-4">
             <div>
               <Label
                 htmlFor="limite_mensal_pf"
@@ -148,47 +84,6 @@ export function WithdrawalSettingsSection({
                 Limite máximo de saques por mês para pessoa física
               </p>
             </div>
-
-            <div>
-              <Label
-                htmlFor="taxa_saque_api"
-                className="min-h-[40px] leading-tight flex items-end pb-1"
-              >
-                Taxa Saque via API (%)
-              </Label>
-              <Input
-                id="taxa_saque_api"
-                type="text"
-                inputMode="decimal"
-                value={getDisplayValue('taxa_saque_api')}
-                onChange={handleChange('taxa_saque_api')}
-                onBlur={handleBlur('taxa_saque_api')}
-              />
-              <p className="text-sm text-gray-500 mt-1">
-                Taxa percentual para saques realizados via API externa
-              </p>
-            </div>
-
-            <div>
-              <Label
-                htmlFor="taxa_percentual_altos"
-                className="min-h-[40px] leading-tight flex items-end pb-1"
-              >
-                Taxa Saque Criptomoedas (%)
-              </Label>
-              <Input
-                id="taxa_percentual_altos"
-                type="text"
-                inputMode="decimal"
-                value={getDisplayValue('taxa_percentual_altos')}
-                onChange={handleChange('taxa_percentual_altos')}
-                onBlur={handleBlur('taxa_percentual_altos')}
-              />
-              <p className="text-sm text-gray-500 mt-1">
-                Taxa percentual para saques em criptomoedas (Bitcoin, Ethereum,
-                etc.)
-              </p>
-            </div>
           </div>
 
           <div className="mt-4 p-4 bg-cyan-50 rounded-lg border border-cyan-200">
@@ -197,27 +92,13 @@ export function WithdrawalSettingsSection({
             </p>
             <ul className="text-sm text-cyan-700 space-y-1 list-disc list-inside">
               <li>
-                <strong>Taxa percentual PIX:</strong>{' '}
-                {settings.taxa_percentual_pix}% do valor
-              </li>
-              <li>
-                <strong>Taxa mínima PIX:</strong> R${' '}
-                {settings.taxa_minima_pix.toFixed(2)}
-              </li>
-              <li>
                 <strong>Taxa fixa PIX:</strong> R${' '}
-                {settings.taxa_fixa_pix.toFixed(2)} (sempre somada)
+                {settings.taxa_fixa_pix.toFixed(2)}
               </li>
               <li>
-                <strong>Taxa aplicada:</strong> Maior valor entre taxa
-                percentual e taxa mínima + taxa fixa
-              </li>
-              <li>
-                <strong>Exemplo:</strong> R$ 2,00 → 2% = R$ 0,04 {'<'} R${' '}
-                {settings.taxa_minima_pix.toFixed(2)} → Taxa = R${' '}
-                {settings.taxa_minima_pix.toFixed(2)} + R${' '}
-                {settings.taxa_fixa_pix.toFixed(2)} = R${' '}
-                {(settings.taxa_minima_pix + settings.taxa_fixa_pix).toFixed(2)}
+                <strong>Exemplo:</strong> Saque de R$ 100,00 → Taxa = R${' '}
+                {settings.taxa_fixa_pix.toFixed(2)} → Total descontado = R${' '}
+                {(100 + settings.taxa_fixa_pix).toFixed(2)}
               </li>
             </ul>
           </div>

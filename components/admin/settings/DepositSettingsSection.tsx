@@ -47,26 +47,6 @@ export function DepositSettingsSection({
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
             <div>
               <Label
-                htmlFor="taxa_percentual_deposito"
-                className="min-h-[40px] leading-tight flex items-end pb-1"
-              >
-                Taxa Percentual (%)
-              </Label>
-              <Input
-                id="taxa_percentual_deposito"
-                type="text"
-                inputMode="decimal"
-                value={getDisplayValue('taxa_percentual_deposito')}
-                onChange={handleChange('taxa_percentual_deposito')}
-                onBlur={handleBlur('taxa_percentual_deposito')}
-              />
-              <p className="text-sm text-gray-500 mt-1 min-h-[42px]">
-                Taxa percentual aplicada sobre o valor do depósito
-              </p>
-            </div>
-
-            <div>
-              <Label
                 htmlFor="taxa_fixa_deposito"
                 className="min-h-[40px] leading-tight flex items-end pb-1"
               >
@@ -81,27 +61,7 @@ export function DepositSettingsSection({
                 onBlur={handleBlur('taxa_fixa_deposito')}
               />
               <p className="text-sm text-gray-500 mt-1 min-h-[42px]">
-                Taxa fixa adicional aplicada sobre depósitos (sempre somada)
-              </p>
-            </div>
-
-            <div>
-              <Label
-                htmlFor="valor_minimo_deposito"
-                className="min-h-[40px] leading-tight flex items-end pb-1"
-              >
-                Valor Mínimo de Depósito (R$)
-              </Label>
-              <Input
-                id="valor_minimo_deposito"
-                type="text"
-                inputMode="decimal"
-                value={getDisplayValue('valor_minimo_deposito')}
-                onChange={handleChange('valor_minimo_deposito')}
-                onBlur={handleBlur('valor_minimo_deposito')}
-              />
-              <p className="text-sm text-gray-500 mt-1 min-h-[42px]">
-                Valor mínimo que o usuário pode depositar
+                Taxa fixa aplicada sobre cada depósito (valor em centavos)
               </p>
             </div>
           </div>
@@ -112,25 +72,13 @@ export function DepositSettingsSection({
             </p>
             <ul className="text-sm text-cyan-700 space-y-1 list-disc list-inside">
               <li>
-                <strong>Taxa percentual:</strong>{' '}
-                {settings.taxa_percentual_deposito}% do valor
-              </li>
-              <li>
                 <strong>Taxa fixa:</strong> R${' '}
-                {settings.taxa_fixa_deposito.toFixed(2)} (sempre somada)
+                {settings.taxa_fixa_deposito.toFixed(2)}
               </li>
               <li>
-                <strong>Taxa aplicada:</strong> Taxa percentual + taxa fixa
-              </li>
-              <li>
-                <strong>Exemplo:</strong> R$ 100,00 →{' '}
-                {settings.taxa_percentual_deposito}% = R${' '}
-                {((100 * settings.taxa_percentual_deposito) / 100).toFixed(2)} +
-                R$ {settings.taxa_fixa_deposito.toFixed(2)} = R${' '}
-                {(
-                  (100 * settings.taxa_percentual_deposito) / 100 +
-                  settings.taxa_fixa_deposito
-                ).toFixed(2)}
+                <strong>Exemplo:</strong> Depósito de R$ 100,00 → Taxa = R${' '}
+                {settings.taxa_fixa_deposito.toFixed(2)} → Líquido = R${' '}
+                {(100 - settings.taxa_fixa_deposito).toFixed(2)}
               </li>
             </ul>
           </div>

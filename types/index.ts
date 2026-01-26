@@ -68,12 +68,9 @@ export interface ApiCredentials {
 
 export interface AccountSettings {
   taxas: {
-    depositoPercentual: number
-    saquePercentual: number
-    afiliadoPercentual: number
-    limiteDeposito: number
+    depositoFixo: number
+    saqueFixo: number
     limiteSaque: number
-    retencaoPercentual: number
   }
   funcionalidades: {
     saqueAutomatico: boolean
