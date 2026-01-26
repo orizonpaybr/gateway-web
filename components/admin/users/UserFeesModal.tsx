@@ -23,9 +23,6 @@ export const UserFeesModal = memo(
     const [form, setForm] = useState<UpdateUserData>({})
     // Estados locais para permitir edição livre nos inputs numéricos
     const [localValues, setLocalValues] = useState<Record<string, string>>({})
-    // Estado para controlar modal de confirmação
-    const [showConfirmModal, setShowConfirmModal] = useState(false)
-    const [loadingDefaults, setLoadingDefaults] = useState(false)
 
     const exampleCalc = useMemo(() => {
       const taxaFixa = Number(form.taxa_fixa_pix || 0)
@@ -134,48 +131,6 @@ export const UserFeesModal = memo(
       }
     }, [user, form, onSubmit])
 
-    const handleConfirmUseGlobalFees = useCallback(async () => {
-      if (!user?.id) {
-        return
-      }
-
-      setLoadingDefaults(true)
-      try {
-        const response = await adminUsersAPI.getDefaultFees()
-
-        if (!response.success || !response.data.fees) {
-          throw new Error('Erro ao buscar taxas padrão')
-        }
-
-        const defaultFees = response.data.fees
-
-        // Preparar dados para envio com taxas globais
-        const dataToSend: UpdateUserData = {
-          // Taxa fixa de depósito
-          taxa_fixa_deposito: defaultFees.taxa_fixa_deposito,
-          // Taxa fixa de saque
-          taxa_fixa_pix: defaultFees.taxa_fixa_pix,
-          // Limites
-          limite_mensal_pf: defaultFees.limite_mensal_pf,
-          // Desativar taxas personalizadas (usar globais)
-          taxas_personalizadas_ativas: false,
-          // Observações - manter as existentes ou null
-          observacoes_taxas:
-            form.observacoes_taxas && form.observacoes_taxas.trim() !== ''
-              ? form.observacoes_taxas.trim()
-              : null,
-        }
-
-        await onSubmit(user.id, dataToSend)
-
-        setShowConfirmModal(false)
-        onClose()
-      } catch (error) {
-        console.error('Erro ao salvar taxas globais:', error)
-      } finally {
-        setLoadingDefaults(false)
-      }
-    }, [user, form, onSubmit, onClose])
 
     return (
       <Dialog
@@ -184,7 +139,7 @@ export const UserFeesModal = memo(
         title={`Configuração de Taxas${user?.name ? ` - ${user.name}` : ''}`}
         size="xl"
         footer={
-          <div className="grid grid-cols-2 sm:flex sm:justify-end gap-2">
+          <div className="flex justify-end gap-2">
             <Button
               variant="outline"
               onClick={onClose}
@@ -193,16 +148,9 @@ export const UserFeesModal = memo(
               Cancelar
             </Button>
             <Button
-              variant="outline"
-              className="w-full sm:w-auto"
-              onClick={() => setShowConfirmModal(true)}
-            >
-              Usar taxas globais
-            </Button>
-            <Button
               onClick={handleSave}
               disabled={isSaving}
-              className="w-full sm:w-auto col-span-2 sm:col-span-1"
+              className="w-full sm:w-auto"
             >
               {isSaving ? 'Salvando...' : 'Salvar taxas'}
             </Button>
@@ -312,59 +260,6 @@ export const UserFeesModal = memo(
             </div>
           </div>
         )}
-
-        <Dialog
-          open={showConfirmModal}
-          onClose={() => setShowConfirmModal(false)}
-          title="Confirmar uso de taxas globais"
-          size="md"
-          footer={
-            <div className="flex justify-end gap-2">
-              <Button
-                variant="outline"
-                onClick={() => setShowConfirmModal(false)}
-                disabled={loadingDefaults || isSaving}
-              >
-                Cancelar
-              </Button>
-              <Button
-                onClick={handleConfirmUseGlobalFees}
-                disabled={loadingDefaults || isSaving}
-              >
-                {loadingDefaults || isSaving
-                  ? 'Processando...'
-                  : 'Confirmar e Salvar'}
-              </Button>
-            </div>
-          }
-        >
-          {loadingDefaults ? (
-            <div className="flex items-center justify-center py-8">
-              <LoadingSpinner size="lg" />
-            </div>
-          ) : (
-            <div className="space-y-4">
-              <p className="text-sm text-gray-700">
-                Você está prestes a resetar todas as taxas personalizadas deste
-                usuário para os valores padrão do sistema.
-              </p>
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                <p className="text-sm font-semibold text-yellow-800 mb-2">
-                  Atenção:
-                </p>
-                <ul className="text-sm text-yellow-700 space-y-1 list-disc list-inside">
-                  <li>
-                    Todas as taxas personalizadas serão substituídas pelos
-                    valores padrão
-                  </li>
-                  <li>As taxas personalizadas serão desativadas</li>
-                  <li>Esta ação não pode ser desfeita facilmente</li>
-                </ul>
-              </div>
-              <p className="text-sm text-gray-600">Deseja continuar?</p>
-            </div>
-          )}
-        </Dialog>
       </Dialog>
     )
   },
