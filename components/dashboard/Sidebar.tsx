@@ -469,61 +469,6 @@ export const Sidebar = memo(() => {
                 </li>
                 <li>
                   <button
-                    onClick={() => toggleSubmenu('CriarTransacoes')}
-                    className={cn(
-                      'flex items-center justify-between w-full px-4 py-3 rounded-lg text-sm font-medium transition-colors',
-                      pathname.startsWith('/dashboard/admin/criar-transacoes')
-                        ? 'bg-primary text-white hover:!bg-primary hover:!text-white'
-                        : 'text-gray-700 hover:bg-gray-100',
-                    )}
-                  >
-                    <div className="flex items-center gap-3">
-                      <ArrowLeftRight size={18} />
-                      <span>Criar Transações</span>
-                    </div>
-                    {expandedMenus.includes('CriarTransacoes') ? (
-                      <ChevronUp size={16} />
-                    ) : (
-                      <ChevronDown size={16} />
-                    )}
-                  </button>
-                  {expandedMenus.includes('CriarTransacoes') && (
-                    <ul className="mt-1 ml-6 space-y-1">
-                      <li>
-                        <Link
-                          href="/dashboard/admin/criar-transacoes/entrada"
-                          onClick={() => isMobile && closeMobileMenu()}
-                          className={cn(
-                            'block px-4 py-2.5 rounded-lg text-sm transition-colors',
-                            pathname ===
-                              '/dashboard/admin/criar-transacoes/entrada'
-                              ? 'bg-primary text-white'
-                              : 'text-gray-600 hover:bg-gray-100',
-                          )}
-                        >
-                          Entrada
-                        </Link>
-                      </li>
-                      <li>
-                        <Link
-                          href="/dashboard/admin/criar-transacoes/saida"
-                          onClick={() => isMobile && closeMobileMenu()}
-                          className={cn(
-                            'block px-4 py-2.5 rounded-lg text-sm transition-colors',
-                            pathname ===
-                              '/dashboard/admin/criar-transacoes/saida'
-                              ? 'bg-primary text-white'
-                              : 'text-gray-600 hover:bg-gray-100',
-                          )}
-                        >
-                          Saída
-                        </Link>
-                      </li>
-                    </ul>
-                  )}
-                </li>
-                <li>
-                  <button
                     onClick={() => toggleSubmenu('Configuracoes')}
                     className={cn(
                       'flex items-center justify-between w-full px-4 py-3 rounded-lg text-sm font-medium transition-colors',

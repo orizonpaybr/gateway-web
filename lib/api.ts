@@ -2028,69 +2028,6 @@ export interface AdminTransaction {
   created_at: string
 }
 
-export interface ManualDeposit {
-  id: number
-  transaction_id: string
-  amount: number
-  valor_liquido: number
-  taxa: number
-  status: string
-  descricao?: string | null
-  created_at?: string
-  user: {
-    id: number
-    user_id: string
-    name: string
-    username: string
-  }
-}
-
-export interface ManualDepositPayload {
-  user_id: string
-  amount: number
-  description?: string
-}
-
-export interface ManualDepositResponse {
-  success: boolean
-  message: string
-  data: {
-    deposit: ManualDeposit
-  }
-}
-
-export interface ManualWithdrawal {
-  id: number
-  transaction_id: string
-  amount: number
-  valor_liquido: number
-  taxa: number
-  valor_total_descontado: number
-  status: string
-  descricao: string
-  created_at: string
-  user: {
-    id: number
-    user_id: string
-    name: string
-    username: string
-  }
-}
-
-export interface ManualWithdrawalPayload {
-  user_id: string
-  amount: number
-  description?: string
-}
-
-export interface ManualWithdrawalResponse {
-  success: boolean
-  message: string
-  data: {
-    withdrawal: ManualWithdrawal
-  }
-}
-
 /**
  * API para Dashboard Administrativo
  * Apenas usuários com permission === 3 podem acessar
@@ -2213,25 +2150,6 @@ export const adminDashboardAPI = {
   },
 }
 
-export const adminManualTransactionsAPI = {
-  async createDeposit(
-    payload: ManualDepositPayload,
-  ): Promise<ManualDepositResponse> {
-    return apiRequest('/admin/manual-transactions/deposits', {
-      method: 'POST',
-      body: JSON.stringify(payload),
-    })
-  },
-
-  async createWithdrawal(
-    payload: ManualWithdrawalPayload,
-  ): Promise<ManualWithdrawalResponse> {
-    return apiRequest('/admin/manual-transactions/withdrawal', {
-      method: 'POST',
-      body: JSON.stringify(payload),
-    })
-  },
-}
 
 /**
  * API para CRUD de Usuários (Admin)
