@@ -560,20 +560,6 @@ export const Sidebar = memo(() => {
                       </li>
                       <li>
                         <Link
-                          href="/dashboard/admin/configuracoes/niveis"
-                          onClick={() => isMobile && closeMobileMenu()}
-                          className={cn(
-                            'block px-4 py-2.5 rounded-lg text-sm transition-colors',
-                            pathname === '/dashboard/admin/configuracoes/niveis'
-                              ? 'bg-primary text-white'
-                              : 'text-gray-600 hover:bg-gray-100',
-                          )}
-                        >
-                          Níveis
-                        </Link>
-                      </li>
-                      <li>
-                        <Link
                           href="/dashboard/admin/configuracoes/adquirentes"
                           onClick={() => isMobile && closeMobileMenu()}
                           className={cn(

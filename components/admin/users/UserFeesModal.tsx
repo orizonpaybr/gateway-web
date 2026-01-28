@@ -116,9 +116,15 @@ export const UserFeesModal = memo(
         return
       }
       try {
+        // Verificar se alguma taxa foi definida
+        const hasTaxaDeposito = (form.taxa_fixa_deposito as number) > 0
+        const hasTaxaPix = (form.taxa_fixa_pix as number) > 0
+        
         // Preparar dados para envio: garantir que observacoes_taxas seja enviado corretamente
         const dataToSend: UpdateUserData = {
           ...form,
+          // Ativar taxas personalizadas automaticamente se alguma taxa foi definida
+          taxas_personalizadas_ativas: hasTaxaDeposito || hasTaxaPix || (form.taxas_personalizadas_ativas ?? false),
           // Converter string vazia para null em observacoes_taxas (campo nullable)
           observacoes_taxas:
             form.observacoes_taxas && form.observacoes_taxas.trim() !== ''
