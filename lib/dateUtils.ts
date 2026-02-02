@@ -14,23 +14,32 @@ export const computeDateRange = (
   let fim: string | undefined
 
   if (period === 'hoje') {
-    const d1 = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-    const d2 = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-    inicio = d1.toISOString().slice(0, 10)
-    fim = d2.toISOString().slice(0, 10)
+    const d1 = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0)
+    const d2 = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59)
+    // Formatar como YYYY-MM-DD HH:MM:SS
+    inicio = d1.toISOString().slice(0, 19).replace('T', ' ')
+    fim = d2.toISOString().slice(0, 19).replace('T', ' ')
   } else if (period === '7d') {
     const d1 = new Date(now)
     d1.setDate(now.getDate() - 6)
-    inicio = d1.toISOString().slice(0, 10)
-    fim = now.toISOString().slice(0, 10)
+    d1.setHours(0, 0, 0, 0)
+    const d2 = new Date(now)
+    d2.setHours(23, 59, 59, 999)
+    inicio = d1.toISOString().slice(0, 19).replace('T', ' ')
+    fim = d2.toISOString().slice(0, 19).replace('T', ' ')
   } else if (period === '30d') {
     const d1 = new Date(now)
     d1.setDate(now.getDate() - 29)
-    inicio = d1.toISOString().slice(0, 10)
-    fim = now.toISOString().slice(0, 10)
+    d1.setHours(0, 0, 0, 0)
+    const d2 = new Date(now)
+    d2.setHours(23, 59, 59, 999)
+    inicio = d1.toISOString().slice(0, 19).replace('T', ' ')
+    fim = d2.toISOString().slice(0, 19).replace('T', ' ')
   } else if (period === 'custom' && startDate && endDate) {
-    inicio = startDate
-    fim = endDate
+    // Se as datas customizadas já têm hora, usar diretamente
+    // Se não, adicionar hora (00:00:00 para início e 23:59:59 para fim)
+    inicio = startDate.includes(' ') ? startDate : `${startDate} 00:00:00`
+    fim = endDate.includes(' ') ? endDate : `${endDate} 23:59:59`
   }
 
   return { inicio, fim }
@@ -76,10 +85,21 @@ export const createPaginationFilters = (
   // Se period é null e não há datas customizadas, não enviar filtros de data
   const hasDateFilter = period !== null || (startDate && endDate)
 
-  const { inicio, fim } =
-    hasDateFilter && period
-      ? computeDateRange(period, startDate, endDate)
-      : { inicio: undefined, fim: undefined }
+  let inicio: string | undefined
+  let fim: string | undefined
+
+  if (hasDateFilter) {
+    if (period) {
+      // Usar computeDateRange para períodos pré-definidos
+      const dateRange = computeDateRange(period, startDate, endDate)
+      inicio = dateRange.inicio
+      fim = dateRange.fim
+    } else if (startDate && endDate) {
+      // Se não há period mas há datas customizadas, usar diretamente
+      inicio = startDate
+      fim = endDate
+    }
+  }
 
   const filters: {
     page: number
@@ -97,10 +117,12 @@ export const createPaginationFilters = (
 
   // Apenas adicionar filtros de data se houver período ou datas customizadas
   if (hasDateFilter) {
-    if (inicio) {
+    // Se há datas customizadas sem período definido, usar diretamente
+    if (!period && startDate && endDate) {
+      filters.data_inicio = startDate
+      filters.data_fim = endDate
+    } else if (inicio && fim) {
       filters.data_inicio = inicio
-    }
-    if (fim) {
       filters.data_fim = fim
     }
     if (period) {

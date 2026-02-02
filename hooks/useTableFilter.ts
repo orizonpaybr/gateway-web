@@ -116,9 +116,9 @@ export function useSearchFilter(
 ) {
   const debouncedSearch = useDebounce(searchTerm, debounceDelay)
 
-  // Se há filtro de período, usar debouncedSearch para backend
-  // Caso contrário, filtro é totalmente client-side
-  const backendSearch = hasPeriodFilter ? debouncedSearch : ''
+  // Sempre usar debouncedSearch para backend quando houver busca
+  // Se não há filtro de período mas há busca, também enviar para backend
+  const backendSearch = debouncedSearch.trim() ? debouncedSearch : ''
 
   return {
     // Termo de busca para filtro client-side (sem debounce)

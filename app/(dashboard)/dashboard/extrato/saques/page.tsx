@@ -5,7 +5,6 @@ import { useState, useMemo, useCallback } from 'react'
 import {
   ArrowUpRight,
   Filter,
-  Download,
   Calendar,
   RotateCcw,
 } from 'lucide-react'
@@ -13,11 +12,10 @@ import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
 import { Skeleton } from '@/components/ui/Skeleton'
-import { useTableFilter, useSearchFilter } from '@/hooks/useTableFilter'
-import { useTableExport } from '@/hooks/useTableExport'
+import { useSearchFilter } from '@/hooks/useTableFilter'
 import { useTransactions } from '@/hooks/useReactQuery'
 import { transactionsAPI } from '@/lib/api'
-import { createPaginationFilters, formatDateForExport } from '@/lib/dateUtils'
+import { createPaginationFilters } from '@/lib/dateUtils'
 import { getFinancialStatusBadgeClasses } from '@/lib/helpers/financialUtils'
 
 export default function SaquesPage() {
@@ -47,72 +45,29 @@ export default function SaquesPage() {
   }, [page, perPage, backendSearch, period, startDate, endDate])
 
   // React Query hook
-  const { data, isLoading, error: _error } = useTransactions(filters)
+  const { data, isLoading, error } = useTransactions(filters)
 
-  // Filtrar items usando o hook centralizado
+  // Obter dados do backend
   const allItems = data?.data?.data || []
-  const filteredItems = useTableFilter(allItems, search, {
-    descricaoField: 'descricao',
-    valorField: 'valor_liquido',
-    searchFields: ['transaction_id', 'nome_cliente'],
-  })
-
-  const hasActiveSearch = search.trim() && !hasPeriodFilter
+  
+  // Sempre usar dados do backend quando há busca ou filtros de período
+  // O backend já faz a filtragem corretamente
+  const filteredItems = allItems
 
   const processedData = useMemo(() => {
     if (!data?.data) {
       return { items: [], totalPages: 1, totalItems: 0 }
     }
 
-    const totalItems = hasActiveSearch
-      ? filteredItems.length
-      : data.data.total || 0
+    // Sempre usar total do backend para paginação correta
+    const totalItems = data.data.total || 0
 
     return {
       items: filteredItems,
       totalPages: data.data.last_page || 1,
       totalItems,
     }
-  }, [filteredItems, data?.data, hasActiveSearch])
-
-  const fetchAllDataForExport = useCallback(async () => {
-    const exportFilters = {
-      page: 1,
-      limit: 10000,
-      tipo: 'saque' as const,
-      busca: backendSearch || undefined,
-      data_inicio: startDate || undefined,
-      data_fim: endDate || undefined,
-    }
-
-    const response = await transactionsAPI.list(exportFilters)
-    if (!response.success || !response.data) {
-      return []
-    }
-
-    return response.data.data || []
-  }, [backendSearch, startDate, endDate])
-
-  // Hook de exportação centralizado
-  const { handleExport, isExporting } = useTableExport({
-    filename: `saques_${new Date().toISOString().slice(0, 10)}.xlsx`,
-    sheetName: 'Saques',
-    fetchAllData: fetchAllDataForExport,
-    dataMapper: (saque) => ({
-      ID: saque.id,
-      'Transaction ID': saque.transaction_id,
-      'Nome Cliente': saque.nome_cliente,
-      Documento: saque.documento,
-      Valor: saque.amount,
-      'Valor Líquido': saque.valor_liquido,
-      Taxa: saque.taxa,
-      Status: saque.status_legivel,
-      Data: formatDateForExport(saque.data),
-      Adquirente: saque.adquirente,
-      Descrição: saque.descricao,
-    }),
-    emptyMessage: 'Nenhum saque para exportar',
-  })
+  }, [filteredItems, data?.data])
 
   const resetDates = useCallback(() => {
     setStartDate('')
@@ -122,33 +77,18 @@ export default function SaquesPage() {
     setPage(1)
   }, [setStartDate, setEndDate, setShowDatePicker, setPeriod, setPage])
 
-  const canPrev = hasActiveSearch ? false : page > 1
-  const canNext = hasActiveSearch ? false : page < processedData.totalPages
+  const canPrev = page > 1
+  const canNext = page < processedData.totalPages
   const hasData = !isLoading && processedData.items.length > 0
 
   return (
     <div className="p-4 md:p-6 space-y-4">
-      <div className="flex items-start justify-between gap-3">
+        <div className="flex items-start justify-between gap-3">
         <div className="flex-1">
           <h1 className="text-xl font-semibold text-gray-900">Saques</h1>
           <p className="text-sm text-gray-600">
             Histórico de todos os saques realizados
           </p>
-        </div>
-        <div className="flex items-center gap-2 sm:gap-3">
-          <Button
-            variant="outline"
-            size="sm"
-            icon={<Download size={16} />}
-            onClick={handleExport}
-            disabled={isExporting}
-          >
-            {isExporting ? (
-              'Exportando...'
-            ) : (
-              <span className="hidden sm:inline">Exportar</span>
-            )}
-          </Button>
         </div>
       </div>
 
