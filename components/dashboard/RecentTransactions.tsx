@@ -2,7 +2,7 @@
 
 import { memo, useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowUpRight, ArrowDownLeft, FileText, List } from 'lucide-react'
+import { ArrowUpRight, ArrowDownLeft, FileText } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Skeleton } from '@/components/ui/Skeleton'
@@ -96,14 +96,6 @@ export const RecentTransactions = memo(
           <h2 className="text-xl font-bold text-gray-900">
             Últimas Transações
           </h2>
-          <Button
-            variant="outline"
-            size="sm"
-            icon={<List size={16} />}
-            onClick={onViewExtract}
-          >
-            Ver Extrato
-          </Button>
         </div>
 
         <Card className="overflow-hidden">
@@ -220,7 +212,7 @@ export const RecentTransactions = memo(
 
           {transactions.length === 0 && (
             <div className="py-12 text-center">
-              <List className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+              <FileText className="w-12 h-12 text-gray-400 mx-auto mb-3" />
               <p className="text-gray-500 text-sm">
                 Nenhuma transação encontrada
               </p>

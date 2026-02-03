@@ -52,7 +52,7 @@ const mainMenuItems: MenuItem[] = [
   {
     icon: List,
     label: 'Extrato',
-    href: '/dashboard/extrato',
+    href: '/dashboard/extrato/depositos',
     hasSubmenu: true,
     submenu: [
       { label: 'Depósitos', href: '/dashboard/extrato/depositos' },

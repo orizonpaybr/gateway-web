@@ -127,11 +127,6 @@ export default function DashboardPage() {
         label: 'Buscar Transações',
         onClick: () => router.push('/dashboard/buscar'),
       },
-      {
-        icon: List,
-        label: 'Extrato Detalhado',
-        onClick: () => router.push('/dashboard/extrato'),
-      },
     ],
     [router],
   )
@@ -208,9 +203,7 @@ export default function DashboardPage() {
           </div>
         </Card>
 
-        <LazyRecentTransactions
-          onViewExtract={() => router.push('/dashboard/extrato')}
-        />
+        <LazyRecentTransactions />
       </div>
     </div>
   )
