@@ -253,7 +253,8 @@ export const ConfiguracoesIntegracaoTab = memo(() => {
               Acesso Restrito
             </h3>
             <p className="text-yellow-700 text-sm">
-              Sua conta está pendente de aprovação. Você não pode acessar as configurações de integração até que sua conta seja aprovada.
+              Sua conta está pendente de aprovação. Você não pode acessar as
+              configurações de integração até que sua conta seja aprovada.
             </p>
           </div>
         </div>
@@ -272,21 +273,27 @@ export const ConfiguracoesIntegracaoTab = memo(() => {
   if (credentialsError || ipsError) {
     // Verificar se o erro é devido ao status pendente (403)
     const errorMessage = credentialsError?.message || ipsError?.message || ''
-    const isPendingError = errorMessage.includes('pendente') || 
-                          (credentialsError as any)?.response?.status === 403 ||
-                          (ipsError as any)?.response?.status === 403
+    const isPendingError =
+      errorMessage.includes('pendente') ||
+      (credentialsError as { response?: { status?: number } })?.response
+        ?.status === 403 ||
+      (ipsError as { response?: { status?: number } })?.response?.status === 403
 
     if (isPendingError) {
       return (
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
           <div className="flex items-start gap-3">
-            <AlertCircle className="text-yellow-600 shrink-0 mt-0.5" size={20} />
+            <AlertCircle
+              className="text-yellow-600 shrink-0 mt-0.5"
+              size={20}
+            />
             <div>
               <h3 className="text-yellow-800 font-semibold mb-1">
                 Acesso Restrito
               </h3>
               <p className="text-yellow-700 text-sm">
-                Sua conta está pendente de aprovação. Você não pode acessar as configurações de integração até que sua conta seja aprovada.
+                Sua conta está pendente de aprovação. Você não pode acessar as
+                configurações de integração até que sua conta seja aprovada.
               </p>
             </div>
           </div>

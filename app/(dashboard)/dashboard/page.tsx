@@ -10,7 +10,6 @@ import {
   TrendingUp,
   DollarSign,
   Search,
-  List,
 } from 'lucide-react'
 
 import { PixIcon } from '@/components/icons/PixIcon'
@@ -166,14 +165,14 @@ export default function DashboardPage() {
           <h2 className="text-lg font-semibold text-gray-900 mb-4">
             Acesso Rápido
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+          <div className="flex flex-col md:flex-row gap-3">
             {quickActions.map((action) => {
               const Icon = action.icon
               return (
                 <Button
                   key={action.label}
                   variant="outline"
-                  className="justify-start h-auto py-4"
+                  className="justify-start h-auto py-4 md:flex-1"
                   icon={<Icon size={20} />}
                   onClick={action.onClick}
                 >

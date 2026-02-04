@@ -46,8 +46,9 @@ const PendentesPage = memo(() => {
 
   const allItems = data?.data?.data || []
   const filteredItems = useTableFilter(allItems, search, {
-    descricaoField: 'descricao',
-    valorField: 'valor_liquido',
+    descricaoField: undefined,
+    valorField: undefined,
+    searchFields: ['transaction_id', 'nome_cliente', 'documento'],
   })
 
   const hasActiveSearch = search.trim() && !hasPeriodFilter
@@ -97,7 +98,7 @@ const PendentesPage = memo(() => {
         <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
           <div className="flex items-center gap-2 w-full xl:w-auto">
             <Input
-              placeholder="Buscar..."
+              placeholder="Buscar por transações..."
               value={search}
               onChange={(e) => {
                 setSearch(e.target.value)

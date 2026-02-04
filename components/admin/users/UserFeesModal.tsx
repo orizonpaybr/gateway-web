@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/Button'
 import { Dialog } from '@/components/ui/Dialog'
 import { Input } from '@/components/ui/Input'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
-import { adminUsersAPI, type AdminUser, type UpdateUserData } from '@/lib/api'
+import { type AdminUser, type UpdateUserData } from '@/lib/api'
 import {
   formatNumber,
   formatCurrencyInput,
@@ -119,12 +119,15 @@ export const UserFeesModal = memo(
         // Verificar se alguma taxa foi definida
         const hasTaxaDeposito = (form.taxa_fixa_deposito as number) > 0
         const hasTaxaPix = (form.taxa_fixa_pix as number) > 0
-        
+
         // Preparar dados para envio: garantir que observacoes_taxas seja enviado corretamente
         const dataToSend: UpdateUserData = {
           ...form,
           // Ativar taxas personalizadas automaticamente se alguma taxa foi definida
-          taxas_personalizadas_ativas: hasTaxaDeposito || hasTaxaPix || (form.taxas_personalizadas_ativas ?? false),
+          taxas_personalizadas_ativas:
+            hasTaxaDeposito ||
+            hasTaxaPix ||
+            (form.taxas_personalizadas_ativas ?? false),
           // Converter string vazia para null em observacoes_taxas (campo nullable)
           observacoes_taxas:
             form.observacoes_taxas && form.observacoes_taxas.trim() !== ''
@@ -136,7 +139,6 @@ export const UserFeesModal = memo(
         console.error('Erro ao salvar taxas:', error)
       }
     }, [user, form, onSubmit])
-
 
     return (
       <Dialog

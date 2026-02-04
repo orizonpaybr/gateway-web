@@ -1129,11 +1129,9 @@ export const withdrawalsAPI = {
     if (filters?.limit) {
       params.append('limit', filters.limit.toString())
     }
-    // CORRIGIDO: Enviar status mesmo quando for 'all' para o backend processar corretamente
     if (filters?.status) {
       params.append('status', filters.status)
     }
-    // CORRIGIDO: Enviar tipo mesmo quando for 'all' para o backend processar corretamente
     if (filters?.tipo) {
       params.append('tipo', filters.tipo)
     }
@@ -2151,7 +2149,6 @@ export const adminDashboardAPI = {
     return apiRequest('/admin/dashboard/cache-metrics')
   },
 }
-
 
 /**
  * API para CRUD de Usuários (Admin)

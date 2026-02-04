@@ -21,7 +21,6 @@ import {
   LayoutDashboard,
   Users,
   DollarSign,
-  ArrowLeftRight,
 } from 'lucide-react'
 import { DocumentIcon } from '@/components/icons/DocumentIcon'
 import { PixIcon } from '@/components/icons/PixIcon'
@@ -326,218 +325,223 @@ export const Sidebar = memo(() => {
               )
             })}
 
-            {authReady && (Number(user?.permission) === 3 || Number(user?.permission) === 2) && (
-              <>
-                <li aria-hidden className="my-3">
-                  <div className="border-t border-gray-200" />
-                </li>
-                <li className="px-4 py-1">
-                  <span className="text-xs font-semibold uppercase tracking-wider text-gray-500">
-                    Administração
-                  </span>
-                </li>
-                {Number(user?.permission) === 3 && (
-                  <>
-                    <li>
-                      <Link
-                        href="/dashboard/admin"
-                        onClick={() => isMobile && closeMobileMenu()}
-                        className={cn(
-                          'flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors',
-                          pathname === '/dashboard/admin'
-                            ? 'bg-blue-600 text-white shadow-md'
-                            : 'text-gray-700 hover:bg-blue-50 hover:text-blue-700',
-                        )}
-                      >
-                        <LayoutDashboard size={18} />
-                        <span>Dashboard</span>
-                      </Link>
-                    </li>
-                    <li>
-                      <Link
-                        href="/dashboard/admin/usuarios"
-                        onClick={() => isMobile && closeMobileMenu()}
-                        className={cn(
-                          'flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors',
-                          pathname === '/dashboard/admin/usuarios'
-                            ? 'bg-blue-600 text-white shadow-md'
-                            : 'text-gray-700 hover:bg-blue-50 hover:text-blue-700',
-                        )}
-                      >
-                        <Users size={18} />
-                        <span>Usuários</span>
-                      </Link>
-                    </li>
-                  </>
-                )}
-                <li>
-                  <Link
-                    href="/dashboard/admin/aprovar-saques"
-                    onClick={() => isMobile && closeMobileMenu()}
-                    className={cn(
-                      'flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors',
-                      pathname === '/dashboard/admin/aprovar-saques'
-                        ? 'bg-blue-600 text-white shadow-md'
-                        : 'text-gray-700 hover:bg-blue-50 hover:text-blue-700',
-                    )}
-                  >
-                    <Wallet size={18} />
-                    <span>Aprovar Saques</span>
-                  </Link>
-                </li>
-                <li>
-                  <button
-                    onClick={() => toggleSubmenu('Financeiro')}
-                    className={cn(
-                      'flex items-center justify-between w-full px-4 py-3 rounded-lg text-sm font-medium transition-colors',
-                      pathname.startsWith('/dashboard/admin/financeiro')
-                        ? 'bg-primary text-white hover:!bg-primary hover:!text-white'
-                        : 'text-gray-700 hover:bg-gray-100',
-                    )}
-                  >
-                    <div className="flex items-center gap-3">
-                      <DollarSign size={18} />
-                      <span>Financeiro</span>
-                    </div>
-                    {expandedMenus.includes('Financeiro') ? (
-                      <ChevronUp size={16} />
-                    ) : (
-                      <ChevronDown size={16} />
-                    )}
-                  </button>
-                  {expandedMenus.includes('Financeiro') && (
-                    <ul className="mt-1 ml-6 space-y-1">
+            {authReady &&
+              (Number(user?.permission) === 3 ||
+                Number(user?.permission) === 2) && (
+                <>
+                  <li aria-hidden className="my-3">
+                    <div className="border-t border-gray-200" />
+                  </li>
+                  <li className="px-4 py-1">
+                    <span className="text-xs font-semibold uppercase tracking-wider text-gray-500">
+                      Administração
+                    </span>
+                  </li>
+                  {Number(user?.permission) === 3 && (
+                    <>
                       <li>
                         <Link
-                          href="/dashboard/admin/financeiro/transacoes"
+                          href="/dashboard/admin"
                           onClick={() => isMobile && closeMobileMenu()}
                           className={cn(
-                            'block px-4 py-2.5 rounded-lg text-sm transition-colors',
-                            pathname ===
-                              '/dashboard/admin/financeiro/transacoes'
-                              ? 'bg-primary text-white'
-                              : 'text-gray-600 hover:bg-gray-100',
+                            'flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors',
+                            pathname === '/dashboard/admin'
+                              ? 'bg-blue-600 text-white shadow-md'
+                              : 'text-gray-700 hover:bg-blue-50 hover:text-blue-700',
                           )}
                         >
-                          Transações
+                          <LayoutDashboard size={18} />
+                          <span>Dashboard</span>
                         </Link>
                       </li>
                       <li>
                         <Link
-                          href="/dashboard/admin/financeiro/carteiras"
+                          href="/dashboard/admin/usuarios"
                           onClick={() => isMobile && closeMobileMenu()}
                           className={cn(
-                            'block px-4 py-2.5 rounded-lg text-sm transition-colors',
-                            pathname === '/dashboard/admin/financeiro/carteiras'
-                              ? 'bg-primary text-white'
-                              : 'text-gray-600 hover:bg-gray-100',
+                            'flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors',
+                            pathname === '/dashboard/admin/usuarios'
+                              ? 'bg-blue-600 text-white shadow-md'
+                              : 'text-gray-700 hover:bg-blue-50 hover:text-blue-700',
                           )}
                         >
-                          Carteiras
+                          <Users size={18} />
+                          <span>Usuários</span>
                         </Link>
                       </li>
-                      <li>
-                        <Link
-                          href="/dashboard/admin/financeiro/entradas"
-                          onClick={() => isMobile && closeMobileMenu()}
-                          className={cn(
-                            'block px-4 py-2.5 rounded-lg text-sm transition-colors',
-                            pathname === '/dashboard/admin/financeiro/entradas'
-                              ? 'bg-primary text-white'
-                              : 'text-gray-600 hover:bg-gray-100',
-                          )}
-                        >
-                          Entradas
-                        </Link>
-                      </li>
-                      <li>
-                        <Link
-                          href="/dashboard/admin/financeiro/saidas"
-                          onClick={() => isMobile && closeMobileMenu()}
-                          className={cn(
-                            'block px-4 py-2.5 rounded-lg text-sm transition-colors',
-                            pathname === '/dashboard/admin/financeiro/saidas'
-                              ? 'bg-primary text-white'
-                              : 'text-gray-600 hover:bg-gray-100',
-                          )}
-                        >
-                          Saídas
-                        </Link>
-                      </li>
-                    </ul>
+                    </>
                   )}
-                </li>
-                <li>
-                  <button
-                    onClick={() => toggleSubmenu('Configuracoes')}
-                    className={cn(
-                      'flex items-center justify-between w-full px-4 py-3 rounded-lg text-sm font-medium transition-colors',
-                      pathname.startsWith('/dashboard/admin/configuracoes')
-                        ? 'bg-primary text-white hover:!bg-primary hover:!text-white'
-                        : 'text-gray-700 hover:bg-gray-100',
+                  <li>
+                    <Link
+                      href="/dashboard/admin/aprovar-saques"
+                      onClick={() => isMobile && closeMobileMenu()}
+                      className={cn(
+                        'flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors',
+                        pathname === '/dashboard/admin/aprovar-saques'
+                          ? 'bg-blue-600 text-white shadow-md'
+                          : 'text-gray-700 hover:bg-blue-50 hover:text-blue-700',
+                      )}
+                    >
+                      <Wallet size={18} />
+                      <span>Aprovar Saques</span>
+                    </Link>
+                  </li>
+                  <li>
+                    <button
+                      onClick={() => toggleSubmenu('Financeiro')}
+                      className={cn(
+                        'flex items-center justify-between w-full px-4 py-3 rounded-lg text-sm font-medium transition-colors',
+                        pathname.startsWith('/dashboard/admin/financeiro')
+                          ? 'bg-primary text-white hover:!bg-primary hover:!text-white'
+                          : 'text-gray-700 hover:bg-gray-100',
+                      )}
+                    >
+                      <div className="flex items-center gap-3">
+                        <DollarSign size={18} />
+                        <span>Financeiro</span>
+                      </div>
+                      {expandedMenus.includes('Financeiro') ? (
+                        <ChevronUp size={16} />
+                      ) : (
+                        <ChevronDown size={16} />
+                      )}
+                    </button>
+                    {expandedMenus.includes('Financeiro') && (
+                      <ul className="mt-1 ml-6 space-y-1">
+                        <li>
+                          <Link
+                            href="/dashboard/admin/financeiro/transacoes"
+                            onClick={() => isMobile && closeMobileMenu()}
+                            className={cn(
+                              'block px-4 py-2.5 rounded-lg text-sm transition-colors',
+                              pathname ===
+                                '/dashboard/admin/financeiro/transacoes'
+                                ? 'bg-primary text-white'
+                                : 'text-gray-600 hover:bg-gray-100',
+                            )}
+                          >
+                            Transações
+                          </Link>
+                        </li>
+                        <li>
+                          <Link
+                            href="/dashboard/admin/financeiro/carteiras"
+                            onClick={() => isMobile && closeMobileMenu()}
+                            className={cn(
+                              'block px-4 py-2.5 rounded-lg text-sm transition-colors',
+                              pathname ===
+                                '/dashboard/admin/financeiro/carteiras'
+                                ? 'bg-primary text-white'
+                                : 'text-gray-600 hover:bg-gray-100',
+                            )}
+                          >
+                            Carteiras
+                          </Link>
+                        </li>
+                        <li>
+                          <Link
+                            href="/dashboard/admin/financeiro/entradas"
+                            onClick={() => isMobile && closeMobileMenu()}
+                            className={cn(
+                              'block px-4 py-2.5 rounded-lg text-sm transition-colors',
+                              pathname ===
+                                '/dashboard/admin/financeiro/entradas'
+                                ? 'bg-primary text-white'
+                                : 'text-gray-600 hover:bg-gray-100',
+                            )}
+                          >
+                            Entradas
+                          </Link>
+                        </li>
+                        <li>
+                          <Link
+                            href="/dashboard/admin/financeiro/saidas"
+                            onClick={() => isMobile && closeMobileMenu()}
+                            className={cn(
+                              'block px-4 py-2.5 rounded-lg text-sm transition-colors',
+                              pathname === '/dashboard/admin/financeiro/saidas'
+                                ? 'bg-primary text-white'
+                                : 'text-gray-600 hover:bg-gray-100',
+                            )}
+                          >
+                            Saídas
+                          </Link>
+                        </li>
+                      </ul>
                     )}
-                  >
-                    <div className="flex items-center gap-3">
-                      <Settings size={18} />
-                      <span>Configurações</span>
-                    </div>
-                    {expandedMenus.includes('Configuracoes') ? (
-                      <ChevronUp size={16} />
-                    ) : (
-                      <ChevronDown size={16} />
+                  </li>
+                  <li>
+                    <button
+                      onClick={() => toggleSubmenu('Configuracoes')}
+                      className={cn(
+                        'flex items-center justify-between w-full px-4 py-3 rounded-lg text-sm font-medium transition-colors',
+                        pathname.startsWith('/dashboard/admin/configuracoes')
+                          ? 'bg-primary text-white hover:!bg-primary hover:!text-white'
+                          : 'text-gray-700 hover:bg-gray-100',
+                      )}
+                    >
+                      <div className="flex items-center gap-3">
+                        <Settings size={18} />
+                        <span>Configurações</span>
+                      </div>
+                      {expandedMenus.includes('Configuracoes') ? (
+                        <ChevronUp size={16} />
+                      ) : (
+                        <ChevronDown size={16} />
+                      )}
+                    </button>
+                    {expandedMenus.includes('Configuracoes') && (
+                      <ul className="mt-1 ml-6 space-y-1">
+                        <li>
+                          <Link
+                            href="/dashboard/admin/configuracoes/gerais"
+                            onClick={() => isMobile && closeMobileMenu()}
+                            className={cn(
+                              'block px-4 py-2.5 rounded-lg text-sm transition-colors',
+                              pathname ===
+                                '/dashboard/admin/configuracoes/gerais'
+                                ? 'bg-primary text-white'
+                                : 'text-gray-600 hover:bg-gray-100',
+                            )}
+                          >
+                            Gerais
+                          </Link>
+                        </li>
+                        <li>
+                          <Link
+                            href="/dashboard/admin/configuracoes/adquirentes"
+                            onClick={() => isMobile && closeMobileMenu()}
+                            className={cn(
+                              'block px-4 py-2.5 rounded-lg text-sm transition-colors',
+                              pathname ===
+                                '/dashboard/admin/configuracoes/adquirentes'
+                                ? 'bg-primary text-white'
+                                : 'text-gray-600 hover:bg-gray-100',
+                            )}
+                          >
+                            Adquirentes
+                          </Link>
+                        </li>
+                        <li>
+                          <Link
+                            href="/dashboard/admin/configuracoes/gerentes"
+                            onClick={() => isMobile && closeMobileMenu()}
+                            className={cn(
+                              'block px-4 py-2.5 rounded-lg text-sm transition-colors',
+                              pathname ===
+                                '/dashboard/admin/configuracoes/gerentes'
+                                ? 'bg-primary text-white'
+                                : 'text-gray-600 hover:bg-gray-100',
+                            )}
+                          >
+                            Gerentes
+                          </Link>
+                        </li>
+                      </ul>
                     )}
-                  </button>
-                  {expandedMenus.includes('Configuracoes') && (
-                    <ul className="mt-1 ml-6 space-y-1">
-                      <li>
-                        <Link
-                          href="/dashboard/admin/configuracoes/gerais"
-                          onClick={() => isMobile && closeMobileMenu()}
-                          className={cn(
-                            'block px-4 py-2.5 rounded-lg text-sm transition-colors',
-                            pathname === '/dashboard/admin/configuracoes/gerais'
-                              ? 'bg-primary text-white'
-                              : 'text-gray-600 hover:bg-gray-100',
-                          )}
-                        >
-                          Gerais
-                        </Link>
-                      </li>
-                      <li>
-                        <Link
-                          href="/dashboard/admin/configuracoes/adquirentes"
-                          onClick={() => isMobile && closeMobileMenu()}
-                          className={cn(
-                            'block px-4 py-2.5 rounded-lg text-sm transition-colors',
-                            pathname ===
-                              '/dashboard/admin/configuracoes/adquirentes'
-                              ? 'bg-primary text-white'
-                              : 'text-gray-600 hover:bg-gray-100',
-                          )}
-                        >
-                          Adquirentes
-                        </Link>
-                      </li>
-                      <li>
-                        <Link
-                          href="/dashboard/admin/configuracoes/gerentes"
-                          onClick={() => isMobile && closeMobileMenu()}
-                          className={cn(
-                            'block px-4 py-2.5 rounded-lg text-sm transition-colors',
-                            pathname ===
-                              '/dashboard/admin/configuracoes/gerentes'
-                              ? 'bg-primary text-white'
-                              : 'text-gray-600 hover:bg-gray-100',
-                          )}
-                        >
-                          Gerentes
-                        </Link>
-                      </li>
-                    </ul>
-                  )}
-                </li>
-              </>
-            )}
+                  </li>
+                </>
+              )}
           </ul>
 
           <div className="my-6 border-t border-gray-200" />

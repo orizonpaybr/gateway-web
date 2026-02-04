@@ -2,20 +2,13 @@
 
 import { useState, useMemo, useCallback } from 'react'
 
-import {
-  ArrowDownLeft,
-  Filter,
-  Download,
-  RotateCcw,
-  Calendar,
-} from 'lucide-react'
+import { ArrowDownLeft, Filter, RotateCcw, Calendar } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { useSearchFilter } from '@/hooks/useTableFilter'
 import { useTransactions } from '@/hooks/useReactQuery'
-import { transactionsAPI } from '@/lib/api'
 import { createPaginationFilters } from '@/lib/dateUtils'
 import { getFinancialStatusBadgeClasses } from '@/lib/helpers/financialUtils'
 
@@ -46,11 +39,11 @@ export default function DepositosPage() {
   }, [page, perPage, backendSearch, period, startDate, endDate])
 
   // React Query hook
-  const { data, isLoading, error } = useTransactions(filters)
+  const { data, isLoading } = useTransactions(filters)
 
   // Obter dados do backend
   const allItems = data?.data?.data || []
-  
+
   // Sempre usar dados do backend quando há busca ou filtros de período
   // O backend já faz a filtragem corretamente
   const filteredItems = allItems
@@ -84,7 +77,7 @@ export default function DepositosPage() {
 
   return (
     <div className="p-4 md:p-6 space-y-4">
-        <div className="flex items-start justify-between gap-3">
+      <div className="flex items-start justify-between gap-3">
         <div className="flex-1">
           <h1 className="text-xl font-semibold text-gray-900">
             Extrato da Conta
@@ -99,7 +92,7 @@ export default function DepositosPage() {
         <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
           <div className="flex items-center gap-2 w-full xl:w-auto">
             <Input
-              placeholder="Buscar por descrição, valor ou EndToEndID..."
+              placeholder="Buscar depósitos..."
               value={search}
               onChange={(e) => {
                 setSearch(e.target.value)

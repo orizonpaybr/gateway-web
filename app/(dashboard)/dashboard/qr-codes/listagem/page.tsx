@@ -127,7 +127,7 @@ const QRCodeListagemPage = memo(() => {
         <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
           <div className="flex items-center gap-2 w-full xl:w-auto">
             <Input
-              placeholder="Buscar..."
+              placeholder="Buscar QrCodes..."
               value={search}
               onChange={(e) => {
                 setSearch(e.target.value)

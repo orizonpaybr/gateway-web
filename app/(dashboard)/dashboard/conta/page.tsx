@@ -44,9 +44,7 @@ const ContaPage = memo(() => {
     <div className="p-4 md:p-6 space-y-4">
       <div>
         <h1 className="text-xl font-semibold text-gray-900">Dados da Conta</h1>
-        <p className="text-sm text-gray-600">
-          Informações cadastrais
-        </p>
+        <p className="text-sm text-gray-600">Informações cadastrais</p>
       </div>
 
       {isLoading ? (
@@ -86,25 +84,7 @@ const ContaPage = memo(() => {
             <h3 className="text-sm font-semibold text-gray-700 mb-3 inline-flex items-center gap-2">
               <InfoIcon size={16} className="text-gray-500" /> Informações
             </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 text-sm">
-              <div className="min-w-0">
-                <p className="text-gray-600">Razão Social:</p>
-                <p className="font-medium text-gray-900 break-words">
-                  {account.company?.razao_social || '—'}
-                </p>
-              </div>
-              <div className="min-w-0">
-                <p className="text-gray-600">Nome Fantasia:</p>
-                <p className="font-medium text-gray-900 break-words">
-                  {account.company?.nome_fantasia || '—'}
-                </p>
-              </div>
-              <div className="min-w-0">
-                <p className="text-gray-600">Área de Atuação:</p>
-                <p className="font-medium text-gray-900 break-words">
-                  {account.company?.area_atuacao || '—'}
-                </p>
-              </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
               <div className="min-w-0">
                 <p className="text-gray-600">Tipo:</p>
                 <p className="font-medium text-gray-900">

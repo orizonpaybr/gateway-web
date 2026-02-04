@@ -35,8 +35,8 @@ export function useTableFilter<T extends Record<string, unknown>>(
   options: TableFilterOptions = {},
 ): T[] {
   const {
-    descricaoField = 'descricao',
-    valorField = 'valor_liquido',
+    descricaoField,
+    valorField,
     searchFields = ['transaction_id', 'end_to_end'],
     customFilter,
   } = options
@@ -57,11 +57,15 @@ export function useTableFilter<T extends Record<string, unknown>>(
         }
       }
 
-      // Buscar por descrição (case insensitive)
-      const descricaoValue = item[descricaoField]
-      const descricaoMatch =
-        descricaoValue &&
-        String(descricaoValue).toLowerCase().includes(searchLower)
+      // Buscar por descrição (case insensitive) - apenas se descricaoField foi fornecido
+      let descricaoMatch = false
+      if (descricaoField) {
+        const descricaoValue = item[descricaoField]
+        descricaoMatch = Boolean(
+          descricaoValue &&
+            String(descricaoValue).toLowerCase().includes(searchLower),
+        )
+      }
 
       // Buscar por campos adicionais
       const searchFieldsMatch = searchFields.some((field) => {
@@ -71,9 +75,9 @@ export function useTableFilter<T extends Record<string, unknown>>(
         )
       })
 
-      // Buscar por valor
+      // Buscar por valor - apenas se valorField foi fornecido
       let valorMatch = false
-      if (searchNumber && searchNumber.length > 0 && valorField) {
+      if (valorField && searchNumber && searchNumber.length > 0) {
         const valorItem = Number(item[valorField]) || 0
 
         // Converter valor do item para string sem formatação

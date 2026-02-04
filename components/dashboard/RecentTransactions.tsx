@@ -25,7 +25,7 @@ interface RecentTransactionsProps {
 }
 
 export const RecentTransactions = memo(
-  ({ onViewExtract }: RecentTransactionsProps) => {
+  ({ onViewExtract: _onViewExtract }: RecentTransactionsProps) => {
     const router = useRouter()
     const [transactions, setTransactions] = useState<Transaction[]>([])
     const [isLoading, setIsLoading] = useState(true)
