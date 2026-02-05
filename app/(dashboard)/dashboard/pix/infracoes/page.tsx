@@ -1,18 +1,7 @@
 'use client'
 
 import { useState, useMemo, useCallback, memo } from 'react'
-
-import {
-  Filter,
-  Eye,
-  Download,
-  RotateCcw,
-  Calendar,
-  FileText,
-} from 'lucide-react'
-import { toast } from 'sonner'
-import * as XLSX from 'xlsx'
-
+import { Filter, Eye, RotateCcw, Calendar, FileText } from 'lucide-react'
 import { InfracaoDetailsModal } from '@/components/modals/InfracaoDetailsModal'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
@@ -94,35 +83,6 @@ const PixInfracoesPage = memo(() => {
 
   const hasData = !isLoading && processedData.items.length > 0
 
-  const handleExport = useCallback(() => {
-    if (processedData.items.length === 0) {
-      toast.error('Não há dados para exportar')
-      return
-    }
-
-    const buildRowsForExcel = (rows: InfracaoItem[]) =>
-      rows.map((r) => ({
-        ID: r.id,
-        Status: formatStatus(r.status),
-        'Data de Criação': r.data_criacao,
-        'Data Limite': r.data_limite,
-        Valor: r.valor,
-        'End to End': r.end_to_end,
-        Tipo: r.tipo,
-        Descrição: r.descricao,
-      }))
-
-    const rows = buildRowsForExcel(processedData.items)
-    const ws = XLSX.utils.json_to_sheet(rows)
-    const wb = XLSX.utils.book_new()
-    XLSX.utils.book_append_sheet(wb, ws, 'Infrações')
-
-    const fileName = `infracoes_${new Date().toISOString().slice(0, 10)}.xlsx`
-    XLSX.writeFile(wb, fileName)
-
-    toast.success('Arquivo exportado com sucesso!')
-  }, [processedData.items])
-
   const formatCurrency = formatCurrencyBRL
   const formatDate = formatDateForDisplay
 
@@ -172,16 +132,6 @@ const PixInfracoesPage = memo(() => {
           <p className="text-sm text-gray-600">
             Listagem das Infrações abertas ou recebidas pela conta
           </p>
-        </div>
-        <div className="flex items-center gap-2 sm:gap-3">
-          <Button
-            variant="outline"
-            size="sm"
-            icon={<Download size={16} />}
-            onClick={handleExport}
-          >
-            <span className="hidden sm:inline">Exportar</span>
-          </Button>
         </div>
       </div>
 

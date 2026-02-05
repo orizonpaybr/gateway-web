@@ -2,8 +2,7 @@
 
 import { useState, useMemo } from 'react'
 
-import { Download, Search, AlertTriangle } from 'lucide-react'
-import { toast } from 'sonner'
+import { Search, AlertTriangle } from 'lucide-react'
 
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
@@ -110,12 +109,6 @@ export default function InfracoesPage() {
     }
   }
 
-  const handleExport = () => {
-    toast.info(
-      'Funcionalidade de exportação será implementada com a integração da API',
-    )
-  }
-
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -125,9 +118,6 @@ export default function InfracoesPage() {
             Acompanhe infrações e bloqueios em sua conta
           </p>
         </div>
-        <Button icon={<Download size={18} />} onClick={handleExport}>
-          Exportar Infrações
-        </Button>
       </div>
 
       {stats.ativas > 0 && (
