@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useMemo } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { pixAPI, type PixDepositData, type PixDepositResponse } from '@/lib/api'
 import { toast } from 'sonner'
@@ -19,16 +19,34 @@ export function usePixDeposit(options: UsePixDepositOptions = {}) {
     pollingInterval = 5000,
   } = options
 
-  const { authReady } = useAuth()
+  const { authReady, user } = useAuth()
   const queryClient = useQueryClient()
   const [currentTransaction, setCurrentTransaction] = useState<string | null>(
     null,
   )
   const [isPolling, setIsPolling] = useState(false)
 
+  // Dados do usuário para preencher automaticamente
+  const userData = useMemo(() => ({
+    debtor_name: user?.name || '',
+    debtor_document_number: user?.cnpj || '',
+    email: user?.email || '',
+    phone: user?.phone || '',
+  }), [user])
+
   // Mutation para gerar QR Code
   const generateMutation = useMutation({
-    mutationFn: (data: PixDepositData) => pixAPI.generateDeposit(data),
+    mutationFn: (data: PixDepositData) => {
+      // Adicionar dados do usuário automaticamente
+      const fullData: PixDepositData = {
+        ...data,
+        debtor_name: data.debtor_name || userData.debtor_name,
+        debtor_document_number: data.debtor_document_number || userData.debtor_document_number,
+        email: data.email || userData.email,
+        phone: data.phone || userData.phone,
+      }
+      return pixAPI.generateDeposit(fullData)
+    },
     onSuccess: (data) => {
       const transactionId =
         data.data.idTransaction || data.data.transaction_id || null
@@ -61,7 +79,9 @@ export function usePixDeposit(options: UsePixDepositOptions = {}) {
   const { data: depositStatus, refetch: refetchStatus } = useQuery({
     queryKey: ['deposit-status', currentTransaction],
     queryFn: () => {
-      if (!currentTransaction) throw new Error('No transaction ID')
+      if (!currentTransaction) {
+        throw new Error('No transaction ID')
+      }
       return pixAPI.checkDepositStatus(currentTransaction)
     },
     enabled: authReady && isPolling && !!currentTransaction,

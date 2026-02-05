@@ -78,8 +78,3 @@ export interface AccountSettings {
     saqueAPI: boolean
   }
 }
-
-export interface NotificationSettings {
-  whatsapp: boolean
-  push: boolean
-}

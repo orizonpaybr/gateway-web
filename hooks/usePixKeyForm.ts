@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useMemo } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { pixAPI, accountAPI, PixKeyType, PixKey } from '@/lib/api'
+import { pixAPI, accountAPI, type PixKeyType, type PixKey } from '@/lib/api'
 import { validatePixKey } from '@/components/ui/PixKeyInput'
 import { centsToBRL } from '@/lib/format'
 import { toast } from 'sonner'
@@ -13,7 +13,6 @@ export function usePixKeyForm() {
   const { authReady } = useAuth()
 
   // ===== ESTADO LOCAL =====
-  const [step, setStep] = useState<'form' | 'confirm'>('form')
   const [selectedKeyType, setSelectedKeyType] = useState<PixKeyType>('cpf')
   const [keyValue, setKeyValue] = useState('')
   const [amount, setAmount] = useState('')
@@ -89,7 +88,6 @@ export function usePixKeyForm() {
 
   // ===== CALLBACKS ESTÁVEIS (não recriam a cada render) =====
   const resetForm = useCallback(() => {
-    setStep('form')
     setKeyValue('')
     setAmount('')
     setSelectedKeyType('cpf')
@@ -100,7 +98,7 @@ export function usePixKeyForm() {
     setKeyValue('')
   }, [])
 
-  const handleAdvanceToConfirm = useCallback(() => {
+  const handleConfirmWithdraw = useCallback(() => {
     // Validar chave PIX
     if (!isKeyValid) {
       toast.error('Chave PIX inválida')
@@ -118,23 +116,20 @@ export function usePixKeyForm() {
       return false
     }
 
-    setStep('confirm')
-    return true
-  }, [isKeyValid, numericAmount, balance])
-
-  const handleConfirmWithdraw = useCallback(() => {
     withdrawMutation.mutate({
       key_type: selectedKeyType,
       key_value: keyValue.replace(/\D/g, ''),
       amount: numericAmount,
     })
-  }, [selectedKeyType, keyValue, numericAmount, withdrawMutation])
-
-  const handleBack = useCallback(() => {
-    if (step === 'confirm') {
-      setStep('form')
-    }
-  }, [step])
+    return true
+  }, [
+    isKeyValid,
+    numericAmount,
+    balance,
+    selectedKeyType,
+    keyValue,
+    withdrawMutation,
+  ])
 
   const handleUseSavedKey = useCallback((key: PixKey) => {
     setSelectedKeyType(key.key_type)
@@ -144,7 +139,6 @@ export function usePixKeyForm() {
   // ===== RETORNO DO HOOK =====
   return {
     // Estado
-    step,
     selectedKeyType,
     keyValue,
     amount,
@@ -178,9 +172,7 @@ export function usePixKeyForm() {
 
     // Handlers
     handleKeyTypeChange,
-    handleAdvanceToConfirm,
     handleConfirmWithdraw,
-    handleBack,
     handleUseSavedKey,
     resetForm,
   }

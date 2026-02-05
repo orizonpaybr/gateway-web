@@ -87,6 +87,59 @@ export async function apiRequest<T>(
   return response.json()
 }
 
+// Função para fazer requisições com api_token/api_secret
+export async function apiRequestWithCredentials<T>(
+  endpoint: string,
+  options: RequestInit = {},
+): Promise<T> {
+  const apiToken =
+    typeof window !== 'undefined' ? localStorage.getItem('api_token') : null
+  const apiSecret =
+    typeof window !== 'undefined' ? localStorage.getItem('api_secret') : null
+
+  if (!apiToken || !apiSecret) {
+    throw new Error('Credenciais API não encontradas. Faça login novamente.')
+  }
+
+  const headers = {
+    'Content-Type': 'application/json',
+    api_token: apiToken,
+    api_secret: apiSecret,
+    ...options.headers,
+  }
+
+  const response = await fetch(`${BASE_URL}${endpoint}`, {
+    ...options,
+    headers,
+  })
+
+  // Tratamento centralizado de erros
+  if (!response.ok) {
+    // 401: limpar credenciais e emitir evento
+    if (response.status === 401) {
+      try {
+        clearAuthData()
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new Event('auth-unauthorized'))
+        }
+      } catch {
+        // Ignorar erros ao limpar autenticação
+      }
+    }
+
+    const errorPayload = await response.json().catch(() => ({}))
+    const message =
+      errorPayload?.message ||
+      (response.status === 401
+        ? 'Não autorizado. Faça login novamente.'
+        : 'Erro na requisição')
+
+    throw new Error(message)
+  }
+
+  return response.json()
+}
+
 // Interface para resposta de login/registro
 interface AuthResponse {
   success: boolean
@@ -480,8 +533,24 @@ export interface PixWithdrawData {
 export interface PixDepositData {
   amount: number
   description?: string
+  debtor_name?: string
+  debtor_document_number?: string
+  email?: string
+  phone?: string
+  postback?: string
+  split_email?: string
+  split_percentage?: number
 }
 
+interface TreealDepositResponse {
+  status: 'success' | 'error'
+  message: string
+  transaction_id?: string
+  amount?: number
+  qr_code?: string
+  qr_code_image_url?: string
+  expires_at?: string | null
+}
 export interface PixDepositResponse {
   success: boolean
   data: {
@@ -506,14 +575,28 @@ export const pixAPI = {
     throw new Error('API não implementada')
   },
 
-  // Gerar QR Code para depósito
+  // Gerar QR Code para depósito (integração Treal)
   generateDeposit: async (
     data: PixDepositData,
   ): Promise<PixDepositResponse> => {
-    return apiRequest('/pix/generate-qr', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    })
+    const response = await apiRequestWithCredentials<TreealDepositResponse>(
+      '/wallet/deposit/payment',
+      {
+        method: 'POST',
+        body: JSON.stringify(data),
+      },
+    )
+
+    return {
+      success: response.status === 'success',
+      data: {
+        transaction_id: response.transaction_id,
+        qr_code: response.qr_code,
+        qr_code_image_url: response.qr_code_image_url,
+        amount: response.amount || data.amount,
+        status: response.status,
+      },
+    }
   },
 
   // Verificar status do depósito
@@ -1640,182 +1723,6 @@ export const integrationAPI = {
       body: pin ? JSON.stringify({ pin }) : undefined,
     })
   },
-}
-
-// ========================================
-// Notificações (listar, marcar como lida, stats)
-// ========================================
-
-export interface NotificationItem {
-  id: number
-  user_id: string
-  type: string
-  title: string
-  body: string
-  data?: Record<string, unknown>
-  read_at?: string | null
-  created_at: string
-}
-
-export interface NotificationsResponse {
-  success: boolean
-  data: {
-    notifications: NotificationItem[]
-    current_page: number
-    last_page: number
-    per_page: number
-    total: number
-    unread_count: number
-  }
-}
-
-export async function listNotifications(params: {
-  page?: number
-  limit?: number
-  unread_only?: boolean
-  token: string
-  secret: string
-}): Promise<NotificationsResponse> {
-  const { token, secret, page = 1, limit = 20, unread_only = false } = params
-  const qs = new URLSearchParams({
-    page: String(page),
-    limit: String(limit),
-    unread_only: unread_only ? '1' : '0',
-    token,
-    secret,
-  }).toString()
-  return apiRequest(`/notifications?${qs}`, { method: 'GET' })
-}
-
-export async function markNotificationRead(
-  id: number,
-  token: string,
-  secret: string,
-): Promise<{ success: boolean; message: string }> {
-  return apiRequest(`/notifications/${id}/read`, {
-    method: 'POST',
-    body: JSON.stringify({ token, secret }),
-  })
-}
-
-export async function markAllNotificationsRead(
-  token: string,
-  secret: string,
-): Promise<{ success: boolean; message: string }> {
-  return apiRequest('/notifications/mark-all-read', {
-    method: 'POST',
-    body: JSON.stringify({ token, secret }),
-  })
-}
-
-export async function getNotificationsStats(
-  token: string,
-  secret: string,
-): Promise<{
-  success: boolean
-  data: { total: number; sent: number; unread: number; today: number }
-}> {
-  const qs = new URLSearchParams({ token, secret }).toString()
-  return apiRequest(`/notifications/stats?${qs}`, { method: 'GET' })
-}
-
-// ========================================
-// Notificações e Preferências
-// ========================================
-
-export interface NotificationPreferences {
-  id?: number
-  user_id: string
-  notify_transactions: boolean
-  notify_deposits: boolean
-  notify_withdrawals: boolean
-  notify_security: boolean
-  notify_system: boolean
-  created_at?: string
-  updated_at?: string
-}
-
-export interface NotificationPreferencesResponse {
-  success: boolean
-  message?: string
-  data: NotificationPreferences
-}
-
-/**
- * Obter preferências de notificação do usuário
- */
-export async function getNotificationPreferences(
-  token: string,
-  secret: string,
-): Promise<NotificationPreferencesResponse> {
-  return apiRequest('/notification-preferences', {
-    method: 'POST',
-    body: JSON.stringify({ token, secret }),
-  })
-}
-
-/**
- * Atualizar preferências de notificação
- */
-export async function updateNotificationPreferences(
-  token: string,
-  secret: string,
-  preferences: Partial<
-    Omit<
-      NotificationPreferences,
-      'id' | 'user_id' | 'created_at' | 'updated_at'
-    >
-  >,
-): Promise<NotificationPreferencesResponse> {
-  return apiRequest('/notification-preferences', {
-    method: 'PUT',
-    body: JSON.stringify({ token, secret, ...preferences }),
-  })
-}
-
-/**
- * Alternar uma preferência específica
- */
-export async function toggleNotificationPreference(
-  token: string,
-  secret: string,
-  type:
-    | 'notify_transactions'
-    | 'notify_deposits'
-    | 'notify_withdrawals'
-    | 'notify_security'
-    | 'notify_system',
-): Promise<NotificationPreferencesResponse> {
-  return apiRequest(`/notification-preferences/toggle/${type}`, {
-    method: 'POST',
-    body: JSON.stringify({ token, secret }),
-  })
-}
-
-/**
- * Desabilitar todas as notificações
- */
-export async function disableAllNotifications(
-  token: string,
-  secret: string,
-): Promise<NotificationPreferencesResponse> {
-  return apiRequest('/notification-preferences/disable-all', {
-    method: 'POST',
-    body: JSON.stringify({ token, secret }),
-  })
-}
-
-/**
- * Habilitar todas as notificações
- */
-export async function enableAllNotifications(
-  token: string,
-  secret: string,
-): Promise<NotificationPreferencesResponse> {
-  return apiRequest('/notification-preferences/enable-all', {
-    method: 'POST',
-    body: JSON.stringify({ token, secret }),
-  })
 }
 
 // ============================================

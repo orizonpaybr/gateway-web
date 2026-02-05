@@ -6,7 +6,6 @@ import { Settings } from 'lucide-react'
 
 import { ConfiguracoesContaTab } from '@/components/dashboard/ConfiguracoesContaTab'
 import { ConfiguracoesIntegracaoTab } from '@/components/dashboard/ConfiguracoesIntegracaoTab'
-import { ConfiguracoesNotificacoesTab } from '@/components/dashboard/ConfiguracoesNotificacoesTab'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/Tabs'
 import { useAuth } from '@/contexts/AuthContext'
 import { USER_STATUS } from '@/lib/constants'
@@ -58,7 +57,6 @@ const ConfiguracoesPage = memo(() => {
           {!isPending && (
             <TabsTrigger value="integracao">INTEGRAÇÃO</TabsTrigger>
           )}
-          <TabsTrigger value="notificacoes">NOTIFICAÇÕES</TabsTrigger>
         </TabsList>
 
         <TabsContent value="conta">
@@ -70,10 +68,6 @@ const ConfiguracoesPage = memo(() => {
             <ConfiguracoesIntegracaoTab />
           </TabsContent>
         )}
-
-        <TabsContent value="notificacoes">
-          <ConfiguracoesNotificacoesTab />
-        </TabsContent>
       </Tabs>
     </div>
   )

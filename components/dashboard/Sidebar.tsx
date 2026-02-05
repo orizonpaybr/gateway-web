@@ -65,7 +65,7 @@ const mainMenuItems: MenuItem[] = [
     hasSubmenu: true,
     submenu: [
       { label: 'Depositar', href: '/dashboard/pix/depositar' },
-      { label: 'Com Chave', href: '/dashboard/pix/chave' },
+      { label: 'Saque', href: '/dashboard/pix/chave' },
       { label: 'Infrações', href: '/dashboard/pix/infracoes' },
     ],
   },
@@ -78,7 +78,11 @@ const mainMenuItems: MenuItem[] = [
   },
   { icon: Clock, label: 'Transações Pendentes', href: '/dashboard/pendentes' },
   { icon: User, label: 'Dados da Conta', href: '/dashboard/conta' },
-  { icon: Settings, label: 'Configurações', href: '/dashboard/configuracoes' },
+  {
+    icon: Settings,
+    label: 'Configurações',
+    href: '/dashboard/configuracoes',
+  },
 ]
 
 const supportAndDocsItems: MenuItem[] = [
