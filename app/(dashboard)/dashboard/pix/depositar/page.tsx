@@ -8,13 +8,11 @@ import { PixDepositModal } from '@/components/modals/PixDepositModal'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { CurrencyInput } from '@/components/ui/CurrencyInput'
-import { Input } from '@/components/ui/Input'
 import { formatCurrencyBRL } from '@/lib/format'
 
 export default function DepositarPage() {
   const [isDepositModalOpen, setIsDepositModalOpen] = useState(false)
   const [selectedAmount, setSelectedAmount] = useState('')
-  const [selectedDescription, setSelectedDescription] = useState('')
 
   const quickAmounts = useMemo(() => [50, 100, 200, 500, 1000, 2000], [])
 
@@ -127,20 +125,15 @@ export default function DepositarPage() {
           <h2 className="text-lg font-semibold text-gray-900 mb-4">
             Ou Digite o Valor
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <CurrencyInput
-              label="VALOR DO DEPÓSITO"
-              value={selectedAmount}
-              onChange={setSelectedAmount}
-              placeholder="R$ 0,00"
-            />
-            <Input
-              label="DESCRIÇÃO (OPCIONAL)"
-              value={selectedDescription}
-              onChange={(e) => setSelectedDescription(e.target.value)}
-              placeholder="Ex: Recarga de saldo"
-              maxLength={100}
-            />
+          <div className="flex">
+            <div className="flex-1 min-w-0">
+              <CurrencyInput
+                label="VALOR DO DEPÓSITO"
+                value={selectedAmount}
+                onChange={setSelectedAmount}
+                placeholder="R$ 0,00"
+              />
+            </div>
           </div>
         </div>
 
@@ -204,7 +197,6 @@ export default function DepositarPage() {
         isOpen={isDepositModalOpen}
         onClose={() => setIsDepositModalOpen(false)}
         initialAmount={selectedAmount}
-        initialDescription={selectedDescription}
         minAmount={1}
       />
     </div>
