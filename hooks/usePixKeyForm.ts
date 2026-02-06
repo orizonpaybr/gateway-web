@@ -38,7 +38,19 @@ export function usePixKeyForm() {
   const withdrawMutation = useMutation({
     mutationFn: pixAPI.withdrawWithKey,
     onSuccess: (data) => {
-      toast.success(data.message || 'Saque realizado com sucesso!')
+      const isManual = data.data?.status === 'PENDING_APPROVAL'
+
+      if (isManual) {
+        toast.info(data.message || 'Saque criado com sucesso!', {
+          description:
+            data.data?.motivo_manual ||
+            'Aguardando aprovação do administrador.',
+          duration: 6000,
+        })
+      } else {
+        toast.success(data.message || 'Saque realizado com sucesso!')
+      }
+
       // Invalidar queries para forçar refetch
       queryClient.invalidateQueries({ queryKey: ['balance'] })
       queryClient.invalidateQueries({ queryKey: ['transactions'] })

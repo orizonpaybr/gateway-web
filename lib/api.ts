@@ -690,14 +690,23 @@ export const pixAPI = {
     message: string
     data: {
       transaction_id: string
+      withdrawal_id?: number
       amount: number
       key_type: string
       key_value: string
       description: string
       status: string
-      estimated_time: string
+      tipo_processamento?: string
+      motivo_manual?: string
+      observacao?: string
+      estimated_time?: string
       created_at: string
-      adquirente: string
+      adquirente?: string
+      taxa_cash_out?: number
+      taxa_adquirente?: number
+      taxa_aplicacao?: number
+      valor_liquido?: number
+      valor_total_descontar?: number
     }
   }> => {
     return apiRequest('/pix/withdraw-with-key', {
@@ -1901,10 +1910,10 @@ export interface UpdateUserData {
   complemento?: string | null
   media_faturamento?: number
   gerente_id?: number
-  // Taxas fixas (em centavos)
+  // Taxas fixas (em reais). null = usar padrão da aplicação
   taxas_personalizadas_ativas?: boolean
-  taxa_fixa_deposito?: number
-  taxa_fixa_pix?: number
+  taxa_fixa_deposito?: number | null
+  taxa_fixa_pix?: number | null
   limite_mensal_pf?: number
   observacoes_taxas?: string | null
   // Campos de adquirente

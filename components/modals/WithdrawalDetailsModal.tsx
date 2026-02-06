@@ -5,7 +5,6 @@ import {
   User,
   CreditCard,
   DollarSign,
-  Clock,
   CheckCircle,
   XCircle,
   Hash,
@@ -16,7 +15,6 @@ import { Dialog } from '@/components/ui/Dialog'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { useWithdrawalDetails } from '@/hooks/useWithdrawals'
 import { formatCurrencyBRL, formatDateTimeBR } from '@/lib/format'
-import { getStatusBadgeClasses } from '@/lib/helpers/withdrawalUtils'
 interface WithdrawalDetailsModalProps {
   isOpen: boolean
   onClose: () => void
@@ -53,95 +51,52 @@ export const WithdrawalDetailsModal = memo(
             </div>
           ) : saque ? (
             <>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <div className="bg-gray-50 rounded-lg p-3">
-                  <div className="flex items-center gap-2 mb-1.5">
-                    <DollarSign size={20} className="text-gray-600" />
-                    <span className="text-sm font-medium text-gray-600">
-                      Valor
-                    </span>
-                  </div>
-                  <div className="space-y-0.5">
-                    <div className="text-xl font-bold text-gray-900">
-                      {formatCurrencyBRL(saque.amount)}
-                    </div>
-                    <div className="text-xs text-gray-600">
-                      Líquido:{' '}
-                      <span className="font-medium">
-                        {formatCurrencyBRL(saque.valor_liquido)}
-                      </span>
-                    </div>
-                    <div className="text-xs text-gray-600">
-                      Taxa:{' '}
-                      <span className="font-medium">
-                        {formatCurrencyBRL(saque.taxa)}
-                      </span>
-                    </div>
-                  </div>
+              <div className="bg-gray-50 rounded-lg p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <DollarSign size={20} className="text-gray-600 shrink-0" />
+                  <span className="text-sm font-semibold text-gray-700">
+                    Valor
+                  </span>
                 </div>
-
-                <div className="bg-gray-50 rounded-lg p-3">
-                  <div className="flex items-center gap-2 mb-1.5">
-                    <Clock size={20} className="text-gray-600" />
-                    <span className="text-sm font-medium text-gray-600">
-                      Status
-                    </span>
+                <div className="space-y-1.5">
+                  <div className="text-xl font-bold text-gray-900">
+                    {formatCurrencyBRL(saque.amount)}
                   </div>
-                  <div className="space-y-1.5">
-                    <span className={getStatusBadgeClasses(saque.status)}>
-                      {saque.status_legivel}
-                    </span>
-                    <div className="text-xs text-gray-600">
-                      Tipo:{' '}
-                      <span className="font-medium">
-                        {saque.tipo_processamento}
-                      </span>
-                    </div>
-                    {saque.executor && (
-                      <div className="text-[11px] text-gray-500">
-                        Executor: {saque.executor}
-                      </div>
-                    )}
+                  <div className="flex flex-wrap gap-x-4 gap-y-0.5 text-xs text-gray-600">
+                    <span>Líquido: <span className="font-medium text-gray-800">{formatCurrencyBRL(saque.valor_liquido)}</span></span>
+                    <span>Taxa: <span className="font-medium text-gray-800">{formatCurrencyBRL(saque.taxa)}</span></span>
                   </div>
                 </div>
               </div>
 
               <div className="border-t pt-3">
                 <div className="flex items-center gap-2 mb-2">
-                  <User size={20} className="text-gray-600" />
+                  <User size={20} className="text-gray-600 shrink-0" />
                   <h3 className="font-semibold text-gray-900 text-sm">
                     Informações do Cliente
                   </h3>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <div>
-                    <div className="text-[11px] text-gray-600">Nome</div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
+                  <div className="flex flex-col gap-0.5">
+                    <span className="text-xs text-gray-500">Nome:</span>
                     <p className="text-sm font-medium text-gray-900">
                       {saque.nome_cliente}
                     </p>
                   </div>
-                  <div>
-                    <div className="text-[11px] text-gray-600">Documento</div>
+                  <div className="flex flex-col gap-0.5">
+                    <span className="text-xs text-gray-500">Documento:</span>
                     <p className="text-sm font-medium text-gray-900">
                       {saque.documento}
                     </p>
                   </div>
-                  <div>
-                    <div className="text-[11px] text-gray-600">Usuário</div>
-                    <p className="text-sm font-medium text-gray-900">
-                      {saque.username}
-                    </p>
-                  </div>
-                  <div>
-                    <div className="text-[11px] text-gray-600">Email</div>
-                    <p className="text-sm font-medium text-gray-900">
+                  <div className="flex flex-col gap-0.5">
+                    <span className="text-xs text-gray-500">Email:</span>
+                    <p className="text-sm font-medium text-gray-900 break-all">
                       {saque.email}
                     </p>
                   </div>
-                  <div>
-                    <div className="text-[11px] text-gray-600">
-                      Saldo do Usuário
-                    </div>
+                  <div className="flex flex-col gap-0.5">
+                    <span className="text-xs text-gray-500">Saldo do Usuário:</span>
                     <p className="text-sm font-medium text-gray-900">
                       {formatCurrencyBRL(saque.user_balance)}
                     </p>
@@ -151,31 +106,27 @@ export const WithdrawalDetailsModal = memo(
 
               <div className="border-t pt-3">
                 <div className="flex items-center gap-2 mb-2">
-                  <CreditCard size={20} className="text-gray-600" />
+                  <CreditCard size={20} className="text-gray-600 shrink-0" />
                   <h3 className="font-semibold text-gray-900 text-sm">
                     Informações PIX
                   </h3>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <div>
-                    <div className="text-[11px] text-gray-600">Chave PIX</div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
+                  <div className="flex flex-col gap-0.5">
+                    <span className="text-xs text-gray-500">Chave PIX:</span>
                     <p className="text-sm font-medium text-gray-900 break-all">
                       {saque.pix_key}
                     </p>
                   </div>
-                  <div>
-                    <div className="text-[11px] text-gray-600">
-                      Tipo de Chave
-                    </div>
+                  <div className="flex flex-col gap-0.5">
+                    <span className="text-xs text-gray-500">Tipo de Chave:</span>
                     <p className="text-sm font-medium text-gray-900">
                       {saque.pix_type}
                     </p>
                   </div>
                   {saque.end_to_end && (
-                    <div className="md:col-span-2">
-                      <div className="text-[11px] text-gray-600">
-                        End to End
-                      </div>
+                    <div className="md:col-span-2 flex flex-col gap-0.5">
+                      <span className="text-xs text-gray-500">End to End:</span>
                       <p className="text-sm font-medium text-gray-900 break-all">
                         {saque.end_to_end}
                       </p>
@@ -186,69 +137,55 @@ export const WithdrawalDetailsModal = memo(
 
               <div className="border-t pt-3">
                 <div className="flex items-center gap-2 mb-2">
-                  <Hash size={20} className="text-gray-600" />
+                  <Hash size={20} className="text-gray-600 shrink-0" />
                   <h3 className="font-semibold text-gray-900 text-sm">
                     Informações da Transação
                   </h3>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <div>
-                    <div className="text-[11px] text-gray-600">ID</div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
+                  <div className="flex flex-col gap-0.5">
+                    <span className="text-xs text-gray-500">ID:</span>
                     <p className="text-sm font-medium text-gray-900">
                       #{saque.id}
                     </p>
                   </div>
-                  <div>
-                    <div className="text-[11px] text-gray-600">
-                      Transaction ID
-                    </div>
+                  <div className="flex flex-col gap-0.5">
+                    <span className="text-xs text-gray-500">Transaction ID:</span>
                     <p className="text-sm font-medium text-gray-900 break-all">
                       {saque.transaction_id}
                     </p>
                   </div>
                   {saque.id_transaction_gateway && (
-                    <div className="md:col-span-2">
-                      <div className="text-[11px] text-gray-600">
-                        ID Gateway
-                      </div>
+                    <div className="md:col-span-2 flex flex-col gap-0.5">
+                      <span className="text-xs text-gray-500">ID Gateway:</span>
                       <p className="text-sm font-medium text-gray-900 break-all">
                         {saque.id_transaction_gateway}
                       </p>
                     </div>
                   )}
-                  <div>
-                    <div className="text-[11px] text-gray-600">Descrição</div>
-                    <p className="text-sm font-medium text-gray-900">
-                      {saque.descricao}
-                    </p>
-                  </div>
                 </div>
               </div>
 
               <div className="border-t pt-3">
                 <div className="flex items-center gap-2 mb-2">
-                  <Calendar size={20} className="text-gray-600" />
+                  <Calendar size={20} className="text-gray-600 shrink-0" />
                   <h3 className="font-semibold text-gray-900 text-sm">Datas</h3>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                  <div>
-                    <div className="text-[11px] text-gray-600">
-                      Data do Saque
-                    </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-3">
+                  <div className="flex flex-col gap-0.5">
+                    <span className="text-xs text-gray-500">Data do Saque:</span>
                     <p className="text-sm font-medium text-gray-900">
                       {formatDateTimeBR(saque.data)}
                     </p>
                   </div>
-                  <div>
-                    <div className="text-[11px] text-gray-600">Criado em</div>
+                  <div className="flex flex-col gap-0.5">
+                    <span className="text-xs text-gray-500">Criado em:</span>
                     <p className="text-sm font-medium text-gray-900">
                       {formatDateTimeBR(saque.created_at)}
                     </p>
                   </div>
-                  <div>
-                    <div className="text-[11px] text-gray-600">
-                      Atualizado em
-                    </div>
+                  <div className="flex flex-col gap-0.5">
+                    <span className="text-xs text-gray-500">Atualizado em:</span>
                     <p className="text-sm font-medium text-gray-900">
                       {formatDateTimeBR(saque.updated_at)}
                     </p>

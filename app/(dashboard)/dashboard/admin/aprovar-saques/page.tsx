@@ -281,7 +281,7 @@ const AprovarSaquesPage = memo(() => {
         <div className="space-y-4">
           <div className="flex w-full items-center gap-2 flex-col sm:flex-row">
             <Input
-              placeholder="Buscar..."
+              placeholder="Buscar saques..."
               value={search}
               onChange={(e) => {
                 setSearch(e.target.value)
