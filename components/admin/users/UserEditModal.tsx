@@ -4,7 +4,6 @@ import { Dialog } from '@/components/ui/Dialog'
 import { Input } from '@/components/ui/Input'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import { Select } from '@/components/ui/Select'
-import { useManagers, usePixAcquirers } from '@/hooks/useAdminUsers'
 import type { AdminUser, UpdateUserData } from '@/lib/api'
 import { USER_PERMISSION_OPTIONS } from '@/lib/constants'
 import { formatCpfCnpjBR, formatPhoneBR } from '@/lib/format'
@@ -15,18 +14,10 @@ interface UserEditModalProps {
   onSubmit: (userId: number, data: UpdateUserData) => Promise<void> | void
 }
 
-const DEFAULT_PIX_OPTION = {
-  label: 'Usar adquirente PIX padrão do sistema',
-  value: 'default',
-}
-
 export const UserEditModal = memo(
   ({ open, onClose, user, onSubmit }: UserEditModalProps) => {
     const [form, setForm] = useState<UpdateUserData>({})
     const isReady = !!user
-
-    const { data: managers } = useManagers(open)
-    const { data: pixAcquirers } = usePixAcquirers(open)
 
     // Função auxiliar para formatar data para input type="date" (YYYY-MM-DD)
     const formatDateForInput = useCallback(
@@ -69,9 +60,6 @@ export const UserEditModal = memo(
         cpf_cnpj: user.cpf_cnpj || user.cpf || '',
         data_nascimento: formatDateForInput(user.data_nascimento),
         permission: user.permission || 1,
-        preferred_adquirente: user.preferred_adquirente,
-        adquirente_override: user.adquirente_override,
-        gerente_id: user.gerente_id || undefined,
       })
     }, [user, formatDateForInput])
 
@@ -105,28 +93,6 @@ export const UserEditModal = memo(
           value: String(o.value),
         })),
       [],
-    )
-
-    const managerOptions = useMemo(
-      () => [
-        { label: 'Nenhum', value: '' },
-        ...(managers || []).map((m) => ({
-          label: m.name || m.username,
-          value: String(m.id),
-        })),
-      ],
-      [managers],
-    )
-
-    const pixAcquirerOptions = useMemo(
-      () => [
-        DEFAULT_PIX_OPTION,
-        ...(pixAcquirers || []).map((a) => ({
-          label: a.name,
-          value: a.referencia,
-        })),
-      ],
-      [pixAcquirers],
     )
 
     const handleSave = useCallback(async () => {
@@ -214,33 +180,6 @@ export const UserEditModal = memo(
                 }}
                 options={permissionOptions}
               />
-              <Select
-                label="Gerente:"
-                value={String(form.gerente_id || '')}
-                onChange={(val) => {
-                  handleChange('gerente_id', val ? Number(val) : undefined)
-                }}
-                options={managerOptions}
-              />
-            </div>
-
-            <div>
-              <p className="text-sm font-semibold text-gray-900">
-                Adquirente PIX Específica:
-              </p>
-              <Select
-                value={String(form.preferred_adquirente || 'default')}
-                onChange={(val) => {
-                  handleChange(
-                    'preferred_adquirente',
-                    val === 'default' ? undefined : val,
-                  )
-                }}
-                options={pixAcquirerOptions}
-              />
-              <p className="text-xs text-gray-500">
-                Adquirente usada para pagamentos via PIX
-              </p>
             </div>
           </div>
         )}

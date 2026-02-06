@@ -319,14 +319,6 @@ export const UserViewModal = memo(
                 <p className="font-medium">{user.telefone || '-'}</p>
               </div>
               <div>
-                <p className="text-gray-500">Razão Social:</p>
-                <p className="font-medium">{user.razao_social || '-'}</p>
-              </div>
-              <div>
-                <p className="text-gray-500">Nome Fantasia:</p>
-                <p className="font-medium">{user.nome_fantasia || '-'}</p>
-              </div>
-              <div>
                 <p className="text-gray-500">CPF/CNPJ:</p>
                 <p className="font-medium">
                   {user.cpf_cnpj || user.cpf || '-'}
