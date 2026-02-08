@@ -192,3 +192,4 @@ Este projeto é proprietário da Orizon Pay.
 ## 👥 Suporte
 
 Para suporte técnico, consulte a documentação ou entre em contato com a equipe de desenvolvimento.
+# gateway-web
