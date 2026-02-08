@@ -1,0 +1,121 @@
+name: 🚀 Deploy to Production
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch: # Permite execução manual
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  # Job 1: Verificação antes do deploy
+  pre-deploy:
+    name: ✅ Pre-Deploy Checks
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 📥 Install dependencies
+        run: npm ci
+
+      - name: 🔍 Type Check
+        run: npm run type-check
+
+      - name: 🧹 Lint
+        run: npm run lint:strict
+
+      - name: 🏗️ Build Next.js
+        run: npm run build
+        env:
+          NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
+
+  # Job 2: Deploy para produção
+  deploy:
+    name: 🚀 Deploy to Production
+    needs: pre-deploy
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 🔐 Setup SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: 🔍 Add server to known hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
+
+      - name: 🚀 Deploy to server
+        env:
+          SERVER_HOST: ${{ secrets.SERVER_HOST }}
+          SERVER_USER: ${{ secrets.SERVER_USER }}
+          APP_DIR: ${{ secrets.APP_DIR }}
+          NODE_VERSION: ${{ env.NODE_VERSION }}
+        run: |
+          echo "🚀 Iniciando deploy do front-end..."
+          
+          ssh $SERVER_USER@$SERVER_HOST bash << 'EOF'
+            set -e
+            cd $APP_DIR || exit 1
+            
+            echo "📥 Fazendo pull do código..."
+            git fetch origin
+            git checkout main
+            git pull origin main
+            
+            echo "📦 Instalando dependências..."
+            npm ci --production=false
+            
+            echo "🏗️ Construindo aplicação..."
+            export NEXT_PUBLIC_API_URL="${{ secrets.NEXT_PUBLIC_API_URL }}"
+            npm run build
+            
+            echo "🔄 Reiniciando serviço (PM2/Systemd)..."
+            # Ajuste o comando abaixo conforme seu gerenciador de processos
+            # Para PM2:
+            # pm2 restart gateway-web || pm2 start npm --name gateway-web -- start
+            # Para Systemd:
+            # sudo systemctl restart gateway-web || true
+            
+            echo "🧹 Limpando cache do Next.js..."
+            rm -rf .next/cache || true
+            
+            echo "✅ Deploy concluído com sucesso!"
+          EOF
+
+      - name: ✅ Health Check
+        env:
+          SERVER_HOST: ${{ secrets.SERVER_HOST }}
+          APP_URL: ${{ secrets.APP_URL }}
+        run: |
+          echo "🔍 Verificando saúde da aplicação..."
+          sleep 10
+          # Ajuste a URL conforme necessário
+          curl -f ${APP_URL:-http://$SERVER_HOST} || exit 1
+          echo "✅ Aplicação está respondendo!"
+
+      - name: 📢 Notify deployment
+        if: always()
+        run: |
+          if [ "${{ job.status }}" == "success" ]; then
+            echo "✅ Deploy concluído com sucesso!"
+          else
+            echo "❌ Deploy falhou!"
+          fi
