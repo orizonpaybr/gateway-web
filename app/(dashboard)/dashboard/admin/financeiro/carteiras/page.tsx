@@ -1,10 +1,7 @@
 'use client'
 
 import { useState, useMemo, useCallback, memo } from 'react'
-
-import { Wallet, Download, Award } from 'lucide-react'
-import { toast } from 'sonner'
-
+import { Wallet, Award } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
@@ -12,11 +9,9 @@ import { Skeleton } from '@/components/ui/Skeleton'
 import { useAuth } from '@/contexts/AuthContext'
 import { useDebounce } from '@/hooks/useDebounce'
 import { useWallets, useWalletsStats } from '@/hooks/useFinancial'
-import { useFinancialExport } from '@/hooks/useFinancialExport'
 import type { Wallet as WalletType, Top3User } from '@/lib/api'
 import { USER_PERMISSION } from '@/lib/constants'
 import { formatCurrencyBRL } from '@/lib/format'
-import { openWhatsApp } from '@/lib/helpers/whatsappUtils'
 
 const PER_PAGE = 20
 const DEBOUNCE_DELAY = 500
@@ -28,15 +23,15 @@ const StatsCard = memo<{
   gradient: string
   textColor: string
 }>(({ label, value, isLoading, gradient, textColor }) => (
-  <Card className={gradient}>
-    <div className="p-6">
+  <Card className={`${gradient} min-w-0`}>
+    <div className="p-4 sm:p-6">
       {isLoading ? (
         <Skeleton className="h-16 w-full" />
       ) : (
         <>
           <p className={`text-sm font-medium ${textColor} mb-1`}>{label}</p>
           <p
-            className={`text-3xl font-bold ${textColor.replace('700', '900')}`}
+            className={`text-xl sm:text-3xl font-bold whitespace-nowrap overflow-hidden text-ellipsis min-w-0 ${textColor.replace('700', '900')}`}
           >
             {value}
           </p>
@@ -63,21 +58,28 @@ const Top3UserItem = memo<{
   }, [index])
 
   return (
-    <div className="flex items-center justify-between p-3 bg-white rounded-lg border border-amber-200">
-      <div className="flex items-center gap-3">
+    <div className="flex items-center justify-between gap-2 min-w-0 p-3 bg-white rounded-lg border border-amber-200">
+      <div className="flex items-center gap-2">
         <div
-          className={`flex items-center justify-center w-8 h-8 rounded-full font-bold text-sm ${medalColors}`}
+          className={`flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-full font-bold text-sm ${medalColors}`}
         >
           {index + 1}º
         </div>
-        <div>
-          <p className="font-semibold text-gray-900">{user.name}</p>
-          <p className="text-xs text-gray-600">@{user.username}</p>
+        <div className="min-w-0 flex-1">
+          <p className="font-semibold text-gray-900 truncate" title={user.name}>
+            {user.name}
+          </p>
+          <p
+            className="text-xs text-gray-600 truncate"
+            title={`@${user.username}`}
+          >
+            @{user.username}
+          </p>
         </div>
       </div>
-      <div className="text-right">
+      <div className="flex-shrink-0 text-right whitespace-nowrap">
         <p className="text-sm text-gray-600">Saldo</p>
-        <p className="font-bold text-green-600">
+        <p className="font-bold text-green-600 text-sm sm:text-base">
           {formatCurrencyBRL(user.saldo)}
         </p>
       </div>
@@ -89,8 +91,7 @@ Top3UserItem.displayName = 'Top3UserItem'
 
 const WalletTableRow = memo<{
   wallet: WalletType
-  onWhatsAppClick: (phone: string | null) => void
-}>(({ wallet, onWhatsAppClick }) => (
+}>(({ wallet }) => (
   <tr className="border-b border-gray-100 hover:bg-gray-50">
     <td className="py-4 px-4">
       <span className="text-sm font-medium text-gray-900">
@@ -112,16 +113,6 @@ const WalletTableRow = memo<{
     </td>
     <td className="py-4 px-4">
       <span className="text-sm text-gray-600">{wallet.telefone || '—'}</span>
-    </td>
-    <td className="py-4 px-4">
-      <Button
-        variant="primary"
-        size="sm"
-        className="bg-green-600 hover:bg-green-700"
-        onClick={() => onWhatsAppClick(wallet.telefone)}
-      >
-        WHATSAPP
-      </Button>
     </td>
   </tr>
 ))
@@ -161,27 +152,6 @@ const CarteirasPage = memo(() => {
       totalItems: data.data.total || 0,
     }
   }, [data])
-
-  const { handleExport } = useFinancialExport<WalletType>(
-    processedData.items as WalletType[],
-    {
-      filename: `carteiras_${new Date().toISOString().slice(0, 10)}.csv`,
-      sheetName: 'Carteiras',
-      customMapper: (item) => ({
-        'User ID': item.user_id,
-        Faturamento: item.total_transacoes,
-        'Saldo da Carteira': item.saldo,
-        Email: item.email,
-        Telefone: item.telefone || 'Não informado',
-      }),
-    },
-  )
-
-  const handleWhatsApp = useCallback((telefone: string | null) => {
-    if (!openWhatsApp(telefone)) {
-      toast.error('Telefone não cadastrado ou inválido')
-    }
-  }, [])
 
   const handleSearchChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -281,27 +251,12 @@ const CarteirasPage = memo(() => {
                 Relatório de Usuários
               </h2>
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              icon={<Download size={16} />}
-              onClick={handleExport}
-              className="border-blue-400 text-blue-600 hover:bg-blue-50 bg-white"
-            >
-              Exportar
-            </Button>
           </div>
 
           <div className="mb-4">
-            <label
-              htmlFor="carteiras-search"
-              className="block text-sm font-medium text-gray-700 mb-2"
-            >
-              Pesquisar
-            </label>
             <Input
               id="carteiras-search"
-              placeholder="Pesquisar"
+              placeholder="Buscar carteiras..."
               value={search}
               onChange={handleSearchChange}
               className="max-w-md"
@@ -327,15 +282,12 @@ const CarteirasPage = memo(() => {
                   <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">
                     Telefone
                   </th>
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">
-                    Ação
-                  </th>
                 </tr>
               </thead>
               <tbody>
                 {isLoading ? (
                   <tr>
-                    <td colSpan={6} className="p-4">
+                    <td colSpan={5} className="p-4">
                       <div className="space-y-3">
                         <Skeleton className="h-12 w-full" />
                         <Skeleton className="h-12 w-full" />
@@ -345,7 +297,7 @@ const CarteirasPage = memo(() => {
                   </tr>
                 ) : !hasData ? (
                   <tr>
-                    <td colSpan={6} className="py-16 text-center">
+                    <td colSpan={5} className="py-16 text-center">
                       <div className="flex items-center justify-center mb-4">
                         <div className="w-12 h-12 rounded-lg bg-blue-50 flex items-center justify-center">
                           <Wallet className="text-blue-400" />
@@ -361,11 +313,7 @@ const CarteirasPage = memo(() => {
                   </tr>
                 ) : (
                   processedData.items.map((carteira) => (
-                    <WalletTableRow
-                      key={carteira.id}
-                      wallet={carteira}
-                      onWhatsAppClick={handleWhatsApp}
-                    />
+                    <WalletTableRow key={carteira.id} wallet={carteira} />
                   ))
                 )}
               </tbody>

@@ -1,31 +1,16 @@
 'use client'
 
 import { useState, useMemo, useCallback, memo } from 'react'
-
-import { format } from 'date-fns'
-import {
-  TrendingUp,
-  CheckCircle,
-  RotateCcw,
-  Download,
-  Calendar,
-} from 'lucide-react'
-import { toast } from 'sonner'
-import * as XLSX from 'xlsx'
-
+import { TrendingUp, CheckCircle, RotateCcw, Calendar } from 'lucide-react'
 import { DepositStatsCard } from '@/components/financial/DepositStatsCard'
 import { DepositStatusBadge } from '@/components/financial/DepositStatusBadge'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
-import { Dialog } from '@/components/ui/Dialog'
 import { Input } from '@/components/ui/Input'
-import { Select } from '@/components/ui/Select'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { useAuth } from '@/contexts/AuthContext'
 import { useDebounce } from '@/hooks/useDebounce'
-import { useDepositStatusUpdate } from '@/hooks/useDepositStatusUpdate'
 import { useDeposits, useDepositsStats } from '@/hooks/useFinancial'
-import type { Deposit } from '@/lib/api'
 import { USER_PERMISSION } from '@/lib/constants'
 import { formatCurrencyBRL } from '@/lib/format'
 import {
@@ -45,18 +30,11 @@ const EntradasPage = memo(() => {
   const [tempEndDate, setTempEndDate] = useState('')
   const [page, setPage] = useState(1)
   const [showDatePicker, setShowDatePicker] = useState(false)
-  const [confirmStatusChange, setConfirmStatusChange] = useState<{
-    depositoId: number
-    newStatus: string
-    depositoInfo?: Deposit
-  } | null>(null)
   const perPage = 20
 
   const isAdmin = useMemo(() => {
     return !!user && Number(user.permission) === USER_PERMISSION.ADMIN
   }, [user])
-
-  const updateStatusMutation = useDepositStatusUpdate()
 
   // Usar helper function existente para calcular range de datas
   const dateRange = useMemo(
@@ -107,30 +85,6 @@ const EntradasPage = memo(() => {
     setPage(1)
   }, [])
 
-  const handleExport = useCallback(() => {
-    if (processedData.items.length === 0) {
-      toast.error('Nenhum depósito para exportar')
-      return
-    }
-
-    const exportData = processedData.items.map((item) => ({
-      Meio: item.meio || 'PIX',
-      'User ID': item.cliente_id,
-      'Transação ID': item.transacao_id,
-      Valor: item.valor_total,
-      'Valor Líquido': item.valor_liquido,
-      Status: item.status_legivel,
-      Data: format(new Date(item.data), 'dd/MM/yyyy HH:mm'),
-      Taxa: item.taxa,
-    }))
-
-    const ws = XLSX.utils.json_to_sheet(exportData)
-    const wb = XLSX.utils.book_new()
-    XLSX.utils.book_append_sheet(wb, ws, 'Entradas')
-    XLSX.writeFile(wb, `entradas_${new Date().toISOString().slice(0, 10)}.xlsx`)
-    toast.success('Arquivo exportado com sucesso!')
-  }, [processedData.items])
-
   const canPrev = useMemo(() => page > 1, [page])
   const canNext = useMemo(
     () => page < processedData.totalPages,
@@ -139,38 +93,6 @@ const EntradasPage = memo(() => {
   const hasData = useMemo(
     () => !isLoading && processedData.items.length > 0,
     [isLoading, processedData.items.length],
-  )
-
-  const statusOptions = useMemo(
-    () => [
-      { value: 'PENDING', label: 'Pendente' },
-      { value: 'PAID_OUT', label: 'Aprovado' },
-      { value: 'COMPLETED', label: 'Completo' },
-      { value: 'CANCELLED', label: 'Cancelado' },
-    ],
-    [],
-  )
-
-  // Função para obter opções de status incluindo o status atual se não estiver na lista
-  const getStatusOptionsForDeposit = useCallback(
-    (deposito: Deposit) => {
-      const currentStatusInOptions = statusOptions.find(
-        (opt) => opt.value === deposito.status,
-      )
-
-      if (!currentStatusInOptions) {
-        return [
-          ...statusOptions,
-          {
-            value: deposito.status,
-            label: deposito.status_legivel || deposito.status,
-          },
-        ]
-      }
-
-      return statusOptions
-    },
-    [statusOptions],
   )
 
   const handlePeriodFilterChange = useCallback((period: string) => {
@@ -191,34 +113,6 @@ const EntradasPage = memo(() => {
     setPage(1)
   }, [])
 
-  const handleStatusChange = useCallback(
-    (depositoId: number, newStatus: string) => {
-      const deposito = processedData.items.find((d) => d.id === depositoId)
-      setConfirmStatusChange({
-        depositoId,
-        newStatus,
-        depositoInfo: deposito,
-      })
-    },
-    [processedData.items],
-  )
-
-  const handleConfirmStatusChange = useCallback(async () => {
-    if (!confirmStatusChange) {
-      return
-    }
-
-    try {
-      await updateStatusMutation.mutateAsync({
-        depositoId: confirmStatusChange.depositoId,
-        newStatus: confirmStatusChange.newStatus,
-      })
-      setConfirmStatusChange(null)
-    } catch (error) {
-      // Erro já é tratado pelo hook (toast será exibido)
-    }
-  }, [confirmStatusChange, updateStatusMutation])
-
   return (
     <div className="p-4 md:p-6 space-y-6">
       <div className="flex items-start justify-between gap-3">
@@ -235,94 +129,94 @@ const EntradasPage = memo(() => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <DepositStatsCard
-          title="Aprovadas (Total)"
-          value={stats?.data?.depositos_aprovados_geral ?? 0}
-          isLoading={statsLoading}
-          icon={CheckCircle}
-          iconBgColor="bg-green-500"
-          valueColor="text-green-600"
-        />
-        <DepositStatsCard
-          title="Aprovadas (Hoje)"
-          value={stats?.data?.depositos_aprovados_hoje ?? 0}
-          isLoading={statsLoading}
-          icon={CheckCircle}
-          iconBgColor="bg-green-500"
-          valueColor="text-green-600"
-        />
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 min-w-0">
+        <div className="min-w-0">
+          <DepositStatsCard
+            title="Aprovadas (Total)"
+            value={stats?.data?.depositos_aprovados_geral ?? 0}
+            isLoading={statsLoading}
+            icon={CheckCircle}
+            iconBgColor="bg-green-500"
+            valueColor="text-green-600"
+          />
+        </div>
+        <div className="min-w-0">
+          <DepositStatsCard
+            title="Aprovadas (Hoje)"
+            value={stats?.data?.depositos_aprovados_hoje ?? 0}
+            isLoading={statsLoading}
+            icon={CheckCircle}
+            iconBgColor="bg-green-500"
+            valueColor="text-green-600"
+          />
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <DepositStatsCard
-          title="Aprovadas (Mês)"
-          value={stats?.data?.depositos_aprovados_mes ?? 0}
-          isLoading={statsLoading}
-          icon={CheckCircle}
-          iconBgColor="bg-green-500"
-          valueColor="text-green-600"
-        />
-        <DepositStatsCard
-          title="Transações geral"
-          value={stats?.data?.total_depositos_geral ?? 0}
-          isLoading={statsLoading}
-          icon={RotateCcw}
-          iconBgColor="bg-yellow-500"
-          valueColor="text-yellow-600"
-        />
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 min-w-0">
+        <div className="min-w-0">
+          <DepositStatsCard
+            title="Aprovadas (Mês)"
+            value={stats?.data?.depositos_aprovados_mes ?? 0}
+            isLoading={statsLoading}
+            icon={CheckCircle}
+            iconBgColor="bg-green-500"
+            valueColor="text-green-600"
+          />
+        </div>
+        <div className="min-w-0">
+          <DepositStatsCard
+            title="Transações geral"
+            value={stats?.data?.total_depositos_geral ?? 0}
+            isLoading={statsLoading}
+            icon={RotateCcw}
+            iconBgColor="bg-yellow-500"
+            valueColor="text-yellow-600"
+          />
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <DepositStatsCard
-          title="Aprovadas (Bruto)"
-          value={stats?.data?.valor_total_geral ?? 0}
-          isLoading={statsLoading}
-          icon={CheckCircle}
-          iconBgColor="bg-yellow-500"
-          valueColor="text-green-600"
-          isCurrency
-        />
-        <DepositStatsCard
-          title="Aprovadas (Hoje)"
-          value={stats?.data?.valor_total_hoje ?? 0}
-          isLoading={statsLoading}
-          icon={CheckCircle}
-          iconBgColor="bg-yellow-500"
-          valueColor="text-green-600"
-          isCurrency
-        />
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <DepositStatsCard
-          title="Aprovadas (Mês)"
-          value={stats?.data?.valor_total_mes ?? 0}
-          isLoading={statsLoading}
-          icon={CheckCircle}
-          iconBgColor="bg-yellow-500"
-          valueColor="text-green-600"
-          isCurrency
-        />
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 min-w-0">
+        <div className="min-w-0">
+          <DepositStatsCard
+            title="Aprovadas (Bruto)"
+            value={stats?.data?.valor_total_geral ?? 0}
+            isLoading={statsLoading}
+            icon={CheckCircle}
+            iconBgColor="bg-yellow-500"
+            valueColor="text-green-600"
+            isCurrency
+          />
+        </div>
+        <div className="min-w-0">
+          <DepositStatsCard
+            title="Aprovadas (Hoje)"
+            value={stats?.data?.valor_total_hoje ?? 0}
+            isLoading={statsLoading}
+            icon={CheckCircle}
+            iconBgColor="bg-yellow-500"
+            valueColor="text-green-600"
+            isCurrency
+          />
+        </div>
+        <div className="min-w-0 sm:col-span-2">
+          <DepositStatsCard
+            title="Aprovadas (Mês)"
+            value={stats?.data?.valor_total_mes ?? 0}
+            isLoading={statsLoading}
+            icon={CheckCircle}
+            iconBgColor="bg-yellow-500"
+            valueColor="text-green-600"
+            isCurrency
+          />
+        </div>
       </div>
 
       <Card className="border border-gray-200 shadow-sm">
         <div className="p-6">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <h2 className="text-lg font-bold text-gray-900">
-                Relatório de Transações
-              </h2>
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              icon={<Download size={16} />}
-              onClick={handleExport}
-              className="border-blue-400 text-blue-600 hover:bg-blue-50 bg-white"
-            >
-              Exportar
-            </Button>
+          <div className="mb-4">
+            <h2 className="text-lg font-bold text-gray-900">
+              Relatório de Transações
+            </h2>
           </div>
 
           <div className="mb-4">
@@ -527,15 +421,12 @@ const EntradasPage = memo(() => {
                   <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">
                     Taxa
                   </th>
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">
-                    Ações
-                  </th>
                 </tr>
               </thead>
               <tbody>
                 {isLoading ? (
                   <tr>
-                    <td colSpan={9} className="p-4">
+                    <td colSpan={8} className="p-4">
                       <div className="space-y-3">
                         <Skeleton className="h-12 w-full" />
                         <Skeleton className="h-12 w-full" />
@@ -545,7 +436,7 @@ const EntradasPage = memo(() => {
                   </tr>
                 ) : !hasData ? (
                   <tr>
-                    <td colSpan={9} className="py-16 text-center">
+                    <td colSpan={8} className="py-16 text-center">
                       <div className="flex items-center justify-center mb-4">
                         <div className="w-12 h-12 rounded-lg bg-blue-50 flex items-center justify-center">
                           <TrendingUp className="text-blue-400" />
@@ -590,19 +481,6 @@ const EntradasPage = memo(() => {
                       <td className="py-3 px-4 text-sm font-bold text-gray-900">
                         {formatCurrencyBRL(deposito.taxa)}
                       </td>
-                      <td className="py-3 px-4">
-                        <div className="w-32">
-                          <Select
-                            options={getStatusOptionsForDeposit(deposito)}
-                            value={deposito.status}
-                            onChange={(value) =>
-                              handleStatusChange(deposito.id, value)
-                            }
-                            placeholder=""
-                            className="[&>div>div>button]:py-2 [&>div>div>button]:text-xs [&>div>div>button]:px-2"
-                          />
-                        </div>
-                      </td>
                     </tr>
                   ))
                 )}
@@ -640,63 +518,6 @@ const EntradasPage = memo(() => {
           </div>
         </div>
       </Card>
-
-      <Dialog
-        open={!!confirmStatusChange}
-        onClose={() => setConfirmStatusChange(null)}
-        title="Confirmar alteração de status"
-        footer={
-          <div className="flex justify-end gap-2">
-            <Button
-              variant="outline"
-              onClick={() => setConfirmStatusChange(null)}
-            >
-              Cancelar
-            </Button>
-            <Button onClick={handleConfirmStatusChange}>Confirmar</Button>
-          </div>
-        }
-      >
-        {confirmStatusChange && (
-          <div className="space-y-2">
-            <p className="text-sm text-gray-600">
-              Tem certeza que deseja alterar o status do depósito?
-            </p>
-            <div className="bg-gray-50 rounded-lg p-3 space-y-1">
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Transação ID:</span>
-                <span className="font-medium text-gray-900">
-                  {confirmStatusChange.depositoInfo?.transacao_id || 'N/A'}
-                </span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Cliente:</span>
-                <span className="font-medium text-gray-900">
-                  {confirmStatusChange.depositoInfo?.cliente_nome || 'N/A'}
-                </span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Valor:</span>
-                <span className="font-medium text-gray-900">
-                  {confirmStatusChange.depositoInfo
-                    ? formatCurrencyBRL(
-                        confirmStatusChange.depositoInfo.valor_total,
-                      )
-                    : 'N/A'}
-                </span>
-              </div>
-              <div className="flex justify-between text-sm pt-2 border-t border-gray-200">
-                <span className="text-gray-600">Novo Status:</span>
-                <span className="font-medium text-gray-900">
-                  {statusOptions.find(
-                    (opt) => opt.value === confirmStatusChange.newStatus,
-                  )?.label || confirmStatusChange.newStatus}
-                </span>
-              </div>
-            </div>
-          </div>
-        )}
-      </Dialog>
     </div>
   )
 })

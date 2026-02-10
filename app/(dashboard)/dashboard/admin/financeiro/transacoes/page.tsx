@@ -1,9 +1,6 @@
 'use client'
 
 import { useState, useMemo, useCallback, memo } from 'react'
-
-import { Download } from 'lucide-react'
-
 import { FinancialFilters } from '@/components/financial/FinancialFilters'
 import {
   FinancialStatsCards,
@@ -19,7 +16,6 @@ import {
   useFinancialTransactions,
   useFinancialTransactionsStats,
 } from '@/hooks/useFinancial'
-import { useFinancialExport } from '@/hooks/useFinancialExport'
 import { USER_PERMISSION } from '@/lib/constants'
 import { computeFinancialDateRange } from '@/lib/helpers/financialUtils'
 
@@ -79,13 +75,6 @@ const TransacoesFinanceirasPage = memo(() => {
       totalItems: data.data.total || 0,
     }
   }, [data])
-
-  const { handleExport } = useFinancialExport(processedData.items, {
-    filename: `transacoes_financeiras_${new Date()
-      .toISOString()
-      .slice(0, 10)}.xlsx`,
-    sheetName: 'Transações',
-  })
 
   const canPrev = page > 1
   const canNext = page < processedData.totalPages
@@ -153,25 +142,13 @@ const TransacoesFinanceirasPage = memo(() => {
 
   return (
     <div className="p-4 md:p-6 space-y-4">
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex-1">
-          <h1 className="text-xl font-semibold text-gray-900">
-            Transações Financeiras
-          </h1>
-          <p className="text-sm text-gray-600">
-            Visualize todas as transações da plataforma
-          </p>
-        </div>
-        <div className="flex items-center gap-2 sm:gap-3">
-          <Button
-            variant="outline"
-            size="sm"
-            icon={<Download size={16} />}
-            onClick={handleExport}
-          >
-            <span className="hidden sm:inline">Exportar</span>
-          </Button>
-        </div>
+      <div>
+        <h1 className="text-xl font-semibold text-gray-900">
+          Transações Financeiras
+        </h1>
+        <p className="text-sm text-gray-600">
+          Visualize todas as transações da plataforma
+        </p>
       </div>
 
       {statsCards.length > 0 && <FinancialStatsCards stats={statsCards} />}

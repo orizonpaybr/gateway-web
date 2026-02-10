@@ -1,19 +1,13 @@
 'use client'
 
 import { useState, useMemo, useCallback, memo } from 'react'
-
-import { format } from 'date-fns'
 import {
   TrendingDown,
   CheckCircle,
   RotateCcw,
-  Download,
   Calendar,
   Clock,
 } from 'lucide-react'
-import { toast } from 'sonner'
-import * as XLSX from 'xlsx'
-
 import { WithdrawalStatsCard } from '@/components/financial/WithdrawalStatsCard'
 import { WithdrawalStatusBadge } from '@/components/financial/WithdrawalStatusBadge'
 import { Button } from '@/components/ui/Button'
@@ -179,33 +173,6 @@ const SaidasPage = memo(() => {
     setPage(1)
   }, [])
 
-  const handleExport = useCallback(() => {
-    if (processedData.items.length === 0) {
-      toast.error('Nenhum saque para exportar')
-      return
-    }
-
-    const exportData = processedData.items.map((item) => ({
-      ID: item.id,
-      'Cliente ID': item.cliente_id,
-      'Cliente Nome': item.cliente_nome,
-      'Chave PIX': item.pix_key,
-      'Tipo PIX': item.pix_type,
-      'Transação ID': item.transacao_id,
-      'Valor Total': item.valor_total,
-      'Valor Líquido': item.valor_liquido,
-      Taxa: item.taxa,
-      Status: item.status_legivel,
-      Data: format(new Date(item.data), 'dd/MM/yyyy HH:mm'),
-    }))
-
-    const ws = XLSX.utils.json_to_sheet(exportData)
-    const wb = XLSX.utils.book_new()
-    XLSX.utils.book_append_sheet(wb, ws, 'Saídas')
-    XLSX.writeFile(wb, `saidas_${new Date().toISOString().slice(0, 10)}.xlsx`)
-    toast.success('Arquivo exportado com sucesso!')
-  }, [processedData.items])
-
   const canPrev = useMemo(() => page > 1, [page])
   const canNext = useMemo(
     () => page < processedData.totalPages,
@@ -267,21 +234,10 @@ const SaidasPage = memo(() => {
 
       <Card className="border border-gray-200 shadow-sm">
         <div className="p-6">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <h2 className="text-lg font-bold text-gray-900">
-                Relatório de Transações
-              </h2>
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              icon={<Download size={16} />}
-              onClick={handleExport}
-              className="border-blue-400 text-blue-600 hover:bg-blue-50 bg-white"
-            >
-              Exportar
-            </Button>
+          <div className="mb-4">
+            <h2 className="text-lg font-bold text-gray-900">
+              Relatório de Transações
+            </h2>
           </div>
 
           <div className="mb-4">
@@ -293,7 +249,7 @@ const SaidasPage = memo(() => {
             </label>
             <Input
               id="saidas-search-input"
-              placeholder="Buscar por cliente, chave PIX..."
+              placeholder="Buscar por cliente..."
               value={search}
               onChange={(e) => handleSearchChange(e.target.value)}
               className="max-w-md"
@@ -550,7 +506,7 @@ const SaidasPage = memo(() => {
                       <td className="py-3 px-4 text-sm font-bold text-gray-900">
                         {formatCurrencyBRL(saque.valor_liquido)}
                       </td>
-                      <td className="py-3 px-4 text-sm font-bold text-green-600">
+                      <td className="py-3 px-4 text-sm font-bold text-gray-900">
                         {formatCurrencyBRL(saque.taxa)}
                       </td>
                       <td className="py-3 px-4">
