@@ -2282,7 +2282,6 @@ export const adminUsersAPI = {
       fees: {
         taxa_fixa_deposito: number
         taxa_fixa_pix: number
-        limite_mensal_pf: number
       }
     }
   }> {
@@ -2463,35 +2462,6 @@ export const adminUsersAPI = {
   },
 
   /**
-   * Obter clientes vinculados a um gerente
-   */
-  async getManagerClients(
-    managerId: number,
-    params?: {
-      search?: string
-      per_page?: number
-      page?: number
-    },
-  ): Promise<{
-    success: boolean
-    data: AdminUser[]
-    pagination: {
-      current_page: number
-      per_page: number
-      total: number
-      last_page: number
-    }
-  }> {
-    const queryParams = new URLSearchParams({
-      gerente_id: managerId.toString(),
-      ...(params?.search && { search: params.search }),
-      ...(params?.per_page && { per_page: params.per_page.toString() }),
-      ...(params?.page && { page: params.page.toString() }),
-    })
-    return apiRequest(`/admin/dashboard/users?${queryParams.toString()}`)
-  },
-
-  /**
    * Listar adquirentes com filtros e paginação
    */
   async listAcquirers(params?: {
@@ -2592,8 +2562,6 @@ export interface Manager {
   permission: number
   status: number
   created_at?: string
-  total_clients?: number // Total de clientes vinculados
-  gerente_percentage?: number
 }
 
 export interface CreateManagerData {
@@ -2602,14 +2570,12 @@ export interface CreateManagerData {
   password: string
   cpf_cnpj?: string
   telefone?: string
-  gerente_percentage?: number
 }
 
 export interface UpdateManagerData {
   name?: string
   email?: string
   telefone?: string
-  gerente_percentage?: number
   status?: number
 }
 

@@ -12,9 +12,7 @@ export interface Manager {
   telefone?: string
   permission: number
   status: number
-  gerente_percentage?: string | number
   created_at?: string
-  total_clients?: number
 }
 
 /**
@@ -26,7 +24,6 @@ export interface CreateManagerData {
   password: string
   cpf_cnpj?: string
   telefone?: string
-  gerente_percentage?: number
 }
 
 /**
@@ -37,7 +34,6 @@ export interface UpdateManagerData {
   name?: string
   email?: string
   telefone?: string
-  gerente_percentage?: number
 }
 
 // ==================== API Response Types ====================
@@ -102,15 +98,6 @@ export interface PaginationData {
  * Parâmetros para filtrar lista de gerentes
  */
 export interface ManagerFilters {
-  search?: string
-  per_page?: number
-  page?: number
-}
-
-/**
- * Parâmetros para filtrar clientes de um gerente
- */
-export interface ManagerClientsFilters {
   search?: string
   per_page?: number
   page?: number
