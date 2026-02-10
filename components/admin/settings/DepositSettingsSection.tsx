@@ -50,7 +50,7 @@ export function DepositSettingsSection({
                 htmlFor="taxa_fixa_deposito"
                 className="min-h-[40px] leading-tight flex items-end pb-1"
               >
-                Taxa Fixa (R$)
+                Taxa Fixa Cash-in (R$)
               </Label>
               <Input
                 id="taxa_fixa_deposito"
@@ -61,24 +61,25 @@ export function DepositSettingsSection({
                 onBlur={handleBlur('taxa_fixa_deposito')}
               />
               <p className="text-sm text-gray-500 mt-1 min-h-[42px]">
-                Taxa fixa aplicada sobre cada depósito (valor em centavos)
+                Taxa fixa aplicada sobre cada depósito (valor em reais, ex.: 1 =
+                R$ 1,00)
               </p>
             </div>
           </div>
 
           <div className="mt-4 p-4 bg-cyan-50 rounded-lg border border-cyan-200">
             <p className="text-sm text-cyan-800 font-medium mb-2">
-              💡 Como funciona o cálculo de taxa de depósito:
+              💡 Como funciona o cálculo de taxa de depósito (cash-in):
             </p>
             <ul className="text-sm text-cyan-700 space-y-1 list-disc list-inside">
               <li>
-                <strong>Taxa fixa:</strong> R${' '}
-                {settings.taxa_fixa_deposito.toFixed(2)}
+                <strong>Taxa fixa cash-in:</strong> R${' '}
+                {Number(settings.taxa_fixa_deposito).toFixed(2)}
               </li>
               <li>
                 <strong>Exemplo:</strong> Depósito de R$ 100,00 → Taxa = R${' '}
-                {settings.taxa_fixa_deposito.toFixed(2)} → Líquido = R${' '}
-                {(100 - settings.taxa_fixa_deposito).toFixed(2)}
+                {Number(settings.taxa_fixa_deposito).toFixed(2)} → Líquido = R${' '}
+                {(100 - Number(settings.taxa_fixa_deposito)).toFixed(2)}
               </li>
             </ul>
           </div>

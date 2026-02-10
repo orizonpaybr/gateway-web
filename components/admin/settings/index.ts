@@ -3,6 +3,7 @@
  */
 
 export { DepositSettingsSection } from './DepositSettingsSection'
-export { WithdrawalSettingsSection } from './WithdrawalSettingsSection'
 export { ReportCustomizationSection } from './ReportCustomizationSection'
+export { TaxasSection } from './TaxasSection'
+export { WithdrawalSettingsSection } from './WithdrawalSettingsSection'
 export { SecurityIPsSection } from './SecurityIPsSection'
