@@ -124,7 +124,6 @@ export interface ManagersTableProps {
   isLoading: boolean
   onEdit: (manager: Manager) => void
   onDelete: (manager: Manager) => void
-  onViewClients: (manager: Manager) => void
   search?: string
   onSearchChange?: (value: string) => void
   pagination?: PaginationProps

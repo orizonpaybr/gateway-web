@@ -1,10 +1,7 @@
 'use client'
 
 import React, { useMemo, useState, useCallback, memo } from 'react'
-
 import { Plus } from 'lucide-react'
-
-import { ManagerClientsModal } from '@/components/admin/managers/ManagerClientsModal'
 import { ManagerEditModal } from '@/components/admin/managers/ManagerEditModal'
 import { ManagersTable } from '@/components/admin/managers/ManagersTable'
 import { ManagerSummaryCards } from '@/components/admin/managers/ManagerSummaryCards'
@@ -17,7 +14,6 @@ import {
   useCreateManager,
   useUpdateManager,
   useDeleteManager,
-  useManagerClients,
 } from '@/hooks/useManagers'
 import type { Manager, CreateManagerData, UpdateManagerData } from '@/lib/api'
 import { USER_PERMISSION } from '@/lib/constants'
@@ -31,12 +27,6 @@ const ManagersPage = memo(() => {
   const [editManager, setEditManager] = useState<Manager | null>(null)
   const [deleteManager, setDeleteManager] = useState<Manager | null>(null)
   const [isDeleteOpen, setIsDeleteOpen] = useState(false)
-  const [viewClientsManager, setViewClientsManager] = useState<Manager | null>(
-    null,
-  )
-  const [isClientsModalOpen, setIsClientsModalOpen] = useState(false)
-  const [clientsSearch, setClientsSearch] = useState('')
-  const [clientsPage, setClientsPage] = useState(1)
 
   const isAdmin = useMemo(
     () =>
@@ -60,16 +50,6 @@ const ManagersPage = memo(() => {
   const createMutation = useCreateManager()
   const updateMutation = useUpdateManager()
   const deleteMutation = useDeleteManager()
-
-  const { data: clientsData, isLoading: clientsLoading } = useManagerClients(
-    viewClientsManager?.id || null,
-    isClientsModalOpen,
-    {
-      search: clientsSearch || undefined,
-      per_page: PAGINATION_CONFIG.CLIENTS_PER_PAGE,
-      page: clientsPage,
-    },
-  )
 
   // Memorizar managers derivado
   const managers = useMemo(() => data?.managers || [], [data?.managers])
@@ -105,22 +85,6 @@ const ManagersPage = memo(() => {
   const handleDeleteRequest = useCallback((manager: Manager) => {
     setDeleteManager(manager)
     setIsDeleteOpen(true)
-  }, [])
-
-  const handleViewClients = useCallback((manager: Manager) => {
-    setViewClientsManager(manager)
-    setIsClientsModalOpen(true)
-    setClientsSearch('')
-    setClientsPage(1)
-  }, [])
-
-  const handleClientsSearchChange = useCallback((value: string) => {
-    setClientsSearch(value)
-    setClientsPage(1)
-  }, [])
-
-  const handleClientsPageChange = useCallback((page: number) => {
-    setClientsPage(page)
   }, [])
 
   const handleSubmit = useCallback(
@@ -176,9 +140,7 @@ const ManagersPage = memo(() => {
           <h1 className="text-2xl font-bold text-gray-900">
             Gerenciamento de Gerentes
           </h1>
-          <p className="text-gray-600 mt-1">
-            Gerencie os gerentes do sistema e seus clientes vinculados
-          </p>
+          <p className="text-gray-600 mt-1">Gerencie os gerentes do sistema</p>
         </div>
         <Button
           icon={<Plus size={20} />}
@@ -200,7 +162,6 @@ const ManagersPage = memo(() => {
         isLoading={isLoading}
         onEdit={handleEdit}
         onDelete={handleDeleteRequest}
-        onViewClients={handleViewClients}
         search={filters.search || ''}
         onSearchChange={(value) => {
           setFilters({ search: value || undefined })
@@ -248,32 +209,7 @@ const ManagersPage = memo(() => {
           </span>
           ? Esta ação não pode ser desfeita.
         </p>
-        {deleteManager && (
-          <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-            <p className="text-sm text-yellow-800">
-              <strong>Atenção:</strong> Os clientes vinculados a este gerente
-              não serão excluídos, mas perderão o vínculo com o gerente.
-            </p>
-          </div>
-        )}
       </Dialog>
-
-      <ManagerClientsModal
-        open={isClientsModalOpen}
-        onClose={() => {
-          setIsClientsModalOpen(false)
-          setViewClientsManager(null)
-          setClientsSearch('')
-          setClientsPage(1)
-        }}
-        manager={viewClientsManager}
-        clients={clientsData?.clients || []}
-        isLoading={clientsLoading}
-        pagination={clientsData?.pagination}
-        search={clientsSearch}
-        onSearchChange={handleClientsSearchChange}
-        onPageChange={handleClientsPageChange}
-      />
     </div>
   )
 })
