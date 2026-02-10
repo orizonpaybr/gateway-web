@@ -1,10 +1,23 @@
 'use client'
 
 import React, { forwardRef, useState, useEffect, memo } from 'react'
-import InputMask from 'react-input-mask'
+import InputMaskLib from 'react-input-mask'
 import { cn } from '@/lib/utils'
 import { validateCPF, validateCNPJ } from './DocumentInput'
 import { validatePhone } from './PhoneInput'
+
+type InputMaskProps = {
+  mask: string
+  value?: string
+  onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void
+  onBlur?: () => void
+  disabled?: boolean
+  maskChar?: string | null
+  children: (
+    inputProps: React.InputHTMLAttributes<HTMLInputElement>,
+  ) => React.ReactNode
+}
+const InputMask = InputMaskLib as React.ComponentType<InputMaskProps>
 
 interface PixKeyInputProps {
   label?: string
@@ -131,10 +144,10 @@ export const PixKeyInput = memo(
                   error
                     ? 'border-red-500'
                     : isValid === true
-                    ? 'border-green-300 focus:border-green-500 focus:ring-green-500/20'
-                    : isValid === false
-                    ? 'border-red-500'
-                    : 'border-gray-300 hover:border-gray-400',
+                      ? 'border-green-300 focus:border-green-500 focus:ring-green-500/20'
+                      : isValid === false
+                        ? 'border-red-500'
+                        : 'border-gray-300 hover:border-gray-400',
                   className,
                 )}
               />
@@ -183,10 +196,10 @@ export const PixKeyInput = memo(
                     error
                       ? 'border-red-500'
                       : isValid === true
-                      ? 'border-green-300 focus:border-green-500 focus:ring-green-500/20'
-                      : isValid === false
-                      ? 'border-red-500'
-                      : 'border-gray-300 hover:border-gray-400',
+                        ? 'border-green-300 focus:border-green-500 focus:ring-green-500/20'
+                        : isValid === false
+                          ? 'border-red-500'
+                          : 'border-gray-300 hover:border-gray-400',
                     className,
                   )}
                 />

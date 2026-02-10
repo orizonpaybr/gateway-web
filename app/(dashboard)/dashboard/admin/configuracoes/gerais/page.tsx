@@ -1,10 +1,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-
 import { Settings } from 'lucide-react'
 import { toast } from 'sonner'
-
 import {
   ReportCustomizationSection,
   SecurityIPsSection,
