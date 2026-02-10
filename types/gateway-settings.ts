@@ -1,8 +1,7 @@
 export interface GatewaySettings {
-  // Taxas fixas (em centavos)
+  // Taxas fixas cash-in e cash-out (em reais, ex.: 1 = R$ 1,00)
   taxa_fixa_deposito: number
   taxa_fixa_pix: number
-  limite_mensal_pf: number
 
   // Personalização de Relatórios - Entradas
   relatorio_entradas_mostrar_meio: boolean
@@ -32,7 +31,6 @@ export interface GatewaySettings {
 export type NumericSettingsField =
   | 'taxa_fixa_deposito'
   | 'taxa_fixa_pix'
-  | 'limite_mensal_pf'
 
 export type BooleanSettingsField = keyof Pick<
   GatewaySettings,
