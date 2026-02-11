@@ -2,7 +2,6 @@ import React, { memo } from 'react'
 import {
   Eye,
   DollarSign,
-  Users,
   CheckCircle2,
   Ban,
   Unlock,
@@ -31,7 +30,6 @@ interface UsersTableProps {
   isLoading?: boolean
   onView?: (user: AdminUser) => void
   onFees?: (user: AdminUser) => void
-  onAffiliate?: (user: AdminUser) => void
   onApprove?: (user: AdminUser) => void
   onToggleBlock?: (user: AdminUser) => void
   onToggleWithdrawBlock?: (user: AdminUser) => void
@@ -52,7 +50,6 @@ export const UsersTable = memo(
     isLoading,
     onView,
     onFees,
-    onAffiliate,
     onApprove,
     onToggleBlock,
     onToggleWithdrawBlock,
@@ -244,16 +241,6 @@ export const UsersTable = memo(
                           className="px-1.5 sm:px-2 md:px-3"
                         >
                           <DollarSign className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                        </Button>
-                      </Tooltip>
-                      <Tooltip content="Afiliados">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => onAffiliate?.(u)}
-                          className="px-1.5 sm:px-2 md:px-3"
-                        >
-                          <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                         </Button>
                       </Tooltip>
                       <Tooltip content="Excluir">

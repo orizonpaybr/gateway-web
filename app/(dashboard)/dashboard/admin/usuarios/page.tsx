@@ -2,7 +2,6 @@
 
 import React, { useMemo, useState, useCallback } from 'react'
 
-import { UserAffiliateModal } from '@/components/admin/users/UserAffiliateModal'
 import { UserEditModal } from '@/components/admin/users/UserEditModal'
 import { UserFeesModal } from '@/components/admin/users/UserFeesModal'
 import { UserFilters } from '@/components/admin/users/UserFilters'
@@ -38,7 +37,6 @@ export default function AdminUsersPage() {
   const [viewUserId, setViewUserId] = useState<number | null>(null)
   const [isViewOpen, setIsViewOpen] = useState(false)
   const [isFeesOpen, setIsFeesOpen] = useState(false)
-  const [isAffiliateOpen, setIsAffiliateOpen] = useState(false)
 
   const isAdminOrManager = useMemo(
     () =>
@@ -67,7 +65,7 @@ export default function AdminUsersPage() {
   const deleteMutation = useDeleteUser()
   const { data: viewUserData } = useAdminUser(
     viewUserId,
-    isViewOpen || isFeesOpen || isFormOpen || isAffiliateOpen,
+    isViewOpen || isFeesOpen || isFormOpen,
   )
 
   const users = useMemo(() => data?.users || [], [data?.users])
@@ -213,11 +211,6 @@ export default function AdminUsersPage() {
     setIsFeesOpen(true)
   }, [])
 
-  const handleAffiliate = useCallback((u: AdminUser) => {
-    setViewUserId(u.id)
-    setIsAffiliateOpen(true)
-  }, [])
-
   const handleEdit = useCallback((u: AdminUser) => {
     // Definir viewUserId para buscar dados completos do usuário (incluindo telefone e data_nascimento)
     setViewUserId(u.id)
@@ -249,7 +242,6 @@ export default function AdminUsersPage() {
         isLoading={isLoading}
         onView={handleView}
         onFees={handleFees}
-        onAffiliate={handleAffiliate}
         onApprove={handleApprove}
         onToggleBlock={handleToggleBlock}
         onToggleWithdrawBlock={handleToggleWithdrawBlock}
@@ -313,12 +305,6 @@ export default function AdminUsersPage() {
         user={viewUserData}
         onSubmit={handleUpdateFees}
         isSaving={updateMutation.isPending}
-      />
-
-      <UserAffiliateModal
-        open={isAffiliateOpen}
-        onClose={() => setIsAffiliateOpen(false)}
-        user={viewUserData}
       />
     </div>
   )

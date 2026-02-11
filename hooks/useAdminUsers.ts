@@ -22,11 +22,6 @@ export interface UserStats {
   banned_users: number
 }
 
-export interface AffiliateSettings {
-  is_affiliate: boolean
-  affiliate_percentage: number
-}
-
 /**
  * Hook para obter lista de usuários com filtros e paginação
  *
@@ -489,85 +484,5 @@ export function usePixAcquirers(enabled: boolean = true) {
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
     refetchOnWindowFocus: false,
-  })
-}
-
-/**
- * Hook para salvar configurações de afiliados
- */
-export function useSaveAffiliateSettings(): UseMutationResult<
-  {
-    is_affiliate: boolean
-    affiliate_percentage: number
-    affiliate_code?: string
-    affiliate_link?: string
-  },
-  Error,
-  { userId: number; data: AffiliateSettings },
-  unknown
-> {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationFn: async ({ userId, data }) => {
-      const response = await adminUsersAPI.saveAffiliateSettings(userId, data)
-      if (!response.success) {
-        throw new Error(
-          response.data.message || 'Erro ao salvar configurações de afiliados',
-        )
-      }
-      return response.data.user
-    },
-    onSuccess: (user, { userId }) => {
-      // Atualizar cache individual
-      // Estrutura pode ser AdminUser diretamente ou { user: AdminUser }
-      queryClient.setQueryData(['admin-user', userId], (oldData: unknown) => {
-        if (!oldData) {
-          return user
-        }
-        // Se oldData já é AdminUser (estrutura direta)
-        if (
-          typeof oldData === 'object' &&
-          oldData !== null &&
-          'id' in oldData
-        ) {
-          return {
-            ...(oldData as AdminUser),
-            is_affiliate: user.is_affiliate,
-            affiliate_percentage: user.affiliate_percentage,
-            affiliate_code: user.affiliate_code,
-            affiliate_link: user.affiliate_link,
-          }
-        }
-        // Se oldData é { user: AdminUser }
-        if (
-          typeof oldData === 'object' &&
-          oldData !== null &&
-          'user' in oldData
-        ) {
-          return {
-            ...oldData,
-            user: {
-              ...(oldData as { user: AdminUser }).user,
-              is_affiliate: user.is_affiliate,
-              affiliate_percentage: user.affiliate_percentage,
-              affiliate_code: user.affiliate_code,
-              affiliate_link: user.affiliate_link,
-            },
-          }
-        }
-        return user
-      })
-
-      // Invalidar lista para recarregar
-      queryClient.invalidateQueries({ queryKey: ['admin-users-list'] })
-
-      toast.success('Configurações de afiliados salvas com sucesso!')
-    },
-    onError: (error) => {
-      toast.error('Erro ao salvar configurações de afiliados', {
-        description: error.message || 'Tente novamente mais tarde',
-      })
-    },
   })
 }
