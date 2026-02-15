@@ -18,7 +18,9 @@ export function useWithdrawalDetails(id: number | null, enabled = true) {
   return useQuery({
     queryKey: ['withdrawal', id],
     queryFn: () => {
-      if (!id) throw new Error('ID não fornecido')
+      if (!id) {
+        throw new Error('ID não fornecido')
+      }
       return withdrawalsAPI.getById(id)
     },
     enabled: enabled && id !== null,
@@ -42,7 +44,7 @@ export function useApproveWithdrawal() {
 
   return useMutation({
     mutationFn: (id: number) => withdrawalsAPI.approve(id),
-    onMutate: async (id) => {
+    onMutate: async (_id) => {
       // Cancelar queries em andamento para evitar sobrescrever a atualização otimista
       await queryClient.cancelQueries({ queryKey: ['withdrawals'] })
     },

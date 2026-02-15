@@ -115,7 +115,7 @@ export function useTableFilter<T extends Record<string, unknown>>(
  */
 export function useSearchFilter(
   searchTerm: string,
-  hasPeriodFilter: boolean = false,
+  _hasPeriodFilter: boolean = false,
   debounceDelay: number = 500,
 ) {
   const debouncedSearch = useDebounce(searchTerm, debounceDelay)

@@ -1817,7 +1817,6 @@ export interface AdminUser {
   transacoes_recused: number
   permission?: number // 1=cliente, 2=gerente, 3=admin
   aprovado_alguma_vez?: boolean
-  data_nascimento?: string
   nome_fantasia?: string
   razao_social?: string
   cep?: string
@@ -1870,7 +1869,6 @@ export interface CreateUserData {
   telefone?: string
   cpf_cnpj?: string
   cpf?: string
-  data_nascimento?: string
   saldo?: number
   status?: number
   permission?: number
@@ -1895,7 +1893,6 @@ export interface UpdateUserData {
   telefone?: string | null
   cpf_cnpj?: string | null
   cpf?: string | null
-  data_nascimento?: string | null
   saldo?: number
   status?: number
   permission?: number
@@ -2247,33 +2244,6 @@ export const adminUsersAPI = {
   },
 
   /**
-   * Salvar configurações de afiliados
-   *
-   * @param userId - ID do usuário
-   * @param data - Dados de afiliado
-   */
-  async saveAffiliateSettings(
-    userId: number,
-    data: { is_affiliate: boolean; affiliate_percentage: number },
-  ): Promise<{
-    success: boolean
-    data: {
-      message: string
-      user: {
-        is_affiliate: boolean
-        affiliate_percentage: number
-        affiliate_code?: string
-        affiliate_link?: string
-      }
-    }
-  }> {
-    return apiRequest(`/admin/users/${userId}/affiliate-settings`, {
-      method: 'POST',
-      body: JSON.stringify(data),
-    })
-  },
-
-  /**
    * Obter taxas padrão do sistema (apenas taxas fixas em centavos)
    */
   async getDefaultFees(): Promise<{
@@ -2282,7 +2252,6 @@ export const adminUsersAPI = {
       fees: {
         taxa_fixa_deposito: number
         taxa_fixa_pix: number
-        limite_mensal_pf: number
       }
     }
   }> {
@@ -2463,35 +2432,6 @@ export const adminUsersAPI = {
   },
 
   /**
-   * Obter clientes vinculados a um gerente
-   */
-  async getManagerClients(
-    managerId: number,
-    params?: {
-      search?: string
-      per_page?: number
-      page?: number
-    },
-  ): Promise<{
-    success: boolean
-    data: AdminUser[]
-    pagination: {
-      current_page: number
-      per_page: number
-      total: number
-      last_page: number
-    }
-  }> {
-    const queryParams = new URLSearchParams({
-      gerente_id: managerId.toString(),
-      ...(params?.search && { search: params.search }),
-      ...(params?.per_page && { per_page: params.per_page.toString() }),
-      ...(params?.page && { page: params.page.toString() }),
-    })
-    return apiRequest(`/admin/dashboard/users?${queryParams.toString()}`)
-  },
-
-  /**
    * Listar adquirentes com filtros e paginação
    */
   async listAcquirers(params?: {
@@ -2592,8 +2532,6 @@ export interface Manager {
   permission: number
   status: number
   created_at?: string
-  total_clients?: number // Total de clientes vinculados
-  gerente_percentage?: number
 }
 
 export interface CreateManagerData {
@@ -2602,14 +2540,12 @@ export interface CreateManagerData {
   password: string
   cpf_cnpj?: string
   telefone?: string
-  gerente_percentage?: number
 }
 
 export interface UpdateManagerData {
   name?: string
   email?: string
   telefone?: string
-  gerente_percentage?: number
   status?: number
 }
 

@@ -1,0 +1,53 @@
+#!/bin/bash
+
+# 🚀 Script de Pré-Push - Orizon Pay Gateway Web
+# Este script valida o código antes de fazer push
+
+set -e
+
+echo "🚀 Executando validações pré-push..."
+echo ""
+
+# Cores para output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
+
+# Navegar para o diretório do projeto
+cd "$(git rev-parse --show-toplevel)/gateway-web"
+
+# 1. Type Check
+echo "🔍 Verificando tipos TypeScript..."
+if yarn type-check; then
+    echo -e "${GREEN}✅ Type check passou!${NC}"
+    echo ""
+else
+    echo -e "${RED}❌ Erros de tipo encontrados!${NC}"
+    exit 1
+fi
+
+# 2. Lint Strict
+echo "🧹 Executando lint strict..."
+if yarn lint:strict; then
+    echo -e "${GREEN}✅ Lint strict passou!${NC}"
+    echo ""
+else
+    echo -e "${RED}❌ Erros de lint encontrados!${NC}"
+    exit 1
+fi
+
+# 3. Build
+echo "🏗️  Testando build..."
+if yarn build; then
+    echo -e "${GREEN}✅ Build passou!${NC}"
+    echo ""
+else
+    echo -e "${RED}❌ Build falhou!${NC}"
+    exit 1
+fi
+
+echo -e "${GREEN}🎉 Todas as validações passaram! Prosseguindo com o push...${NC}"
+echo ""
+
+exit 0

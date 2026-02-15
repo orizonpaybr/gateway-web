@@ -19,8 +19,6 @@ export function useLocalStorage<T>(
 
       // Se item é null ou string vazia, retorna valor inicial
       if (!item || item === 'null' || item === 'undefined') {
-        if (key === 'token' || key === 'user') {
-        }
         return initialValue
       }
 
@@ -86,8 +84,9 @@ export function useLocalStorage<T>(
           e.newValue === null ||
           e.newValue === 'null' ||
           e.newValue === 'undefined'
-        )
+        ) {
           return
+        }
         try {
           const newValue =
             typeof initialValue === 'string' &&

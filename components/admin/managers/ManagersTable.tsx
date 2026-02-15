@@ -1,7 +1,7 @@
 'use client'
 
 import React, { memo } from 'react'
-import { Edit, Trash2, Users, Search } from 'lucide-react'
+import { Edit, Trash2, Search, Users } from 'lucide-react'
 import { TablePagination } from '@/components/admin/users/TablePagination'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
@@ -13,7 +13,6 @@ interface ManagersTableProps {
   isLoading: boolean
   onEdit: (manager: Manager) => void
   onDelete: (manager: Manager) => void
-  onViewClients: (manager: Manager) => void
   search?: string
   onSearchChange?: (value: string) => void
   pagination?: {
@@ -31,7 +30,6 @@ export const ManagersTable = memo(
     isLoading,
     onEdit,
     onDelete,
-    onViewClients,
     search,
     onSearchChange,
     pagination,
@@ -210,13 +208,6 @@ export const ManagersTable = memo(
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <div className="flex justify-end gap-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        icon={<Users size={16} />}
-                        onClick={() => onViewClients(manager)}
-                        title="Ver Clientes"
-                      />
                       <Button
                         variant="ghost"
                         size="sm"

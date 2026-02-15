@@ -1,7 +1,6 @@
 'use client'
 
-import React, { memo } from 'react'
-
+import React from 'react'
 import {
   Building2,
   Link as LinkIcon,
@@ -20,8 +19,10 @@ interface AcquirerDetailCardProps {
   onToggleStatus: (acquirer: Acquirer) => void
 }
 
-export const AcquirerDetailCard = memo(
-  ({ acquirer, onToggleStatus }: AcquirerDetailCardProps) => {
+export function AcquirerDetailCard({
+  acquirer,
+  onToggleStatus,
+}: AcquirerDetailCardProps) {
     const isActive = acquirer.status === 1 || acquirer.status === true
     const isDefaultPix =
       acquirer.is_default === 1 || acquirer.is_default === true
@@ -138,16 +139,6 @@ export const AcquirerDetailCard = memo(
             </div>
           </div>
 
-          <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
-            <p className="text-xs text-amber-800">
-              <strong>🔒 Credenciais sensíveis:</strong> Client ID, Client
-              Secret, API Key e Webhook Secret são configurados no backend via
-              arquivo{' '}
-              <code className="bg-amber-100 px-1 py-0.5 rounded">.env</code> por
-              motivos de segurança.
-            </p>
-          </div>
-
           {acquirer.created_at && (
             <div className="pt-3 border-t border-gray-100">
               <p className="text-xs text-gray-500">
@@ -165,7 +156,4 @@ export const AcquirerDetailCard = memo(
         </div>
       </div>
     )
-  },
-)
-
-AcquirerDetailCard.displayName = 'AcquirerDetailCard'
+}

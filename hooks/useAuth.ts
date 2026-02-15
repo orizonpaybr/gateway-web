@@ -12,7 +12,9 @@ export function useAuth() {
   }, [])
 
   useEffect(() => {
-    if (!isClient) return
+    if (!isClient) {
+      return
+    }
 
     const getToken = () => {
       const rawToken = localStorage.getItem('token')

@@ -20,6 +20,7 @@ import {
   X,
   LayoutDashboard,
   Users,
+  UserPlus,
   DollarSign,
 } from 'lucide-react'
 import { DocumentIcon } from '@/components/icons/DocumentIcon'
@@ -76,6 +77,7 @@ const mainMenuItems: MenuItem[] = [
     hasSubmenu: true,
     submenu: [{ label: 'Listagem', href: '/dashboard/qr-codes/listagem' }],
   },
+  { icon: UserPlus, label: 'Afiliados', href: '/dashboard/afiliados' },
   { icon: Clock, label: 'Transações Pendentes', href: '/dashboard/pendentes' },
   { icon: User, label: 'Dados da Conta', href: '/dashboard/conta' },
   {
@@ -98,7 +100,6 @@ const supportAndDocsItems: MenuItem[] = [
     label: 'API Docs',
     href: '/dashboard/api-docs',
     secondaryText: 'Documentação da API',
-    isExternal: true,
   },
 ]
 
@@ -192,15 +193,16 @@ export const Sidebar = memo(() => {
         <div className="p-4 border-b border-gray-200 flex items-center justify-between">
           <Link
             href="/dashboard"
-            className="flex items-center justify-center flex-1"
+            className="flex flex-1 justify-center"
             onClick={closeMobileMenu}
           >
             <Image
-              src="/LOGO-ORIZON-AZUL-PRETA.png"
-              alt="Orizon Pay"
-              width={120}
-              height={36}
+              src="/Orizon-Pay---Logo---FINANCE-v1.98.0Prancheta-1.png"
+              alt="Orizon Pay Finance"
+              width={180}
+              height={56}
               priority
+              className="object-contain"
             />
           </Link>
 

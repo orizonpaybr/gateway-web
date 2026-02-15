@@ -6,6 +6,7 @@ import { EyeOff, Eye, RefreshCw, Menu } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { useBalanceVisibility } from '@/contexts/BalanceVisibilityContext'
 import { useMobileMenu } from '@/contexts/MobileMenuContext'
+import { useAuth } from '@/contexts/AuthContext'
 import { useDashboardStats, useAccountData } from '@/hooks/useReactQuery'
 import { formatCurrencyBRL } from '@/lib/format'
 
@@ -42,10 +43,10 @@ export const Header = memo(() => {
   }, [])
 
   const isHomePage = pathname === '/dashboard'
+  const { user: authUser } = useAuth()
   const { data: stats } = useDashboardStats()
   const { data: accountData } = useAccountData()
-  // Verificar se usuário está pendente (status_text === 'Pendente' ou status_numeric = 2)
-  // Não mostrar badge para inativos (status = 0) ou aprovados (status = 1)
+
   const account =
     accountData && typeof accountData === 'object' && 'data' in accountData
       ? (
@@ -54,15 +55,25 @@ export const Header = memo(() => {
               status_text?: string
               status_numeric?: number
               status?: string
+              company?: { status_atual?: string }
             }
           }
         ).data
       : null
-  const isPending = account
-    ? account.status_text === 'Pendente' ||
-      account.status_numeric === 2 ||
-      account.status === 'pending'
-    : false
+  const statusText =
+    account?.status_text ??
+    account?.company?.status_atual ??
+    authUser?.status_text ??
+    ''
+  const statusNum = account?.status_numeric ?? authUser?.status
+  const isPending = Boolean(
+    (account || authUser) &&
+    (statusText === 'Pendente' ||
+      statusNum === 2 ||
+      (typeof statusNum === 'string' && statusNum === '2') ||
+      (typeof account?.status === 'string' && account.status === 'pending') ||
+      (typeof authUser?.status === 'string' && authUser.status === 'pending')),
+  )
   // Formatar saldo disponível
   const availableBalance = stats?.data?.saldo_disponivel || 0
   const formattedBalance = formatCurrencyBRL(availableBalance, {

@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, memo, useCallback } from 'react'
-import { User, Mail, Percent } from 'lucide-react'
+import { User, Mail } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Dialog } from '@/components/ui/Dialog'
 import { DocumentInput } from '@/components/ui/DocumentInput'
@@ -10,13 +10,11 @@ import { PhoneInput } from '@/components/ui/PhoneInput'
 import type { Manager, CreateManagerData, UpdateManagerData } from '@/lib/api'
 import {
   PASSWORD_RULES,
-  PERCENTAGE_RULES,
   VALIDATION_MESSAGES,
   type ValidationRule,
   requiredRule,
   emailRule,
   passwordRule,
-  percentageRule,
 } from '@/lib/constants/managers'
 
 interface ManagerEditModalProps {
@@ -37,7 +35,6 @@ export const ManagerEditModal = memo(
       password: '',
       cpf_cnpj: '',
       telefone: '',
-      gerente_percentage: '',
     })
 
     const [errors, setErrors] = useState<Record<string, string>>({})
@@ -50,7 +47,6 @@ export const ManagerEditModal = memo(
           password: '',
           cpf_cnpj: manager.cpf_cnpj || '',
           telefone: manager.telefone || '',
-          gerente_percentage: manager.gerente_percentage?.toString() || '',
         })
       } else {
         setFormData({
@@ -59,7 +55,6 @@ export const ManagerEditModal = memo(
           password: '',
           cpf_cnpj: '',
           telefone: '',
-          gerente_percentage: '',
         })
       }
       setErrors({})
@@ -86,15 +81,6 @@ export const ManagerEditModal = memo(
           ),
         )
       }
-
-      // Percentual de comissão (opcional, mas se preenchido deve ser válido)
-      validationRules.push(
-        percentageRule(
-          PERCENTAGE_RULES.MIN,
-          PERCENTAGE_RULES.MAX,
-          VALIDATION_MESSAGES.PERCENTAGE_RANGE,
-        ),
-      )
 
       for (const rule of validationRules) {
         const fieldValue = formData[
@@ -133,17 +119,6 @@ export const ManagerEditModal = memo(
           name: formData.name.trim(),
           email: formData.email.trim(),
           telefone: formData.telefone.trim() || undefined,
-        }
-
-        // Processar gerente_percentage: normalizar vírgula para ponto
-        if (formData.gerente_percentage && formData.gerente_percentage.trim()) {
-          const normalizedValue = formData.gerente_percentage
-            .trim()
-            .replace(',', '.')
-          const parsedValue = parseFloat(normalizedValue)
-          if (!isNaN(parsedValue)) {
-            submitData.gerente_percentage = parsedValue
-          }
         }
 
         // Campos exclusivos de criação
@@ -261,28 +236,6 @@ export const ManagerEditModal = memo(
                 disabled={isSaving}
               />
             </div>
-          </div>
-
-          <div>
-            <Input
-              label="Percentual de Comissão (%)"
-              type="number"
-              step={PERCENTAGE_RULES.STEP.toString()}
-              min={PERCENTAGE_RULES.MIN.toString()}
-              max={PERCENTAGE_RULES.MAX.toString()}
-              value={formData.gerente_percentage}
-              onChange={(e) =>
-                setFormData({ ...formData, gerente_percentage: e.target.value })
-              }
-              error={errors.gerente_percentage}
-              icon={<Percent size={18} />}
-              placeholder="0.00"
-              disabled={isSaving}
-            />
-            <p className="text-xs text-gray-500 mt-1">
-              Percentual de comissão que o gerente receberá sobre as transações
-              dos clientes
-            </p>
           </div>
         </form>
       </Dialog>

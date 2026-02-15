@@ -1,15 +1,12 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-
 import { Settings } from 'lucide-react'
 import { toast } from 'sonner'
-
 import {
-  DepositSettingsSection,
-  WithdrawalSettingsSection,
   ReportCustomizationSection,
   SecurityIPsSection,
+  TaxasSection,
 } from '@/components/admin/settings'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
@@ -29,8 +26,6 @@ export default function ConfiguracoesGeraisPage() {
     null,
   )
   const [expandedSections, setExpandedSections] = useState<string[]>([
-    'deposito',
-    'saque',
     'relatorios',
   ])
   const [editingValues, setEditingValues] = useState<
@@ -170,19 +165,8 @@ export default function ConfiguracoesGeraisPage() {
         <div className="p-6">
           <h2 className="text-xl font-semibold mb-6">Taxas</h2>
 
-          <DepositSettingsSection
+          <TaxasSection
             settings={localSettings}
-            isExpanded={expandedSections.includes('deposito')}
-            onToggle={() => toggleSection('deposito')}
-            getDisplayValue={getNumericDisplayedValue}
-            handleChange={handleNumericChange}
-            handleBlur={handleNumericBlur}
-          />
-
-          <WithdrawalSettingsSection
-            settings={localSettings}
-            isExpanded={expandedSections.includes('saque')}
-            onToggle={() => toggleSection('saque')}
             getDisplayValue={getNumericDisplayedValue}
             handleChange={handleNumericChange}
             handleBlur={handleNumericBlur}

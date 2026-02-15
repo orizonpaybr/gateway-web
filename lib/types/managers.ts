@@ -12,9 +12,7 @@ export interface Manager {
   telefone?: string
   permission: number
   status: number
-  gerente_percentage?: string | number
   created_at?: string
-  total_clients?: number
 }
 
 /**
@@ -26,7 +24,6 @@ export interface CreateManagerData {
   password: string
   cpf_cnpj?: string
   telefone?: string
-  gerente_percentage?: number
 }
 
 /**
@@ -37,7 +34,6 @@ export interface UpdateManagerData {
   name?: string
   email?: string
   telefone?: string
-  gerente_percentage?: number
 }
 
 // ==================== API Response Types ====================
@@ -108,15 +104,6 @@ export interface ManagerFilters {
 }
 
 /**
- * Parâmetros para filtrar clientes de um gerente
- */
-export interface ManagerClientsFilters {
-  search?: string
-  per_page?: number
-  page?: number
-}
-
-/**
  * Props para componente de paginação
  */
 export interface PaginationProps {
@@ -137,7 +124,6 @@ export interface ManagersTableProps {
   isLoading: boolean
   onEdit: (manager: Manager) => void
   onDelete: (manager: Manager) => void
-  onViewClients: (manager: Manager) => void
   search?: string
   onSearchChange?: (value: string) => void
   pagination?: PaginationProps

@@ -6,10 +6,7 @@ interface MemoizedFunction<T extends (...args: unknown[]) => unknown> {
   (...args: Parameters<T>): ReturnType<T>
 }
 
-export function useGlobalMemo<T extends (...args: unknown[]) => unknown>(
-  fn: T,
-  deps: React.DependencyList,
-): MemoizedFunction<T> {
+export function useGlobalMemo<T extends(...args: unknown[]) => unknown>(fn: T, deps: React.DependencyList): MemoizedFunction<T> {
   const depsRef = useRef<React.DependencyList>([])
   const fnRef = useRef<T>(fn)
   const memoizedFnRef = useRef<T>(fn)
@@ -77,10 +74,7 @@ function areEqual(a: React.DependencyList, b: React.DependencyList): boolean {
   return true
 }
 
-export function useStableCallback<T extends (...args: unknown[]) => unknown>(
-  callback: T,
-  _deps: React.DependencyList,
-): T {
+export function useStableCallback<T extends(...args: unknown[]) => unknown>(callback: T, _deps: React.DependencyList): T {
   const callbackRef = useRef<T>(callback)
   const stableCallbackRef = useRef<T>()
 

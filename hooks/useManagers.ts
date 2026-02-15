@@ -4,28 +4,25 @@ import {
   useQuery,
   useMutation,
   useQueryClient,
-  UseQueryOptions,
+  type UseQueryOptions,
 } from '@tanstack/react-query'
 import {
   adminUsersAPI,
-  Manager,
-  CreateManagerData,
-  UpdateManagerData,
-  AdminUser,
+  type CreateManagerData,
+  type Manager,
+  type UpdateManagerData,
 } from '@/lib/api'
 import { toast } from 'sonner'
-import type {
-  ManagerFilters,
-  ManagerClientsFilters,
-  PaginationData,
-  ApiError,
+import {
+  getErrorMessage,
+  type ApiError,
+  type ManagerFilters,
+  type PaginationData,
 } from '@/lib/types/managers'
-import { getErrorMessage } from '@/lib/types/managers'
 
 const QUERY_KEYS = {
   managers: 'managers',
   managersStats: 'managers-stats',
-  managerClients: 'manager-clients',
   manager: 'manager',
 } as const
 
@@ -33,7 +30,6 @@ const CACHE_CONFIG = {
   staleTime: {
     list: 1000 * 30,
     stats: 1000 * 60,
-    clients: 1000 * 30,
   },
   gcTime: 1000 * 60 * 5,
   retry: 2,
@@ -107,51 +103,6 @@ export function useManagersStats(enabled: boolean = true) {
 }
 
 /**
- * Hook para obter clientes vinculados a um gerente
- *
- * @param managerId - ID do gerente
- * @param enabled - Se a query deve ser executada
- * @param params - Filtros de busca e paginação
- * @returns Query com lista de clientes e paginação
- */
-export function useManagerClients(
-  managerId: number | null,
-  enabled: boolean = true,
-  params?: ManagerClientsFilters,
-) {
-  return useQuery({
-    queryKey: [QUERY_KEYS.managerClients, managerId, params],
-    queryFn: async (): Promise<{
-      clients: AdminUser[]
-      pagination: PaginationData
-    }> => {
-      // Early return se não houver managerId
-      if (!managerId) {
-        return {
-          clients: [],
-          pagination: {
-            current_page: 1,
-            per_page: params?.per_page || 10,
-            total: 0,
-            last_page: 1,
-          },
-        }
-      }
-
-      const response = await adminUsersAPI.getManagerClients(managerId, params)
-      return {
-        clients: response.data,
-        pagination: response.pagination,
-      }
-    },
-    enabled: enabled && !!managerId,
-    staleTime: CACHE_CONFIG.staleTime.clients,
-    gcTime: CACHE_CONFIG.gcTime,
-    retry: CACHE_CONFIG.retry,
-  })
-}
-
-/**
  * Hook para criar um novo gerente
  *
  * Implementa:
@@ -209,16 +160,10 @@ export function useUpdateManager() {
     }) => {
       return await adminUsersAPI.updateManager(managerId, data)
     },
-    onSuccess: (response, variables) => {
+    onSuccess: (response) => {
       // Invalidar cache relacionado
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.managers] })
-      queryClient.invalidateQueries({
-        queryKey: [QUERY_KEYS.manager, variables.managerId],
-      })
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.managersStats] })
-      queryClient.invalidateQueries({
-        queryKey: [QUERY_KEYS.managerClients, variables.managerId],
-      })
 
       toast.success(response.data.message || 'Gerente atualizado com sucesso!')
     },

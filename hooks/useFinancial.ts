@@ -8,7 +8,7 @@
  * - Padrões consistentes com o projeto
  */
 
-import { useQuery, UseQueryResult } from '@tanstack/react-query'
+import { useQuery, type UseQueryResult } from '@tanstack/react-query'
 import {
   financialAPI,
   type FinancialTransaction,

@@ -50,7 +50,7 @@ export function WithdrawalSettingsSection({
                 htmlFor="taxa_fixa_pix"
                 className="min-h-[40px] leading-tight flex items-end pb-1"
               >
-                Taxa Fixa PIX (R$)
+                Taxa Fixa Cash-out (R$)
               </Label>
               <Input
                 id="taxa_fixa_pix"
@@ -61,44 +61,25 @@ export function WithdrawalSettingsSection({
                 onBlur={handleBlur('taxa_fixa_pix')}
               />
               <p className="text-sm text-gray-500 mt-1">
-                Taxa fixa aplicada sobre cada saque PIX (valor em centavos)
-              </p>
-            </div>
-
-            <div>
-              <Label
-                htmlFor="limite_mensal_pf"
-                className="min-h-[40px] leading-tight flex items-end pb-1"
-              >
-                Limite Mensal Pessoa Física (R$)
-              </Label>
-              <Input
-                id="limite_mensal_pf"
-                type="text"
-                inputMode="decimal"
-                value={getDisplayValue('limite_mensal_pf')}
-                onChange={handleChange('limite_mensal_pf')}
-                onBlur={handleBlur('limite_mensal_pf')}
-              />
-              <p className="text-sm text-gray-500 mt-1">
-                Limite máximo de saques por mês para pessoa física
+                Taxa fixa aplicada sobre cada saque PIX (valor em reais, ex.: 1 =
+                R$ 1,00)
               </p>
             </div>
           </div>
 
           <div className="mt-4 p-4 bg-cyan-50 rounded-lg border border-cyan-200">
             <p className="text-sm text-cyan-800 font-medium mb-2">
-              💡 Como funciona o cálculo de taxa de saque PIX:
+              💡 Como funciona o cálculo de taxa de saque (cash-out):
             </p>
             <ul className="text-sm text-cyan-700 space-y-1 list-disc list-inside">
               <li>
-                <strong>Taxa fixa PIX:</strong> R${' '}
-                {settings.taxa_fixa_pix.toFixed(2)}
+                <strong>Taxa fixa cash-out:</strong> R${' '}
+                {Number(settings.taxa_fixa_pix).toFixed(2)}
               </li>
               <li>
                 <strong>Exemplo:</strong> Saque de R$ 100,00 → Taxa = R${' '}
-                {settings.taxa_fixa_pix.toFixed(2)} → Total descontado = R${' '}
-                {(100 + settings.taxa_fixa_pix).toFixed(2)}
+                {Number(settings.taxa_fixa_pix).toFixed(2)} → Total descontado =
+                R$ {(100 + Number(settings.taxa_fixa_pix)).toFixed(2)}
               </li>
             </ul>
           </div>

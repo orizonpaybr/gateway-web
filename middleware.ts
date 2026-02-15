@@ -1,8 +1,7 @@
-import { NextResponse } from 'next/server'
-import type { NextRequest } from 'next/server'
+import { NextResponse, type NextRequest } from 'next/server'
 
 // Rotas públicas que não precisam de autenticação
-const publicRoutes = ['/login', '/cadastro', '/']
+const _publicRoutes = ['/login', '/cadastro', '/']
 
 // Rotas protegidas que precisam de autenticação
 const protectedRoutes = ['/dashboard']
@@ -11,7 +10,7 @@ export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   // Verificar se é uma rota protegida
-  const isProtectedRoute = protectedRoutes.some((route) =>
+  const _isProtectedRoute = protectedRoutes.some((route) =>
     pathname.startsWith(route),
   )
 

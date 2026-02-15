@@ -47,12 +47,15 @@ export function useDepositStatusUpdate() {
       // Atualizar cache otimisticamente com os dados retornados
       if (data?.deposit) {
         queryClient.setQueryData(['financial-deposits'], (oldData: unknown) => {
-          if (!oldData || typeof oldData !== 'object' || !('data' in oldData))
+          if (!oldData || typeof oldData !== 'object' || !('data' in oldData)) {
             return oldData
+          }
           const typedData = oldData as {
             data?: { data?: Array<{ id: number; [key: string]: unknown }> }
           }
-          if (!typedData.data?.data) return oldData
+          if (!typedData.data?.data) {
+            return oldData
+          }
 
           return {
             ...typedData,
@@ -71,7 +74,7 @@ export function useDepositStatusUpdate() {
           `Status do depósito #${variables.depositoId} alterado com sucesso`,
       )
     },
-    onError: (error: Error, variables) => {
+    onError: (error: Error, _variables) => {
       toast.error('Erro ao atualizar status', {
         description: error.message || 'Tente novamente mais tarde',
       })

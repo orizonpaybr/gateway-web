@@ -26,17 +26,17 @@ export const DepositStatsCard = memo(
     isCurrency = false,
   }: DepositStatsCardProps) => {
     return (
-      <Card className="p-5 border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
-        <div className="flex items-center justify-between">
-          <div className="flex-1">
-            <p className="text-sm text-gray-600 mb-2">{title}</p>
+      <Card className="p-4 sm:p-5 border border-gray-200 shadow-sm hover:shadow-md transition-shadow min-w-0">
+        <div className="flex items-center justify-between gap-3 min-w-0">
+          <div className="flex-1 min-w-0">
+            <p className="text-sm text-gray-600 mb-2 truncate">{title}</p>
             {isLoading ? (
               <Skeleton className={isCurrency ? 'h-8 w-32' : 'h-9 w-20'} />
             ) : (
               <p
                 className={`${
-                  isCurrency ? 'text-2xl' : 'text-3xl'
-                } font-bold ${valueColor}`}
+                  isCurrency ? 'text-xl sm:text-2xl' : 'text-2xl sm:text-3xl'
+                } font-bold ${valueColor} break-words overflow-hidden`}
               >
                 {isCurrency ? formatCurrencyBRL(Number(value)) : value}
               </p>

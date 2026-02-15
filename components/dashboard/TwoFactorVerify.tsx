@@ -88,6 +88,9 @@ function PinInput({ value, onChange, onKeyPress, autoFocus }: PinInputProps) {
   )
 }
 
+const FOCUSABLE_SELECTOR =
+  'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+
 export function TwoFactorVerify() {
   const [showModal, setShowModal] = useState(false)
   const [code, setCode] = useState('')
@@ -97,6 +100,7 @@ export function TwoFactorVerify() {
   const { user, logout, tempToken, verify2FA } = useAuth()
   const router = useRouter()
   const hasChecked = useRef(false)
+  const modalRef = useRef<HTMLDivElement>(null)
 
   const checkIfNeedsVerification = useCallback(async () => {
     if (tempToken) {
@@ -123,6 +127,39 @@ export function TwoFactorVerify() {
       checkIfNeedsVerification()
     }
   }, [user, tempToken, checkIfNeedsVerification])
+
+  useEffect(() => {
+    if (!showModal || !modalRef.current) {
+      return
+    }
+    const el = modalRef.current
+    const focusable = Array.from(
+      el.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR),
+    ).filter((node) => !node.hasAttribute('disabled'))
+    const first = focusable[0]
+    const last = focusable[focusable.length - 1]
+    if (first) {
+      first.focus()
+    }
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== 'Tab') {
+        return
+      }
+      if (e.shiftKey) {
+        if (document.activeElement === first) {
+          e.preventDefault()
+          last?.focus()
+        }
+      } else {
+        if (document.activeElement === last) {
+          e.preventDefault()
+          first?.focus()
+        }
+      }
+    }
+    el.addEventListener('keydown', onKeyDown)
+    return () => el.removeEventListener('keydown', onKeyDown)
+  }, [showModal])
 
   if (!shouldRender) {
     return null
@@ -193,15 +230,28 @@ export function TwoFactorVerify() {
 
   return (
     <>
-      <div className="fixed inset-0 bg-black/80 z-40" />
+      <div
+        className="fixed inset-0 bg-black/80 z-40"
+        aria-hidden
+        tabIndex={-1}
+      />
 
       <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
-        <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6">
+        <div
+          ref={modalRef}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="two-factor-modal-title"
+          className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6"
+        >
           <div className="mb-6">
             <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4 mx-auto">
               <Shield className="w-6 h-6 text-primary" />
             </div>
-            <h2 className="text-2xl font-bold text-gray-900">
+            <h2
+              id="two-factor-modal-title"
+              className="text-2xl font-bold text-gray-900"
+            >
               Verificação de Segurança
             </h2>
             <p className="text-gray-600 mt-2">

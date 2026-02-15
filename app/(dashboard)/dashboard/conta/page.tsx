@@ -6,11 +6,29 @@ import {
   User as UserIcon,
   Info as InfoIcon,
   Phone as PhoneIcon,
+  Percent as PercentIcon,
+  ArrowDownCircle,
+  ArrowUpCircle,
 } from 'lucide-react'
 
 import { Card } from '@/components/ui/Card'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { useAccountData } from '@/hooks/useReactQuery'
+
+interface TaxesData {
+  deposit?: {
+    fixed: number
+    global_fixed?: number
+    custom_fixed?: number | null
+    is_custom?: boolean
+  }
+  withdraw?: {
+    fixed: number
+    global_fixed?: number
+    custom_fixed?: number | null
+    is_custom?: boolean
+  }
+}
 
 interface AccountData {
   data?: {
@@ -18,6 +36,7 @@ interface AccountData {
     email?: string
     cnpj?: string
     status_text?: string
+    taxes?: TaxesData
     company?: {
       razao_social?: string
       nome_fantasia?: string
@@ -31,6 +50,10 @@ interface AccountData {
     }
     [key: string]: unknown
   }
+}
+
+function formatTaxa(value: number): string {
+  return `R$ ${value.toFixed(2).replace('.', ',')}`
 }
 
 const ContaPage = memo(() => {
@@ -117,6 +140,81 @@ const ContaPage = memo(() => {
                 </p>
               </div>
             </div>
+
+            {(account.taxes as TaxesData | undefined) && (
+              <>
+                <div className="h-6" />
+                <h3 className="text-sm font-semibold text-gray-700 mb-3 inline-flex items-center gap-2">
+                  <PercentIcon size={16} className="text-gray-500" /> Taxas
+                  fixas
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                  <div className="min-w-0 rounded-lg border border-gray-200 bg-gray-50/50 p-3">
+                    <p className="text-gray-600 mb-1 inline-flex items-center gap-1.5">
+                      <ArrowDownCircle size={14} className="text-emerald-600" />
+                      Depósito (Cash In)
+                    </p>
+                    <p className="text-gray-500 text-xs">
+                      Taxa do sistema:{' '}
+                      {formatTaxa(
+                        (account.taxes as TaxesData).deposit?.global_fixed ?? 0,
+                      )}
+                    </p>
+                    {(account.taxes as TaxesData).deposit?.is_custom &&
+                      (account.taxes as TaxesData).deposit?.custom_fixed !=
+                        null && (
+                        <p className="text-gray-500 text-xs mt-0.5">
+                          Sua taxa (customizada):{' '}
+                          <span className="font-medium text-gray-900">
+                            {formatTaxa(
+                              (account.taxes as TaxesData).deposit?.custom_fixed ??
+                                0,
+                            )}
+                          </span>
+                        </p>
+                      )}
+                    <p className="font-medium text-gray-900 mt-1.5">
+                      Taxa aplicada:{' '}
+                      {formatTaxa(
+                        (account.taxes as TaxesData).deposit?.fixed ?? 0,
+                      )}
+                    </p>
+                  </div>
+                  <div className="min-w-0 rounded-lg border border-gray-200 bg-gray-50/50 p-3">
+                    <p className="text-gray-600 mb-1 inline-flex items-center gap-1.5">
+                      <ArrowUpCircle size={14} className="text-amber-600" />
+                      Saque (Cash Out)
+                    </p>
+                    <p className="text-gray-500 text-xs">
+                      Taxa do sistema:{' '}
+                      {formatTaxa(
+                        (account.taxes as TaxesData).withdraw?.global_fixed ??
+                          0,
+                      )}
+                    </p>
+                    {(account.taxes as TaxesData).withdraw?.is_custom &&
+                      (account.taxes as TaxesData).withdraw?.custom_fixed !=
+                        null && (
+                        <p className="text-gray-500 text-xs mt-0.5">
+                          Sua taxa (customizada):{' '}
+                          <span className="font-medium text-gray-900">
+                            {formatTaxa(
+                              (account.taxes as TaxesData).withdraw
+                                ?.custom_fixed ?? 0,
+                            )}
+                          </span>
+                        </p>
+                      )}
+                    <p className="font-medium text-gray-900 mt-1.5">
+                      Taxa aplicada:{' '}
+                      {formatTaxa(
+                        (account.taxes as TaxesData).withdraw?.fixed ?? 0,
+                      )}
+                    </p>
+                  </div>
+                </div>
+              </>
+            )}
           </Card>
         </div>
       ) : (

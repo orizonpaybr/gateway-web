@@ -1,8 +1,21 @@
 'use client'
 
 import React, { forwardRef } from 'react'
-import InputMask from 'react-input-mask'
+import InputMaskLib from 'react-input-mask'
 import { cn } from '@/lib/utils'
+
+type InputMaskProps = {
+  mask: string
+  value?: string
+  onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void
+  onBlur?: () => void
+  disabled?: boolean
+  maskChar?: string | null
+  children: (
+    inputProps: React.InputHTMLAttributes<HTMLInputElement>,
+  ) => React.ReactNode
+}
+const InputMask = InputMaskLib as React.ComponentType<InputMaskProps>
 
 interface PhoneInputProps {
   label?: string

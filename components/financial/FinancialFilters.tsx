@@ -74,7 +74,7 @@ export const FinancialFilters = memo(
       <div className="space-y-4">
         <div className="flex w-full items-center gap-2">
           <Input
-            placeholder="Buscar por cliente, transação..."
+            placeholder="Buscar por cliente..."
             value={search}
             onChange={(e) => {
               onSearchChange(e.target.value)
@@ -104,7 +104,7 @@ export const FinancialFilters = memo(
                 size="sm"
                 onClick={() => handleStatusChange('WAITING_FOR_APPROVAL')}
               >
-                Aguardando
+                Pendente
               </Button>
               <Button
                 variant={statusFilter === 'all' ? 'primary' : 'outline'}
