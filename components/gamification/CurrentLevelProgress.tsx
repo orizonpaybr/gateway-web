@@ -78,35 +78,35 @@ export const CurrentLevelProgress = memo<CurrentLevelProgressProps>(
     }
 
     return (
-      <Card className="p-8 bg-gradient-to-br from-blue-50 to-indigo-50">
-        <div className="flex items-center gap-6">
-          <div className="w-16 h-16 flex items-center justify-center">
+      <Card className="p-4 sm:p-8 bg-gradient-to-br from-blue-50 to-indigo-50">
+        <div className="flex items-center gap-4 sm:gap-6">
+          <div className="w-12 h-12 sm:w-16 sm:h-16 flex items-center justify-center shrink-0">
             <Image
               src={getCurrentLevelIcon}
               alt={`${currentLevel} medal`}
               width={64}
               height={64}
-              className="object-contain"
+              className="object-contain w-full h-full"
             />
           </div>
 
-          <div className="flex-1">
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+          <div className="flex-1 min-w-0">
+            <h2 className="text-lg sm:text-2xl font-bold text-gray-900 mb-1 sm:mb-2">
               Nível atual: {currentLevel}
             </h2>
 
-            <div className="text-3xl font-bold text-gray-900 mb-4">
+            <div className="text-xl sm:text-3xl font-bold text-gray-900 mb-3 sm:mb-4 tabular-nums">
               {formatCurrency(totalDeposited)}
             </div>
 
-            <div className="w-full bg-gray-200 rounded-full h-3 mb-2">
+            <div className="w-full bg-gray-200 rounded-full h-2.5 sm:h-3 mb-2">
               <div
-                className="bg-gradient-to-r from-blue-500 to-indigo-500 h-3 rounded-full transition-all duration-500 ease-out"
+                className="bg-gradient-to-r from-blue-500 to-indigo-500 h-2.5 sm:h-3 rounded-full transition-all duration-500 ease-out"
                 style={{ width: `${Math.min(progress, 100)}%` }}
               />
             </div>
 
-            <p className="text-gray-600">
+            <p className="text-sm sm:text-base text-gray-600 leading-snug">
               {nextLevelData
                 ? `${formatCurrency(remainingAmount)} para alcançar ${
                     nextLevelData.name

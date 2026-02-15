@@ -1817,7 +1817,6 @@ export interface AdminUser {
   transacoes_recused: number
   permission?: number // 1=cliente, 2=gerente, 3=admin
   aprovado_alguma_vez?: boolean
-  data_nascimento?: string
   nome_fantasia?: string
   razao_social?: string
   cep?: string
@@ -1870,7 +1869,6 @@ export interface CreateUserData {
   telefone?: string
   cpf_cnpj?: string
   cpf?: string
-  data_nascimento?: string
   saldo?: number
   status?: number
   permission?: number
@@ -1895,7 +1893,6 @@ export interface UpdateUserData {
   telefone?: string | null
   cpf_cnpj?: string | null
   cpf?: string | null
-  data_nascimento?: string | null
   saldo?: number
   status?: number
   permission?: number
@@ -2244,33 +2241,6 @@ export const adminUsersAPI = {
     data: { acquirers: { name: string; referencia: string }[] }
   }> {
     return apiRequest('/admin/pix-acquirers')
-  },
-
-  /**
-   * Salvar configurações de afiliados
-   *
-   * @param userId - ID do usuário
-   * @param data - Dados de afiliado
-   */
-  async saveAffiliateSettings(
-    userId: number,
-    data: { is_affiliate: boolean; affiliate_percentage: number },
-  ): Promise<{
-    success: boolean
-    data: {
-      message: string
-      user: {
-        is_affiliate: boolean
-        affiliate_percentage: number
-        affiliate_code?: string
-        affiliate_link?: string
-      }
-    }
-  }> {
-    return apiRequest(`/admin/users/${userId}/affiliate-settings`, {
-      method: 'POST',
-      body: JSON.stringify(data),
-    })
   },
 
   /**

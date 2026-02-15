@@ -23,19 +23,19 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
+          cache: 'yarn'
 
       - name: 📥 Install dependencies
-        run: npm ci
+        run: yarn install --frozen-lockfile
 
       - name: 🔍 Type Check
-        run: npm run type-check
+        run: yarn type-check
 
       - name: 🧹 Lint
-        run: npm run lint:strict
+        run: yarn lint:strict
 
       - name: 🏗️ Build Next.js
-        run: npm run build
+        run: yarn build
         env:
           NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
 
@@ -81,11 +81,11 @@ jobs:
             git pull origin main
             
             echo "📦 Instalando dependências..."
-            npm ci --production=false
+            yarn install --frozen-lockfile
             
             echo "🏗️ Construindo aplicação..."
             export NEXT_PUBLIC_API_URL="${{ secrets.NEXT_PUBLIC_API_URL }}"
-            npm run build
+            yarn build
             
             echo "🔄 Reiniciando serviço (PM2/Systemd)..."
             # Ajuste o comando abaixo conforme seu gerenciador de processos

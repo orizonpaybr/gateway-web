@@ -89,12 +89,14 @@ export default function JornadaPage() {
 
   if (error) {
     return (
-      <div className="space-y-8 p-6">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+      <div className="space-y-8 p-4 sm:p-6">
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
             Jornada Orizon
           </h1>
-          <p className="text-gray-600">Sua evolução no mundo dos pagamentos</p>
+          <p className="text-sm sm:text-base text-gray-600">
+            Sua evolução no mundo dos pagamentos
+          </p>
         </div>
 
         <Card className="p-6 text-center">
@@ -116,12 +118,14 @@ export default function JornadaPage() {
   }
 
   return (
-    <div className="space-y-8 p-6">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">
+    <div className="space-y-6 sm:space-y-8 p-4 sm:p-6">
+      <div className="mb-6 sm:mb-8">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1 sm:mb-2">
           Jornada Orizon
         </h1>
-        <p className="text-gray-600">Sua evolução no mundo dos pagamentos</p>
+        <p className="text-sm sm:text-base text-gray-600">
+          Sua evolução no mundo dos pagamentos
+        </p>
       </div>
 
       <Suspense fallback={<GamificationSkeleton />}>

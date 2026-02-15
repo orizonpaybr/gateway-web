@@ -22,9 +22,9 @@ export const SummaryCards = memo<SummaryCardsProps>(
 
     if (isLoading) {
       return (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 sm:gap-6">
           {Array.from({ length: 3 }).map((_, i) => (
-            <Card key={i} className="p-6">
+            <Card key={i} className="p-4 sm:p-6">
               <div className="flex items-center justify-between mb-4">
                 <Skeleton className="h-4 w-24" />
                 <Skeleton className="h-8 w-8 rounded-full" />
@@ -37,14 +37,14 @@ export const SummaryCards = memo<SummaryCardsProps>(
     }
 
     return (
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 sm:gap-6">
         {memoizedCards.map((card, index) => (
-          <Card key={index} className="p-6">
+          <Card key={index} className="p-4 sm:p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-medium text-gray-600">
                 {card.title}
               </h3>
-              <div className="w-8 h-8 flex items-center justify-center">
+              <div className="w-8 h-8 flex items-center justify-center shrink-0">
                 {card.isImage && card.imageSrc ? (
                   <Image
                     src={card.imageSrc}
@@ -58,7 +58,9 @@ export const SummaryCards = memo<SummaryCardsProps>(
                 )}
               </div>
             </div>
-            <div className="text-2xl font-bold text-gray-900">{card.value}</div>
+            <div className="text-xl sm:text-2xl font-bold text-gray-900">
+              {card.value}
+            </div>
           </Card>
         ))}
       </div>

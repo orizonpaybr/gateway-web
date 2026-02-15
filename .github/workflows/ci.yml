@@ -28,16 +28,16 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
+          cache: 'yarn'
 
       - name: 📥 Install dependencies
-        run: npm ci
+        run: yarn install --frozen-lockfile
 
       - name: 🔍 Type Check
-        run: npm run type-check
+        run: yarn type-check
 
       - name: 🧹 Lint
-        run: npm run lint:strict
+        run: yarn lint:strict
 
   # Job 2: Build da aplicação
   build:
@@ -52,13 +52,13 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
+          cache: 'yarn'
 
       - name: 📥 Install dependencies
-        run: npm ci
+        run: yarn install --frozen-lockfile
 
       - name: 🏗️ Build Next.js
-        run: npm run build
+        run: yarn build
         env:
           # Variáveis de ambiente necessárias para o build (ajuste conforme necessário)
           NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL || 'https://api.example.com' }}
@@ -85,13 +85,13 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
+          cache: 'yarn'
 
       - name: 📥 Install dependencies
-        run: npm ci
+        run: yarn install --frozen-lockfile
 
       - name: 🏗️ Build Next.js (para testes)
-        run: npm run build
+        run: yarn build
         env:
           NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL || 'https://api.example.com' }}
 
@@ -99,7 +99,7 @@ jobs:
         run: npx playwright install --with-deps
 
       - name: 🧪 Run E2E tests
-        run: npm run test:e2e
+        run: yarn test:e2e
         env:
           NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL || 'https://api.example.com' }}
 

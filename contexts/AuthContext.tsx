@@ -11,6 +11,7 @@ import {
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { authAPI, accountAPI } from '@/lib/api'
+import { queryClient } from '@/lib/queryClient'
 import { useLocalStorage } from '@/hooks/useLocalStorage'
 import type { User as UserProfile, RegisterData } from '@/types/user'
 
@@ -293,6 +294,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         duration: 3000,
       })
     } finally {
+      queryClient.clear()
       setUser(null)
       setToken(null)
       sessionStorage.removeItem('2fa_verified')

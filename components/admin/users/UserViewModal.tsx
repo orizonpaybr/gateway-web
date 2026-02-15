@@ -325,10 +325,6 @@ export const UserViewModal = memo(
                 </p>
               </div>
               <div>
-                <p className="text-gray-500">Data de Nascimento:</p>
-                <p className="font-medium">{user.data_nascimento || '-'}</p>
-              </div>
-              <div>
                 <p className="text-gray-500">Status:</p>
                 <p className="font-medium">{statusText}</p>
               </div>

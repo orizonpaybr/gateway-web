@@ -19,36 +19,6 @@ export const UserEditModal = memo(
     const [form, setForm] = useState<UpdateUserData>({})
     const isReady = !!user
 
-    // Função auxiliar para formatar data para input type="date" (YYYY-MM-DD)
-    const formatDateForInput = useCallback(
-      (dateStr?: string | null): string => {
-        if (!dateStr) {
-          return ''
-        }
-
-        // Se já está no formato YYYY-MM-DD, retorna direto
-        if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
-          return dateStr
-        }
-
-        // Tenta converter de outros formatos
-        try {
-          const date = new Date(dateStr)
-          if (isNaN(date.getTime())) {
-            return ''
-          }
-
-          const year = date.getFullYear()
-          const month = String(date.getMonth() + 1).padStart(2, '0')
-          const day = String(date.getDate()).padStart(2, '0')
-          return `${year}-${month}-${day}`
-        } catch {
-          return ''
-        }
-      },
-      [],
-    )
-
     useEffect(() => {
       if (!user) {
         return
@@ -58,10 +28,9 @@ export const UserEditModal = memo(
         email: user.email || '',
         telefone: user.telefone || '',
         cpf_cnpj: user.cpf_cnpj || user.cpf || '',
-        data_nascimento: formatDateForInput(user.data_nascimento),
         permission: user.permission || 1,
       })
-    }, [user, formatDateForInput])
+    }, [user])
 
     const handleChange = useCallback(
       (key: keyof UpdateUserData, value: unknown) => {
@@ -107,10 +76,6 @@ export const UserEditModal = memo(
         // Converter strings vazias para null para campos nullable
         telefone:
           form.telefone && form.telefone.trim() !== '' ? form.telefone : null,
-        data_nascimento:
-          form.data_nascimento && form.data_nascimento.trim() !== ''
-            ? form.data_nascimento
-            : null,
         cpf_cnpj:
           form.cpf_cnpj && form.cpf_cnpj.trim() !== '' ? form.cpf_cnpj : null,
       }
@@ -149,14 +114,6 @@ export const UserEditModal = memo(
                 label="CPF/CNPJ:"
                 value={form.cpf_cnpj || ''}
                 onChange={handleCpfCnpjChange}
-              />
-              <Input
-                label="Data nascimento:"
-                type="date"
-                value={form.data_nascimento || ''}
-                onChange={(e) =>
-                  handleChange('data_nascimento', e.target.value)
-                }
               />
               <Input
                 label="Telefone:"

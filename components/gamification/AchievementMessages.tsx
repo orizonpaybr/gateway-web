@@ -22,7 +22,7 @@ export const AchievementMessages = memo<AchievementMessagesProps>(
       return (
         <Card className="p-6">
           <h2 className="text-lg font-semibold mb-6">Mensagens de Conquista</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
             {Array.from({ length: 5 }).map((_, i) => (
               <Card key={i} className="p-4 border">
                 <div className="flex items-center gap-3 mb-3">
@@ -38,15 +38,17 @@ export const AchievementMessages = memo<AchievementMessagesProps>(
     }
 
     return (
-      <Card className="p-6">
-        <h2 className="text-lg font-semibold mb-6">Mensagens de Conquista</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+      <Card className="p-4 sm:p-6">
+        <h2 className="text-base sm:text-lg font-semibold mb-4 sm:mb-6">
+          Mensagens de Conquista
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3 sm:gap-4 lg:gap-5">
           {memoizedMessages.map((achievement) => (
             <Card
               key={achievement.level}
-              className="p-4 border hover:shadow-md transition-shadow h-32 flex flex-col"
+              className="p-4 lg:p-5 border hover:shadow-md transition-shadow min-h-[8rem] flex flex-col"
             >
-              <div className="flex items-center gap-3 mb-3">
+              <div className="flex items-center gap-3 mb-3 shrink-0">
                 <Image
                   src={achievement.icon}
                   alt={`${achievement.level} medal`}
@@ -58,7 +60,7 @@ export const AchievementMessages = memo<AchievementMessagesProps>(
                   {achievement.level}
                 </h3>
               </div>
-              <p className="text-sm text-gray-600 leading-relaxed flex-1 overflow-hidden">
+              <p className="text-sm text-gray-600 leading-relaxed flex-1 min-h-0">
                 {achievement.message}
               </p>
             </Card>
