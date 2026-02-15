@@ -37,8 +37,12 @@ export function useNumericInput(
 
     // Aplicar limites
     let finalValue = parsed
-    if (min !== undefined && finalValue < min) finalValue = min
-    if (max !== undefined && finalValue > max) finalValue = max
+    if (min !== undefined && finalValue < min) {
+      finalValue = min
+    }
+    if (max !== undefined && finalValue > max) {
+      finalValue = max
+    }
 
     // Formatar com decimais
     const formatted = finalValue.toFixed(decimals)

@@ -1,10 +1,10 @@
-import { useQuery, UseQueryResult } from '@tanstack/react-query'
+import { useQuery, type UseQueryResult } from '@tanstack/react-query'
 import {
   adminDashboardAPI,
-  AdminDashboardStats,
-  AdminUser,
-  AdminTransaction,
-  CacheMetrics,
+  type AdminDashboardStats,
+  type AdminUser,
+  type AdminTransaction,
+  type CacheMetrics,
 } from '@/lib/api'
 
 /**
