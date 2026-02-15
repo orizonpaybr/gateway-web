@@ -70,13 +70,12 @@ jobs:
           path: .next
           retention-days: 7
 
-  # Job 3: Testes E2E (opcional - pode ser desabilitado se muito pesado)
+  # Job 3: Testes E2E (desabilitado até existirem testes - remova "if: false" quando tiver testes)
   test-e2e:
     name: 🧪 E2E Tests
     runs-on: ubuntu-latest
-    # Descomente a linha abaixo para desabilitar os testes E2E temporariamente
-    # if: false
-    
+    if: false
+
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v4
