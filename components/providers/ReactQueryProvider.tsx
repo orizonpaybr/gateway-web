@@ -17,7 +17,8 @@ export function ReactQueryProvider({ children }: ReactQueryProviderProps) {
   const isPublicRoute =
     pathname?.startsWith('/login') ||
     pathname === '/' ||
-    pathname?.startsWith('/cadastro')
+    pathname?.startsWith('/cadastro') ||
+    pathname?.startsWith('/termos')
   const canRenderTree =
     authReady || isPublicRoute || !!tempToken || show2FAModal
   return (
