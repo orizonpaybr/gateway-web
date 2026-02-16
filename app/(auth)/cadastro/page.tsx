@@ -534,7 +534,7 @@ export default function CadastroPage() {
             variant="outline"
             fullWidth
             icon={<HelpCircle size={18} />}
-            onClick={() => window.open('tel:+5549988906647', '_self')}
+            onClick={() => window.open('https://wa.me/5549988906647', '_blank', 'noopener,noreferrer')}
           >
             Precisa de ajuda?
           </Button>

@@ -109,12 +109,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Verificar se há um token salvo no localStorage
     // Aguardar um pouco para garantir que o localStorage está disponível
     const timer = setTimeout(() => {
-      // Só executar checkAuth se houver token no localStorage E não estivermos na página de login ou cadastro
+      const isPublicRoute =
+        typeof window !== 'undefined' &&
+        (window.location.pathname === '/' ||
+          window.location.pathname.startsWith('/login') ||
+          window.location.pathname.startsWith('/cadastro') ||
+          window.location.pathname.startsWith('/termos'))
+
       if (
         typeof window !== 'undefined' &&
         localStorage.getItem('token') &&
-        !window.location.pathname.includes('/login') &&
-        !window.location.pathname.includes('/cadastro')
+        !isPublicRoute
       ) {
         checkAuth()
       } else {

@@ -10,20 +10,15 @@ export default function TermosPage() {
     <div className="min-h-screen bg-gray-light flex items-center justify-center p-4">
       <div className="w-full max-w-4xl">
         <div className="text-center mb-8">
-          <div className="flex justify-center mb-2">
+          <Link href="/" className="inline-block">
             <Image
-              src="/LOGO-ORIZON-AZUL-PRETA.png"
-              alt="Orizon Pay"
-              width={120}
-              height={36}
+              src="/Orizon Pay - Finance.png"
+              alt="Orizon Pay Finance"
+              width={180}
+              height={56}
               priority
+              className="object-contain"
             />
-          </div>
-          <Link
-            href="/"
-            className="text-primary text-sm font-medium hover:underline"
-          >
-            Finance
           </Link>
         </div>
 
