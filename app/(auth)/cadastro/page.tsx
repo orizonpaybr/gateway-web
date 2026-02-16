@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { ArrowRight, ArrowLeft, HelpCircle, User } from 'lucide-react'
 import { useForm, Controller } from 'react-hook-form'
@@ -95,6 +95,8 @@ export default function CadastroPage() {
 
   const { register: registerUser } = useAuth()
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const referralCode = searchParams.get('ref')
 
   const handleFileSelect = (
     fieldName: keyof typeof selectedFiles,
@@ -221,6 +223,7 @@ export default function CadastroPage() {
         password: step2Data.password,
         telefone: step2Data.telefone,
         cpf_cnpj: step2Data.cpf_cnpj,
+        ref: referralCode || undefined,
       }
 
       const documents = {
