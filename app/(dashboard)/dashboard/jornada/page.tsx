@@ -1,6 +1,7 @@
 'use client'
 
 import React, { Suspense, lazy } from 'react'
+import { Percent } from 'lucide-react'
 
 import { Card } from '@/components/ui/Card'
 import { Skeleton } from '@/components/ui/Skeleton'
@@ -140,6 +141,24 @@ export default function JornadaPage() {
               nextLevelData={data.nextLevelData}
               progress={data.currentProgress}
             />
+
+            <Card className="p-5 sm:p-6 bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-100">
+              <div className="flex items-start gap-4">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-emerald-500 text-white">
+                  <Percent className="h-6 w-6" strokeWidth={2.5} />
+                </div>
+                <div>
+                  <h3 className="text-base font-semibold text-gray-900 mb-1">
+                    Benefício Cashback
+                  </h3>
+                  <p className="text-sm sm:text-base text-gray-700 leading-relaxed">
+                    A cada meta de faturamento atingida, você ganha{' '}
+                    <span className="font-semibold text-emerald-700">3% de cashback</span>{' '}
+                    sobre o valor. Quanto mais você evolui na jornada, mais você recebe.
+                  </p>
+                </div>
+              </div>
+            </Card>
 
             <AchievementTrail levels={data.achievementTrail} />
 
