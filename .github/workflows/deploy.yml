@@ -39,12 +39,12 @@ jobs:
         env:
           NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
 
-  # Job 2: Deploy para produção
+  # Job 2: Deploy via SSH (desabilitado - front está na Vercel, não há VPS para o front)
   deploy:
     name: 🚀 Deploy to Production
     needs: pre-deploy
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
+    if: false
     
     steps:
       - name: 📥 Checkout code
@@ -52,6 +52,7 @@ jobs:
         with:
           fetch-depth: 0
 
+      # A chave em SSH_PRIVATE_KEY deve ser SEM passphrase (webfactory/ssh-agent não suporta)
       - name: 🔐 Setup SSH
         uses: webfactory/ssh-agent@v0.9.0
         with:
