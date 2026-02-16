@@ -29,10 +29,24 @@ export const PixDepositModal = memo(
       isPaid,
       generateDeposit,
       cancelDeposit,
+      error,
     } = usePixDeposit({
       enablePolling: true,
       pollingInterval: 5000,
     })
+
+    // Fechar modal quando API retornar erro de conta não aprovada
+    const handleClose = useCallback(() => {
+      cancelDeposit()
+      onClose()
+    }, [cancelDeposit, onClose])
+
+    useEffect(() => {
+      const msg = (error as Error)?.message ?? ''
+      if (msg.includes('não aprovadas') && msg.includes('depósito')) {
+        handleClose()
+      }
+    }, [error, handleClose])
 
     // Gerar QR Code automaticamente quando modal abrir com valores iniciais
     useEffect(() => {
@@ -58,11 +72,6 @@ export const PixDepositModal = memo(
         })
       }
     }, [depositData])
-
-    const handleClose = useCallback(() => {
-      cancelDeposit()
-      onClose()
-    }, [cancelDeposit, onClose])
 
     // Quando o depósito for pago, mostrar mensagem de sucesso
     useEffect(() => {
