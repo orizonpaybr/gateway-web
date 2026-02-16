@@ -1,9 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { Suspense, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { ArrowRight, ArrowLeft, HelpCircle, User } from 'lucide-react'
 import { useForm, Controller } from 'react-hook-form'
@@ -74,7 +74,7 @@ type Step1FormData = z.infer<typeof step1Schema>
 type Step2FormData = z.infer<typeof step2Schema>
 type Step3FormData = z.infer<typeof step3Schema>
 
-export default function CadastroPage() {
+function CadastroContent() {
   const [step, setStep] = useState(1)
   const [isLoading, setIsLoading] = useState(false)
   const [isValidating, setIsValidating] = useState(false)
@@ -95,6 +95,8 @@ export default function CadastroPage() {
 
   const { register: registerUser } = useAuth()
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const referralCode = searchParams.get('ref')
 
   const handleFileSelect = (
     fieldName: keyof typeof selectedFiles,
@@ -221,6 +223,7 @@ export default function CadastroPage() {
         password: step2Data.password,
         telefone: step2Data.telefone,
         cpf_cnpj: step2Data.cpf_cnpj,
+        ref: referralCode || undefined,
       }
 
       const documents = {
@@ -549,5 +552,17 @@ export default function CadastroPage() {
         </p>
       </div>
     </div>
+  )
+}
+
+export default function CadastroPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <p className="text-gray-500">Carregando...</p>
+      </div>
+    }>
+      <CadastroContent />
+    </Suspense>
   )
 }
