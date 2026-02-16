@@ -103,8 +103,8 @@ export async function apiRequestWithCredentials<T>(
 
   const headers = {
     'Content-Type': 'application/json',
-    api_token: apiToken,
-    api_secret: apiSecret,
+    'api-token': apiToken,
+    'api-secret': apiSecret,
     ...options.headers,
   }
 
