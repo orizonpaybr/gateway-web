@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { Suspense, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
@@ -74,7 +74,7 @@ type Step1FormData = z.infer<typeof step1Schema>
 type Step2FormData = z.infer<typeof step2Schema>
 type Step3FormData = z.infer<typeof step3Schema>
 
-export default function CadastroPage() {
+function CadastroContent() {
   const [step, setStep] = useState(1)
   const [isLoading, setIsLoading] = useState(false)
   const [isValidating, setIsValidating] = useState(false)
@@ -552,5 +552,17 @@ export default function CadastroPage() {
         </p>
       </div>
     </div>
+  )
+}
+
+export default function CadastroPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <p className="text-gray-500">Carregando...</p>
+      </div>
+    }>
+      <CadastroContent />
+    </Suspense>
   )
 }
