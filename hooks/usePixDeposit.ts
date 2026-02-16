@@ -68,9 +68,18 @@ export function usePixDeposit(options: UsePixDepositOptions = {}) {
       onSuccess?.(data)
     },
     onError: (error: Error) => {
-      toast.error('Erro ao gerar QR Code', {
-        description: error.message || 'Tente novamente mais tarde.',
-      })
+      const isUnapprovedAccount =
+        error.message?.includes('não aprovadas') &&
+        error.message?.includes('depósito')
+      if (isUnapprovedAccount) {
+        toast.error(
+          'Contas não aprovadas não são permitidas para depósito.',
+        )
+      } else {
+        toast.error('Erro ao gerar QR Code', {
+          description: error.message || 'Tente novamente mais tarde.',
+        })
+      }
       onError?.(error)
     },
   })
