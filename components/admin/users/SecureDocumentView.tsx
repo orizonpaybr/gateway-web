@@ -1,11 +1,8 @@
 'use client'
 
 import React, { memo, useEffect, useRef, useState } from 'react'
+import Image from 'next/image'
 
-/**
- * Exibe documento (imagem ou PDF) a partir da URL do endpoint autenticado.
- * Faz fetch com Bearer token e exibe via blob para não expor documentos em URL pública.
- */
 export const SecureDocumentView = memo(
   ({
     url,
@@ -26,9 +23,7 @@ export const SecureDocumentView = memo(
     const blobUrlRef = useRef<string | null>(null)
 
     const isApiDocument =
-      !!url &&
-      url.includes('/api/admin/users/') &&
-      url.includes('/documents/')
+      !!url && url.includes('/api/admin/users/') && url.includes('/documents/')
 
     useEffect(() => {
       if (!url) {
@@ -53,20 +48,28 @@ export const SecureDocumentView = memo(
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       })
         .then((res) => {
-          if (!res.ok) throw new Error('Falha ao carregar')
+          if (!res.ok) {
+            throw new Error('Falha ao carregar')
+          }
           setMime(res.headers.get('content-type') || null)
           return res.blob()
         })
         .then((blob) => {
           const created = URL.createObjectURL(blob)
           blobUrlRef.current = created
-          if (!revoked) setBlobUrl(created)
+          if (!revoked) {
+            setBlobUrl(created)
+          }
         })
         .catch(() => {
-          if (!revoked) setError(true)
+          if (!revoked) {
+            setError(true)
+          }
         })
         .finally(() => {
-          if (!revoked) setLoading(false)
+          if (!revoked) {
+            setLoading(false)
+          }
         })
 
       return () => {
@@ -78,8 +81,10 @@ export const SecureDocumentView = memo(
       }
     }, [url, isApiDocument])
 
-    if (!url) return null
-    if (error)
+    if (!url) {
+      return null
+    }
+    if (error) {
       return (
         <div
           className={`flex items-center justify-center bg-gray-100 text-gray-500 ${className ?? ''}`}
@@ -88,7 +93,8 @@ export const SecureDocumentView = memo(
           Erro ao carregar documento
         </div>
       )
-    if (loading)
+    }
+    if (loading) {
       return (
         <div
           className={`flex items-center justify-center bg-gray-100 ${className ?? ''}`}
@@ -97,28 +103,38 @@ export const SecureDocumentView = memo(
           <span className="text-sm text-gray-500">Carregando...</span>
         </div>
       )
-    if (!blobUrl) return null
+    }
+    if (!blobUrl) {
+      return null
+    }
 
-    const isPdf = mime?.includes('pdf') ?? blobUrl.toLowerCase().endsWith('.pdf')
+    const isPdf =
+      mime?.includes('pdf') ?? blobUrl.toLowerCase().endsWith('.pdf')
 
-    if (isPdf)
+    if (isPdf) {
       return (
         <iframe
           src={blobUrl}
           title={alt}
           className={className}
-          style={fill ? { width: '100%', height: '100%', minHeight: 280 } : undefined}
+          style={
+            fill ? { width: '100%', height: '100%', minHeight: 280 } : undefined
+          }
         />
       )
+    }
 
     return (
-      // eslint-disable-next-line @next/next/no-img-element
-      <img
+      <Image
         src={blobUrl}
         alt={alt}
+        fill={fill}
         className={className}
-        style={fill ? { objectFit: 'cover', width: '100%', height: '100%' } : undefined}
-        {...rest}
+        unoptimized
+        sizes={fill ? '(max-width: 768px) 100vw, 33vw' : '100vw'}
+        style={fill ? { objectFit: 'cover' } : { objectFit: 'contain' }}
+        width={fill ? undefined : 1200}
+        height={fill ? undefined : 800}
       />
     )
   },
