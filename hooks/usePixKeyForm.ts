@@ -8,7 +8,14 @@ import { centsToBRL } from '@/lib/format'
 import { toast } from 'sonner'
 import { useAuth } from '@/contexts/AuthContext'
 
-export function usePixKeyForm() {
+const DEFAULT_MAX_WITHDRAWAL_LIMIT = 100000
+
+export type UsePixKeyFormOptions = {
+  maxWithdrawalLimit?: number
+}
+
+export function usePixKeyForm(options: UsePixKeyFormOptions = {}) {
+  const { maxWithdrawalLimit = DEFAULT_MAX_WITHDRAWAL_LIMIT } = options
   const queryClient = useQueryClient()
   const { authReady } = useAuth()
 
@@ -89,8 +96,11 @@ export function usePixKeyForm() {
   )
 
   const isAmountValid = useMemo(
-    () => numericAmount > 0 && numericAmount <= balance,
-    [numericAmount, balance],
+    () =>
+      numericAmount > 0 &&
+      numericAmount <= balance &&
+      numericAmount <= maxWithdrawalLimit,
+    [numericAmount, balance, maxWithdrawalLimit],
   )
 
   const canAdvance = useMemo(
@@ -128,6 +138,13 @@ export function usePixKeyForm() {
       return false
     }
 
+    if (numericAmount > maxWithdrawalLimit) {
+      toast.error(
+        `Valor acima do limite máximo por saque de R$ ${maxWithdrawalLimit.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
+      )
+      return false
+    }
+
     withdrawMutation.mutate({
       key_type: selectedKeyType,
       key_value: keyValue.replace(/\D/g, ''),
@@ -138,6 +155,7 @@ export function usePixKeyForm() {
     isKeyValid,
     numericAmount,
     balance,
+    maxWithdrawalLimit,
     selectedKeyType,
     keyValue,
     withdrawMutation,

@@ -22,7 +22,7 @@ const KEY_TYPES = [
   { value: 'aleatoria', label: 'Aleatória', placeholder: 'Chave aleatória' },
 ] as const
 
-const MAX_LIMIT = 15000
+const MAX_LIMIT = 100000
 
 const SavedKeysSkeletonLoader = memo(() => (
   <div className="pt-4 border-t">
@@ -69,7 +69,7 @@ const PixChavePage = memo(() => {
     handleKeyTypeChange,
     handleConfirmWithdraw,
     handleUseSavedKey,
-  } = usePixKeyForm()
+  } = usePixKeyForm({ maxWithdrawalLimit: MAX_LIMIT })
 
   // ===== VALORES MEMORIZADOS (evita recálculos) =====
   const formattedMaxLimit = useMemo(
@@ -168,7 +168,7 @@ const PixChavePage = memo(() => {
                 className="w-full"
               />
               <p className="text-xs text-gray-500 mt-1">
-                Limite máximo: R$ {formattedMaxLimit}
+                Limite máximo por saque: R$ {formattedMaxLimit}
               </p>
             </div>
           </div>
