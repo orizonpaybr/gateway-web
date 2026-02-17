@@ -457,7 +457,7 @@ function CadastroContent() {
               <div className="mb-6">
                 <h2 className="text-xl font-bold text-gray-900">Documentos</h2>
                 <p className="text-sm text-gray-600 mt-1">
-                  Envie os documentos para verificação
+                  Envie fotos (JPG ou PNG) dos documentos para verificação.
                 </p>
               </div>
 
@@ -468,7 +468,7 @@ function CadastroContent() {
                 <div className="space-y-4">
                   <FileUpload
                     label="Frente do Documento"
-                    accept="image/*,application/pdf"
+                    accept="image/jpeg,image/jpg,image/png"
                     maxSize={5}
                     value={selectedFiles.documentoFrente}
                     onChange={(file) =>
@@ -478,7 +478,7 @@ function CadastroContent() {
 
                   <FileUpload
                     label="Verso do Documento"
-                    accept="image/*,application/pdf"
+                    accept="image/jpeg,image/jpg,image/png"
                     maxSize={5}
                     value={selectedFiles.documentoVerso}
                     onChange={(file) =>
@@ -488,7 +488,7 @@ function CadastroContent() {
 
                   <FileUpload
                     label="Selfie com Documento"
-                    accept="image/*,application/pdf"
+                    accept="image/jpeg,image/jpg,image/png"
                     maxSize={5}
                     value={selectedFiles.selfieDocumento}
                     onChange={(file) =>
@@ -537,7 +537,13 @@ function CadastroContent() {
             variant="outline"
             fullWidth
             icon={<HelpCircle size={18} />}
-            onClick={() => window.open('https://wa.me/5549988906647', '_blank', 'noopener,noreferrer')}
+            onClick={() =>
+              window.open(
+                'https://wa.me/5549988906647',
+                '_blank',
+                'noopener,noreferrer',
+              )
+            }
           >
             Precisa de ajuda?
           </Button>
@@ -557,11 +563,13 @@ function CadastroContent() {
 
 export default function CadastroPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <p className="text-gray-500">Carregando...</p>
-      </div>
-    }>
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-gray-50">
+          <p className="text-gray-500">Carregando...</p>
+        </div>
+      }
+    >
       <CadastroContent />
     </Suspense>
   )

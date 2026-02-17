@@ -113,14 +113,12 @@ export const SecureDocumentView = memo(
 
     if (isPdf) {
       return (
-        <iframe
-          src={blobUrl}
-          title={alt}
-          className={className}
-          style={
-            fill ? { width: '100%', height: '100%', minHeight: 280 } : undefined
-          }
-        />
+        <div
+          className={`flex items-center justify-center bg-gray-100 text-gray-500 text-sm text-center p-4 ${className ?? ''}`}
+          {...rest}
+        >
+          Documento em PDF. Visualização em implementação.
+        </div>
       )
     }
 
