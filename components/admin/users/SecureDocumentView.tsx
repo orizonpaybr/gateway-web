@@ -1,0 +1,127 @@
+'use client'
+
+import React, { memo, useEffect, useRef, useState } from 'react'
+
+/**
+ * Exibe documento (imagem ou PDF) a partir da URL do endpoint autenticado.
+ * Faz fetch com Bearer token e exibe via blob para não expor documentos em URL pública.
+ */
+export const SecureDocumentView = memo(
+  ({
+    url,
+    alt,
+    className,
+    fill,
+    ...rest
+  }: {
+    url: string | null
+    alt: string
+    className?: string
+    fill?: boolean
+  } & React.HTMLAttributes<HTMLDivElement>) => {
+    const [blobUrl, setBlobUrl] = useState<string | null>(null)
+    const [loading, setLoading] = useState(!!url)
+    const [error, setError] = useState(false)
+    const [mime, setMime] = useState<string | null>(null)
+    const blobUrlRef = useRef<string | null>(null)
+
+    const isApiDocument =
+      !!url &&
+      url.includes('/api/admin/users/') &&
+      url.includes('/documents/')
+
+    useEffect(() => {
+      if (!url) {
+        setLoading(false)
+        setBlobUrl(null)
+        return
+      }
+
+      if (!isApiDocument) {
+        setBlobUrl(url)
+        setLoading(false)
+        return
+      }
+
+      let revoked = false
+      setLoading(true)
+      setError(false)
+      const token =
+        typeof window !== 'undefined' ? localStorage.getItem('token') : null
+
+      fetch(url, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      })
+        .then((res) => {
+          if (!res.ok) throw new Error('Falha ao carregar')
+          setMime(res.headers.get('content-type') || null)
+          return res.blob()
+        })
+        .then((blob) => {
+          const created = URL.createObjectURL(blob)
+          blobUrlRef.current = created
+          if (!revoked) setBlobUrl(created)
+        })
+        .catch(() => {
+          if (!revoked) setError(true)
+        })
+        .finally(() => {
+          if (!revoked) setLoading(false)
+        })
+
+      return () => {
+        revoked = true
+        if (blobUrlRef.current) {
+          URL.revokeObjectURL(blobUrlRef.current)
+          blobUrlRef.current = null
+        }
+      }
+    }, [url, isApiDocument])
+
+    if (!url) return null
+    if (error)
+      return (
+        <div
+          className={`flex items-center justify-center bg-gray-100 text-gray-500 ${className ?? ''}`}
+          {...rest}
+        >
+          Erro ao carregar documento
+        </div>
+      )
+    if (loading)
+      return (
+        <div
+          className={`flex items-center justify-center bg-gray-100 ${className ?? ''}`}
+          {...rest}
+        >
+          <span className="text-sm text-gray-500">Carregando...</span>
+        </div>
+      )
+    if (!blobUrl) return null
+
+    const isPdf = mime?.includes('pdf') ?? blobUrl.toLowerCase().endsWith('.pdf')
+
+    if (isPdf)
+      return (
+        <iframe
+          src={blobUrl}
+          title={alt}
+          className={className}
+          style={fill ? { width: '100%', height: '100%', minHeight: 280 } : undefined}
+        />
+      )
+
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={blobUrl}
+        alt={alt}
+        className={className}
+        style={fill ? { objectFit: 'cover', width: '100%', height: '100%' } : undefined}
+        {...rest}
+      />
+    )
+  },
+)
+
+SecureDocumentView.displayName = 'SecureDocumentView'
