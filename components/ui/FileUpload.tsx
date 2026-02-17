@@ -43,6 +43,14 @@ export const FileUpload: React.FC<FileUploadProps> = ({
       return
     }
 
+    const onlyImages = accept.includes('image/') && !accept.includes('pdf')
+    if (onlyImages && !file.type.match(/^image\/(jpeg|jpg|png)$/i)) {
+      toast.error(
+        'Envie apenas fotos (JPG ou PNG). Documentos em PDF não são aceitos.',
+      )
+      return
+    }
+
     if (file.type.startsWith('image/')) {
       const previewUrl = URL.createObjectURL(file)
       setImagePreview(previewUrl)
@@ -177,7 +185,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
             <Upload size={24} className="text-gray-400" />
             <p className="text-sm text-gray-600">Clique para enviar</p>
             <p className="text-xs text-gray-500">
-              {accept.includes('image/') ? 'PNG, JPG' : 'PNG, JPG ou PDF'} até{' '}
+              {accept.includes('pdf') ? 'PNG, JPG ou PDF' : 'PNG ou JPG'} até{' '}
               {maxSize}MB
             </p>
           </div>
