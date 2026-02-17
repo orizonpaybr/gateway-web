@@ -1,8 +1,8 @@
 import React, { memo, useMemo, useState, useEffect, useCallback } from 'react'
-import Image from 'next/image'
 import { Dialog } from '@/components/ui/Dialog'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import { BASE_URL, type AdminUser } from '@/lib/api'
+import { SecureDocumentView } from './SecureDocumentView'
 import { useFormatDate } from '@/lib/helpers/formatting'
 import { getStatusLabel } from '@/lib/helpers/userStatus'
 interface UserViewModalProps {
@@ -180,13 +180,11 @@ export const UserViewModal = memo(
                 }}
                 aria-label={`Ampliar ${docType.title}`}
               >
-                <Image
-                  src={imageUrl}
+                <SecureDocumentView
+                  url={imageUrl}
                   alt={docType.title}
                   fill
-                  className="object-cover"
-                  unoptimized
-                  sizes="(max-width: 768px) 100vw, 33vw"
+                  className="absolute inset-0 w-full h-full object-cover"
                 />
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
                   <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-black/80 text-white text-sm px-4 py-2 rounded-lg shadow-lg text-center">
@@ -387,16 +385,13 @@ export const UserViewModal = memo(
                     />
                   )}
 
-                  <Image
-                    src={selectedImage.url}
-                    alt={selectedImage.title}
-                    width={1200}
-                    height={800}
-                    className="max-w-full max-h-[80vh] object-contain"
-                    unoptimized
-                    priority
-                    sizes="(max-width: 1200px) 100vw, 1200px"
-                  />
+                  <div className="w-full max-h-[80vh] flex items-center justify-center min-h-[400px]">
+                    <SecureDocumentView
+                      url={selectedImage.url}
+                      alt={selectedImage.title}
+                      className="max-w-full max-h-[80vh] object-contain w-full min-h-[400px]"
+                    />
+                  </div>
 
                   {availableImages.length > 1 && (
                     <NavigationButton
