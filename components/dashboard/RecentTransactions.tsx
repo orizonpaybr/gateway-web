@@ -1,15 +1,15 @@
 'use client'
 
-import { memo, useState, useEffect, useCallback } from 'react'
+import { memo, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { ArrowUpRight, ArrowDownLeft, FileText } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Skeleton } from '@/components/ui/Skeleton'
-import { useAuth } from '@/contexts/AuthContext'
 import { useBalanceVisibility } from '@/contexts/BalanceVisibilityContext'
-import { transactionsAPI } from '@/lib/api'
 import { formatCurrencyBRL, formatDateBR, formatTimeBR } from '@/lib/format'
+import { useRecentTransactions } from '@/hooks/useReactQuery'
+
 export interface Transaction {
   id: number
   transaction_id: string
@@ -20,6 +20,7 @@ export interface Transaction {
   status: string
   status_legivel: string
 }
+
 interface RecentTransactionsProps {
   onViewExtract?: () => void
 }
@@ -27,47 +28,10 @@ interface RecentTransactionsProps {
 export const RecentTransactions = memo(
   ({ onViewExtract: _onViewExtract }: RecentTransactionsProps) => {
     const router = useRouter()
-    const [transactions, setTransactions] = useState<Transaction[]>([])
-    const [isLoading, setIsLoading] = useState(true)
-
-    // Usar AuthContext para token
-    const { user, authReady } = useAuth()
-
     const { isBalanceHidden } = useBalanceVisibility()
-    const _token = user ? 'authenticated' : null
 
-    useEffect(() => {
-      const fetchTransactions = async () => {
-        if (!authReady || !user) {
-          setIsLoading(false)
-          return
-        }
-
-        setIsLoading(true)
-        try {
-          const response = await transactionsAPI.list({ limit: 7, page: 1 })
-          if (response.success) {
-            setTransactions(response.data.data)
-          }
-        } catch (error) {
-          console.error(
-            'RecentTransactions - Erro ao buscar transações:',
-            error,
-          )
-        } finally {
-          setIsLoading(false)
-        }
-      }
-
-      // Aguardar um pouco para garantir que o token está disponível
-      const timer = setTimeout(() => {
-        fetchTransactions()
-      }, 200)
-
-      return () => {
-        clearTimeout(timer)
-      }
-    }, [user, authReady])
+    const { data, isLoading } = useRecentTransactions(7)
+    const transactions: Transaction[] = data?.data?.data ?? []
 
     const formatCurrency = useCallback(
       (value: number) => formatCurrencyBRL(value, { hide: isBalanceHidden }),

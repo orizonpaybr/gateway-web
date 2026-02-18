@@ -34,12 +34,7 @@ const LazyRecentTransactions = createLazyComponent(() =>
     default: m.RecentTransactions,
   })),
 )
-import {
-  useDashboardStats,
-  useInteractiveMovement,
-  useTransactionSummary,
-  useRecentTransactions,
-} from '@/hooks/useReactQuery'
+import { useDashboardStats } from '@/hooks/useReactQuery'
 import { formatCurrencyBRL } from '@/lib/format'
 
 export default function DashboardPage() {
@@ -51,18 +46,11 @@ export default function DashboardPage() {
   // Usar AuthContext para token
   const { isBalanceHidden } = useBalanceVisibility()
 
-  // React Query hooks para dados otimizados
   const {
     data: stats,
     isLoading: statsLoading,
     error: _statsError,
   } = useDashboardStats()
-  const { data: _interactiveData, isLoading: interactiveLoading } =
-    useInteractiveMovement(chartPeriod)
-  const { data: _summaryData, isLoading: summaryLoading } =
-    useTransactionSummary(chartPeriod)
-  const { data: _recentData, isLoading: recentLoading } =
-    useRecentTransactions(7)
 
   const handlePeriodChange = useCallback(
     (period: 'hoje' | 'ontem' | '7dias' | '30dias') => {
@@ -71,8 +59,7 @@ export default function DashboardPage() {
     [],
   )
 
-  const isLoading =
-    statsLoading || interactiveLoading || summaryLoading || recentLoading
+  const isLoading = statsLoading
 
   // Memorizar formatação de moeda
   const formatCurrency = useCallback(
