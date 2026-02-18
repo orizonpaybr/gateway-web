@@ -6,8 +6,7 @@ import { EyeOff, Eye, RefreshCw, Menu } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { useBalanceVisibility } from '@/contexts/BalanceVisibilityContext'
 import { useMobileMenu } from '@/contexts/MobileMenuContext'
-import { useAuth } from '@/contexts/AuthContext'
-import { useDashboardStats, useAccountData } from '@/hooks/useReactQuery'
+import { useDashboardStats } from '@/hooks/useReactQuery'
 import { formatCurrencyBRL } from '@/lib/format'
 
 const pageTitles: Record<string, string> = {
@@ -43,37 +42,8 @@ export const Header = memo(() => {
   }, [])
 
   const isHomePage = pathname === '/dashboard'
-  const { user: authUser } = useAuth()
   const { data: stats } = useDashboardStats()
-  const { data: accountData } = useAccountData()
 
-  const account =
-    accountData && typeof accountData === 'object' && 'data' in accountData
-      ? (
-          accountData as {
-            data?: {
-              status_text?: string
-              status_numeric?: number
-              status?: string
-              company?: { status_atual?: string }
-            }
-          }
-        ).data
-      : null
-  const statusText =
-    account?.status_text ??
-    account?.company?.status_atual ??
-    authUser?.status_text ??
-    ''
-  const statusNum = account?.status_numeric ?? authUser?.status
-  const isPending = Boolean(
-    (account || authUser) &&
-    (statusText === 'Pendente' ||
-      statusNum === 2 ||
-      (typeof statusNum === 'string' && statusNum === '2') ||
-      (typeof account?.status === 'string' && account.status === 'pending') ||
-      (typeof authUser?.status === 'string' && authUser.status === 'pending')),
-  )
   // Formatar saldo disponível
   const availableBalance = stats?.data?.saldo_disponivel || 0
   const formattedBalance = formatCurrencyBRL(availableBalance, {
@@ -103,11 +73,6 @@ export const Header = memo(() => {
       </div>
 
       <div className="flex items-center gap-2">
-        {isPending && (
-          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 border border-yellow-200">
-            Pendente
-          </span>
-        )}
         <Button
           variant="ghost"
           size="sm"

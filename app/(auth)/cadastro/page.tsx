@@ -237,17 +237,14 @@ function CadastroContent() {
       const isPendingApproval =
         response.data?.pending_approval || response.data?.user?.status === 2
 
-      toast.success(
-        isPendingApproval ? 'Cadastro realizado!' : 'Conta criada com sucesso!',
-        {
-          description: isPendingApproval
-            ? 'Sua conta está pendente de aprovação pelo administrador.'
-            : 'Bem-vindo ao Orizon Finance!',
-          duration: 5000,
-        },
-      )
+      toast.success('Cadastro realizado!', {
+        description: isPendingApproval
+          ? 'Sua conta está aguardando aprovação. Você poderá fazer login após a aprovação pelo administrador.'
+          : 'Você poderá fazer login após a aprovação pelo administrador.',
+        duration: 5000,
+      })
 
-      router.push('/dashboard')
+      router.push('/login')
     } catch (err: unknown) {
       const errorMessage =
         err instanceof Error ? err.message : 'Erro ao criar conta'

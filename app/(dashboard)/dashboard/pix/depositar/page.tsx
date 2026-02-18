@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { toast } from 'sonner'
 
 import { Clock, CheckCircle, Info, Send } from 'lucide-react'
 
@@ -10,32 +9,19 @@ import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { CurrencyInput } from '@/components/ui/CurrencyInput'
 import { formatCurrencyBRL } from '@/lib/format'
-import { useAuth } from '@/contexts/AuthContext'
-
-const MSG_CONTA_NAO_APROVADA =
-  'Contas não aprovadas não são permitidas para depósito.'
 
 export default function DepositarPage() {
-  const { user } = useAuth()
   const [isDepositModalOpen, setIsDepositModalOpen] = useState(false)
   const [selectedAmount, setSelectedAmount] = useState('')
 
   const quickAmounts = useMemo(() => [50, 100, 200, 500, 1000, 2000], [])
 
-  const isApproved =
-    user?.status === 1 || user?.status_text === 'Aprovado'
-
   const handleQuickAmount = (amount: number) => {
-    // Converter valor para centavos (formato esperado pelo CurrencyInput)
     const valueInCents = Math.round(amount * 100).toString()
     setSelectedAmount(valueInCents)
   }
 
   const handleGenerateQRCode = () => {
-    if (!isApproved) {
-      toast.error(MSG_CONTA_NAO_APROVADA)
-      return
-    }
     setIsDepositModalOpen(true)
   }
 

@@ -317,14 +317,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     },
   ) => {
     const response = await authAPI.register(data, documents)
-    if (response.data?.user) {
-      setUser(extractUserData(response.data.user))
-      // Usuários pendentes podem acessar o dashboard normalmente
-      // Eles podem fazer requisições, configurar 2FA, etc.
-      setAuthReady(true)
-    }
-    // Limpar tempToken ao registrar novo usuário
-    // Evita que TwoFactorVerify mostre modal quando não deve
     setTempToken(null)
     return response
   }
