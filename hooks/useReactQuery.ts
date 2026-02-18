@@ -117,9 +117,9 @@ export function useRecentTransactions(limit: number = 7) {
     queryKey: ['transactions', 'recent', limit],
     queryFn: () => transactionsAPI.list({ limit, page: 1 }),
     enabled: authReady,
-    staleTime: 1 * 60 * 1000,
-    gcTime: 3 * 60 * 1000,
-    refetchOnWindowFocus: false,
+    staleTime: 20 * 1000,
+    gcTime: 2 * 60 * 1000,
+    refetchOnWindowFocus: true,
   })
 }
 
@@ -131,9 +131,9 @@ export function useDashboardStats() {
     queryKey: ['dashboard', 'stats'],
     queryFn: () => dashboardAPI.getStats(),
     enabled: authReady,
-    staleTime: 2 * 60 * 1000,
-    gcTime: 5 * 60 * 1000,
-    refetchOnWindowFocus: false,
+    staleTime: 20 * 1000,
+    gcTime: 2 * 60 * 1000,
+    refetchOnWindowFocus: true,
   })
 }
 
@@ -157,9 +157,9 @@ export function useTransactionSummary(period: string = '7d') {
     queryKey: ['dashboard', 'summary', period],
     queryFn: () => dashboardAPI.getTransactionSummary(period),
     enabled: authReady,
-    staleTime: 1 * 60 * 1000,
-    gcTime: 3 * 60 * 1000,
-    refetchOnWindowFocus: false,
+    staleTime: 20 * 1000,
+    gcTime: 2 * 60 * 1000,
+    refetchOnWindowFocus: true,
   })
 }
 
@@ -170,9 +170,9 @@ export function useInteractiveMovement(period: string = '7d') {
     queryKey: ['dashboard', 'interactive', period],
     queryFn: () => dashboardAPI.getInteractiveMovement(period),
     enabled: authReady,
-    staleTime: 1 * 60 * 1000,
-    gcTime: 3 * 60 * 1000,
-    refetchOnWindowFocus: false,
+    staleTime: 30 * 1000,
+    gcTime: 2 * 60 * 1000,
+    refetchOnWindowFocus: true,
   })
 }
 
@@ -309,9 +309,9 @@ export function useGamificationData() {
       return data
     },
     enabled: authReady,
-    staleTime: 5 * 60 * 1000,
-    gcTime: 10 * 60 * 1000,
-    refetchOnWindowFocus: false,
+    staleTime: 30 * 1000,
+    gcTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: true,
     retry: 2,
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
   })
