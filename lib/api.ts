@@ -288,11 +288,6 @@ export const authAPI = {
       throw new Error(errorMessage)
     }
 
-    // Armazenar tokens se disponíveis
-    if (result.data) {
-      storeAuthData(result.data)
-    }
-
     return result
   },
 

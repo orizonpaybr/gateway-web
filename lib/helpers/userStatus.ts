@@ -101,8 +101,7 @@ export function isDeleted(user: AdminUser): boolean {
 
 /**
  * Verificar se usuário pode fazer login
- * (Não está bloqueado nem excluído)
  */
 export function canLogin(user: AdminUser): boolean {
-  return !isBlocked(user) && !isDeleted(user)
+  return user.status === USER_STATUS.ACTIVE && !isBlocked(user)
 }
