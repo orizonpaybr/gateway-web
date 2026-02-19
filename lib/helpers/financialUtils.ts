@@ -82,6 +82,38 @@ export function formatTransactionType(tipo: string): string {
 }
 
 /**
+ * Formata descrição técnica da transação para exibição ao usuário (pt-BR).
+ */
+export function formatarDescricao(
+  descricao: string,
+  tipo?: 'deposito' | 'saque',
+): string {
+  if (!descricao?.trim()) {
+    return tipo === 'deposito' ? 'Pagamento recebido' : 'Saque realizado'
+  }
+  const d = descricao.trim().toUpperCase()
+  if (d === 'PERSONALIZADA_FIXA' || d === 'PERSONALIZADA FIXA') {
+    return tipo === 'saque' ? 'Pagamento enviado' : 'Pagamento recebido'
+  }
+  if (d === 'AUTOMATICO' || d === 'AUTOMÁTICO') {
+    return 'Saque automático'
+  }
+  if (d === 'MANUAL') {
+    return 'Saque manual'
+  }
+  if (d === 'PAGAMENTO RECEBIDO') {
+    return 'Pagamento recebido'
+  }
+  if (d === 'PAGAMENTO ENVIADO') {
+    return 'Pagamento enviado'
+  }
+  return descricao
+    .replace(/_/g, ' ')
+    .toLowerCase()
+    .replace(/\b\w/g, (c) => c.toUpperCase())
+}
+
+/**
  * Formata data de transação para exibição
  */
 export function formatTransactionDate(dateString: string): string {

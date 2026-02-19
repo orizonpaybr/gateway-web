@@ -10,7 +10,10 @@ import { Skeleton } from '@/components/ui/Skeleton'
 import { useSearchFilter } from '@/hooks/useTableFilter'
 import { useTransactions } from '@/hooks/useReactQuery'
 import { createPaginationFilters } from '@/lib/dateUtils'
-import { getFinancialStatusBadgeClasses } from '@/lib/helpers/financialUtils'
+import {
+  getFinancialStatusBadgeClasses,
+  formatarDescricao,
+} from '@/lib/helpers/financialUtils'
 
 export default function DepositosPage() {
   const [search, setSearch] = useState('')
@@ -281,7 +284,7 @@ export default function DepositosPage() {
                               <ArrowDownLeft size={16} />
                             </div>
                             <span className="text-sm font-medium text-gray-900">
-                              {deposito.descricao}
+                              {formatarDescricao(deposito.descricao, 'deposito')}
                             </span>
                           </div>
                         </td>

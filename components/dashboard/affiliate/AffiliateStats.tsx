@@ -35,7 +35,7 @@ export function AffiliateStats() {
   const statsData = [
     {
       title: 'Saldo de Afiliados',
-      value: formatCurrency(stats.total_earned),
+      value: formatCurrency(stats.current_balance),
       icon: DollarSign,
       iconBg: 'bg-green-100',
       iconColor: 'text-green-600',

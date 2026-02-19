@@ -395,6 +395,7 @@ export const transactionsAPI = {
     busca?: string
     data_inicio?: string
     data_fim?: string
+    only_processed?: boolean
   }): Promise<{
     success: boolean
     data: {
@@ -443,6 +444,9 @@ export const transactionsAPI = {
     }
     if (filters?.data_fim) {
       params.append('data_fim', filters.data_fim)
+    }
+    if (filters?.only_processed === true) {
+      params.append('only_processed', '1')
     }
 
     return apiRequest(`/transactions?${params.toString()}`)

@@ -10,7 +10,10 @@ import { Skeleton } from '@/components/ui/Skeleton'
 import { useSearchFilter } from '@/hooks/useTableFilter'
 import { useTransactions } from '@/hooks/useReactQuery'
 import { createPaginationFilters } from '@/lib/dateUtils'
-import { getFinancialStatusBadgeClasses } from '@/lib/helpers/financialUtils'
+import {
+  getFinancialStatusBadgeClasses,
+  formatarDescricao,
+} from '@/lib/helpers/financialUtils'
 
 export default function SaquesPage() {
   const [search, setSearch] = useState('')
@@ -279,7 +282,7 @@ export default function SaquesPage() {
                               <ArrowUpRight size={16} />
                             </div>
                             <span className="text-sm font-medium text-gray-900">
-                              {saque.descricao}
+                              {formatarDescricao(saque.descricao, 'saque')}
                             </span>
                           </div>
                         </td>
