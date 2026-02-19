@@ -161,7 +161,7 @@ const ComprovantePage = memo(() => {
                 <h2 className="text-sm font-semibold text-gray-900">
                   ORIZON PAY
                 </h2>
-                <p className="text-xs text-gray-600">Gateway de Pagamentos</p>
+                <p className="text-xs text-gray-600">Instituição de pagamento</p>
               </div>
             </div>
             <div className="text-right">
