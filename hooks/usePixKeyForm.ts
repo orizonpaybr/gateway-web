@@ -62,6 +62,7 @@ export function usePixKeyForm(options: UsePixKeyFormOptions = {}) {
       queryClient.invalidateQueries({ queryKey: ['balance'] })
       queryClient.invalidateQueries({ queryKey: ['transactions'] })
       queryClient.invalidateQueries({ queryKey: ['recent-transactions'] })
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] })
       resetForm()
     },
     onError: (error: unknown) => {
