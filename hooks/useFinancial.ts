@@ -40,9 +40,11 @@ export function useFinancialTransactions(
     queryKey: ['financial-transactions', filters],
     queryFn: () => financialAPI.getAllTransactions(filters),
     enabled,
-    staleTime: 30 * 1000,
+    staleTime: 20 * 1000,
     gcTime: 5 * 60 * 1000,
-    refetchOnWindowFocus: false,
+    refetchOnWindowFocus: true,
+    refetchInterval: 30 * 1000,
+    refetchIntervalInBackground: false,
     retry: 2,
   })
 }
@@ -59,9 +61,9 @@ export function useFinancialTransactionsStats(
     queryKey: ['financial-transactions-stats', periodo],
     queryFn: () => financialAPI.getTransactionsStats(periodo),
     enabled,
-    staleTime: 60 * 1000,
+    staleTime: 20 * 1000,
     gcTime: 10 * 60 * 1000,
-    refetchOnWindowFocus: false,
+    refetchOnWindowFocus: true,
     retry: 2,
   })
 }
@@ -84,9 +86,11 @@ export function useWallets(
     queryKey: ['financial-wallets', filters],
     queryFn: () => financialAPI.getWallets(filters),
     enabled,
-    staleTime: 30 * 1000,
+    staleTime: 20 * 1000,
     gcTime: 5 * 60 * 1000,
-    refetchOnWindowFocus: false,
+    refetchOnWindowFocus: true,
+    refetchInterval: 30 * 1000,
+    refetchIntervalInBackground: false,
     retry: 2,
   })
 }
@@ -100,14 +104,14 @@ export function useWalletsStats(enabled: boolean = true): UseQueryResult<{
     queryKey: ['financial-wallets-stats'],
     queryFn: () => financialAPI.getWalletsStats(),
     enabled,
-    staleTime: 60 * 1000,
+    staleTime: 20 * 1000,
     gcTime: 10 * 60 * 1000,
-    refetchOnWindowFocus: false,
+    refetchOnWindowFocus: true,
     retry: 2,
   })
 }
 
-// Hook para depósitos (entradas)
+// Hook para depósitos (entradas) — Relatórios de Entradas
 export function useDeposits(
   filters: FinancialFilters,
   enabled: boolean = true,
@@ -125,14 +129,16 @@ export function useDeposits(
     queryKey: ['financial-deposits', filters],
     queryFn: () => financialAPI.getDeposits(filters),
     enabled,
-    staleTime: 30 * 1000,
+    staleTime: 20 * 1000,
     gcTime: 5 * 60 * 1000,
-    refetchOnWindowFocus: false,
+    refetchOnWindowFocus: true,
+    refetchInterval: 30 * 1000,
+    refetchIntervalInBackground: false,
     retry: 2,
   })
 }
 
-// Hook para estatísticas de depósitos
+// Hook para estatísticas de depósitos (cards: Aprovadas Total/Hoje/Mês, Transações geral, etc.)
 export function useDepositsStats(
   periodo: string = 'hoje',
   enabled: boolean = true,
@@ -144,14 +150,16 @@ export function useDepositsStats(
     queryKey: ['financial-deposits-stats', periodo],
     queryFn: () => financialAPI.getDepositsStats(periodo),
     enabled,
-    staleTime: 60 * 1000,
+    staleTime: 20 * 1000,
     gcTime: 10 * 60 * 1000,
-    refetchOnWindowFocus: false,
+    refetchOnWindowFocus: true,
+    refetchInterval: 30 * 1000,
+    refetchIntervalInBackground: false,
     retry: 2,
   })
 }
 
-// Hook para saques (saídas)
+// Hook para saques (saídas) — Relatórios de Saídas
 export function useWithdrawalsFinancial(
   filters: FinancialFilters,
   enabled: boolean = true,
@@ -169,14 +177,16 @@ export function useWithdrawalsFinancial(
     queryKey: ['financial-withdrawals', filters],
     queryFn: () => financialAPI.getWithdrawals(filters),
     enabled,
-    staleTime: 30 * 1000,
+    staleTime: 20 * 1000,
     gcTime: 5 * 60 * 1000,
-    refetchOnWindowFocus: false,
+    refetchOnWindowFocus: true,
+    refetchInterval: 30 * 1000,
+    refetchIntervalInBackground: false,
     retry: 2,
   })
 }
 
-// Hook para estatísticas de saques
+// Hook para estatísticas de saques (cards: Aprovados Total/Hoje/Mês, Pendentes, Valor Total, etc.)
 export function useWithdrawalsStatsFinancial(
   periodo: string = 'hoje',
   enabled: boolean = true,
@@ -188,9 +198,11 @@ export function useWithdrawalsStatsFinancial(
     queryKey: ['financial-withdrawals-stats', periodo],
     queryFn: () => financialAPI.getWithdrawalsStats(periodo),
     enabled,
-    staleTime: 60 * 1000,
+    staleTime: 20 * 1000,
     gcTime: 10 * 60 * 1000,
-    refetchOnWindowFocus: false,
+    refetchOnWindowFocus: true,
+    refetchInterval: 30 * 1000,
+    refetchIntervalInBackground: false,
     retry: 2,
   })
 }

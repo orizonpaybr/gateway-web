@@ -2,14 +2,16 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { withdrawalsAPI, type WithdrawalFilters } from '@/lib/api'
 import { toast } from 'sonner'
 
-// Hook para listar saques
+// Hook para listar saques (tela Aprovar Saques e listagens)
 export function useWithdrawals(filters?: WithdrawalFilters, enabled = true) {
   return useQuery({
     queryKey: ['withdrawals', filters],
     queryFn: () => withdrawalsAPI.list(filters),
     enabled,
-    staleTime: 30000,
-    refetchInterval: 60000,
+    staleTime: 20 * 1000,
+    refetchInterval: 30 * 1000,
+    refetchIntervalInBackground: false,
+    refetchOnWindowFocus: true,
   })
 }
 
@@ -28,13 +30,14 @@ export function useWithdrawalDetails(id: number | null, enabled = true) {
   })
 }
 
-// Hook para buscar estatísticas de saques
+// Hook para buscar estatísticas de saques (cards: Pendentes, Aprovados Hoje, etc.)
 export function useWithdrawalStats(periodo: string = 'hoje', enabled = true) {
   return useQuery({
     queryKey: ['withdrawal-stats', periodo],
     queryFn: () => withdrawalsAPI.getStats(periodo),
     enabled,
-    staleTime: 60000,
+    staleTime: 20 * 1000,
+    refetchOnWindowFocus: true,
   })
 }
 

@@ -33,8 +33,8 @@ export function useAdminDashboardStats(
       return response.data
     },
     enabled,
-    staleTime: 2 * 60 * 1000, // 2 minutos - sincronizado com cache do backend
-    gcTime: 5 * 60 * 1000, // 5 minutos
+    staleTime: 20 * 1000,
+    gcTime: 2 * 60 * 1000,
     refetchOnWindowFocus: true,
     retry: 2,
   })
@@ -81,9 +81,9 @@ export function useAdminUsers(
       }
     },
     enabled,
-    staleTime: 1 * 60 * 1000, // 1 minuto
-    gcTime: 3 * 60 * 1000, // 3 minutos
-    refetchOnWindowFocus: false,
+    staleTime: 20 * 1000,
+    gcTime: 2 * 60 * 1000,
+    refetchOnWindowFocus: true,
     retry: 1,
   })
 }
@@ -112,10 +112,11 @@ export function useAdminTransactions(
       return response.data.transactions
     },
     enabled,
-    staleTime: 30 * 1000, // 30 segundos
-    gcTime: 2 * 60 * 1000, // 2 minutos
+    staleTime: 20 * 1000,
+    gcTime: 2 * 60 * 1000,
     refetchOnWindowFocus: true,
-    refetchInterval: 60 * 1000, // Atualizar a cada 1 minuto
+    refetchInterval: 30 * 1000,
+    refetchIntervalInBackground: false,
     retry: 1,
   })
 }
