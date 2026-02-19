@@ -120,6 +120,8 @@ export function useRecentTransactions(limit: number = 7) {
     staleTime: 20 * 1000,
     gcTime: 2 * 60 * 1000,
     refetchOnWindowFocus: true,
+    refetchInterval: 30 * 1000,
+    refetchIntervalInBackground: false,
   })
 }
 
@@ -188,7 +190,7 @@ export function usePixInfracoes(filters: Record<string, unknown> = {}) {
     enabled: authReady,
     staleTime: 2 * 60 * 1000,
     gcTime: 5 * 60 * 1000,
-    refetchOnWindowFocus: false,
+    refetchOnWindowFocus: true,
   })
 }
 
