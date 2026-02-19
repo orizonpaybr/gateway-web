@@ -88,7 +88,7 @@ const BuscarPage = memo(() => {
 
         if (json.success && json.data?.data?.length) {
           const t = json.data.data[0]
-          router.push(`/dashboard/comprovante/${t.id}`)
+          router.push(`/dashboard/comprovante/${t.comprovante_id ?? `${t.tipo}-${t.id}`}`)
           setSearchResult({
             id: t.id,
             endToEndId: t.transaction_id,

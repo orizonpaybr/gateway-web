@@ -13,6 +13,7 @@ import { useRecentTransactions } from '@/hooks/useReactQuery'
 export interface Transaction {
   id: number
   transaction_id: string
+  comprovante_id?: string
   tipo: 'deposito' | 'saque'
   amount: number
   descricao: string
@@ -48,8 +49,8 @@ export const RecentTransactions = memo(
     )
 
     const handleViewReceipt = useCallback(
-      (transactionId: number) => {
-        router.push(`/dashboard/comprovante/${transactionId}`)
+      (comprovanteId: string | number) => {
+        router.push(`/dashboard/comprovante/${comprovanteId}`)
       },
       [router],
     )
@@ -164,7 +165,7 @@ export const RecentTransactions = memo(
                             variant="ghost"
                             size="sm"
                             icon={<FileText size={16} />}
-                            onClick={() => handleViewReceipt(transaction.id)}
+                            onClick={() => handleViewReceipt(transaction.comprovante_id ?? `${transaction.tipo}-${transaction.id}`)}
                             className="p-1.5 text-gray-400 hover:text-gray-600"
                           />
                         </td>
