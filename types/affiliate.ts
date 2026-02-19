@@ -8,7 +8,10 @@ export interface AffiliateLink {
 }
 
 export interface AffiliateStats {
-  total_earned: number
+  /** Saldo disponível de afiliados (para sacar) */
+  current_balance: number
+  /** Total de indicados (filhos cadastrados pelo link) */
   total_referrals: number
+  /** Ganhos do mês (comissões pagas no mês atual) */
   monthly_earned: number
 }

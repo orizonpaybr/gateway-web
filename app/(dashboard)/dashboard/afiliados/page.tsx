@@ -14,7 +14,7 @@ export default function AfiliadosPage() {
         </div>
         <div>
           <h1 className="text-2xl font-bold text-gray-900">
-            Programa de Afiliados
+            Programa Partners
           </h1>
           <p className="text-gray-600 mt-1">
             Indique amigos e ganhe comissões automáticas em cada transação

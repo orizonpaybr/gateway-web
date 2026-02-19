@@ -76,7 +76,7 @@ const mainMenuItems: MenuItem[] = [
     hasSubmenu: true,
     submenu: [{ label: 'Listagem', href: '/dashboard/qr-codes/listagem' }],
   },
-  { icon: UserPlus, label: 'Afiliados', href: '/dashboard/afiliados' },
+  { icon: UserPlus, label: 'Programa Partners', href: '/dashboard/afiliados' },
   { icon: User, label: 'Dados da Conta', href: '/dashboard/conta' },
   {
     icon: Settings,

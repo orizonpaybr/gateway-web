@@ -43,7 +43,7 @@ export function useAffiliateStats(): {
   }
 
   const stats: AffiliateStats = {
-    total_earned: linkData.current_balance,
+    current_balance: linkData.current_balance,
     total_referrals: linkData.affiliates_count,
     monthly_earned: linkData.monthly_earned,
   }
