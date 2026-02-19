@@ -115,7 +115,8 @@ export function useRecentTransactions(limit: number = 7) {
 
   return useQuery({
     queryKey: ['transactions', 'recent', limit],
-    queryFn: () => transactionsAPI.list({ limit, page: 1 }),
+    queryFn: () =>
+      transactionsAPI.list({ limit, page: 1, only_processed: true }),
     enabled: authReady,
     staleTime: 20 * 1000,
     gcTime: 2 * 60 * 1000,
@@ -345,5 +346,7 @@ export function useInvalidateQueries() {
       queryClient.invalidateQueries({ queryKey: ['gamification'] }),
     invalidateExtrato: () =>
       queryClient.invalidateQueries({ queryKey: ['extrato'] }),
+    invalidateAffiliate: () =>
+      queryClient.invalidateQueries({ queryKey: ['affiliate-link'] }),
   }
 }

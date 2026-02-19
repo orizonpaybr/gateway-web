@@ -63,6 +63,7 @@ export function usePixKeyForm(options: UsePixKeyFormOptions = {}) {
       queryClient.invalidateQueries({ queryKey: ['transactions'] })
       queryClient.invalidateQueries({ queryKey: ['recent-transactions'] })
       queryClient.invalidateQueries({ queryKey: ['dashboard'] })
+      queryClient.invalidateQueries({ queryKey: ['affiliate-link'] })
       resetForm()
     },
     onError: (error: unknown) => {
