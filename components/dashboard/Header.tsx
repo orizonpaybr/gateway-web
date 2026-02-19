@@ -15,7 +15,6 @@ const pageTitles: Record<string, string> = {
   '/dashboard/buscar': 'Dashboard Orizon',
   '/dashboard/qr-codes': 'Dashboard Orizon',
   '/dashboard/infracoes': 'Dashboard Orizon',
-  '/dashboard/pendentes': 'Dashboard Orizon',
   '/dashboard/conta': 'Dashboard Orizon',
   '/dashboard/configuracoes': 'Dashboard Orizon',
   '/dashboard/suporte': 'Dashboard Orizon',

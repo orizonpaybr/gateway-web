@@ -33,10 +33,7 @@ export function RecentTransactionsTable({
       PENDING: { label: 'Pendente', variant: 'warning' },
       PROCESSING: { label: 'Processando', variant: 'default' },
       IN_REVIEW: { label: 'Em análise', variant: 'warning' },
-      WAITING_FOR_APPROVAL: {
-        label: 'Aguardando aprovação',
-        variant: 'warning',
-      },
+      WAITING_FOR_APPROVAL: { label: 'Pendente', variant: 'warning' },
       REJECTED: { label: 'Rejeitado', variant: 'error' },
       CANCELLED: { label: 'Cancelado', variant: 'error' },
       FAILED: { label: 'Falhou', variant: 'error' },

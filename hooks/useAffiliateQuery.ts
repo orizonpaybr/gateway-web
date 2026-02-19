@@ -13,9 +13,11 @@ export function useAffiliateLink() {
     queryKey: ['affiliate-link'],
     queryFn: () => affiliateAPI.getLink(),
     enabled: authReady,
-    staleTime: 5 * 60 * 1000, // 5 minutos
-    gcTime: 10 * 60 * 1000, // 10 minutos
-    refetchOnWindowFocus: false,
+    staleTime: 20 * 1000,
+    gcTime: 10 * 60 * 1000,
+    refetchOnWindowFocus: true,
+    refetchInterval: 30 * 1000,
+    refetchIntervalInBackground: false,
     retry: 2,
   })
 }

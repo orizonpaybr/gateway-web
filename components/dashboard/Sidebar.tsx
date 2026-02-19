@@ -10,7 +10,6 @@ import {
   List,
   Wallet,
   QrCode,
-  Clock,
   User,
   Settings,
   LogOut,
@@ -78,7 +77,6 @@ const mainMenuItems: MenuItem[] = [
     submenu: [{ label: 'Listagem', href: '/dashboard/qr-codes/listagem' }],
   },
   { icon: UserPlus, label: 'Afiliados', href: '/dashboard/afiliados' },
-  { icon: Clock, label: 'Transações Pendentes', href: '/dashboard/pendentes' },
   { icon: User, label: 'Dados da Conta', href: '/dashboard/conta' },
   {
     icon: Settings,
