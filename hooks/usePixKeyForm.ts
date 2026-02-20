@@ -61,8 +61,8 @@ export function usePixKeyForm(options: UsePixKeyFormOptions = {}) {
       // Invalidar queries para forçar refetch
       queryClient.invalidateQueries({ queryKey: ['balance'] })
       queryClient.invalidateQueries({ queryKey: ['transactions'] })
-      queryClient.invalidateQueries({ queryKey: ['recent-transactions'] })
       queryClient.invalidateQueries({ queryKey: ['dashboard'] })
+      queryClient.invalidateQueries({ queryKey: ['gamification'] })
       queryClient.invalidateQueries({ queryKey: ['affiliate-link'] })
       resetForm()
     },

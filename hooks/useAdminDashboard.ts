@@ -33,8 +33,9 @@ export function useAdminDashboardStats(
       return response.data
     },
     enabled,
-    staleTime: 20 * 1000,
-    gcTime: 2 * 60 * 1000,
+    staleTime: 10 * 1000,
+    gcTime: 60 * 1000,
+    refetchInterval: 30 * 1000,
     refetchOnWindowFocus: true,
     retry: 2,
   })
@@ -112,8 +113,8 @@ export function useAdminTransactions(
       return response.data.transactions
     },
     enabled,
-    staleTime: 20 * 1000,
-    gcTime: 2 * 60 * 1000,
+    staleTime: 10 * 1000,
+    gcTime: 60 * 1000,
     refetchOnWindowFocus: true,
     refetchInterval: 30 * 1000,
     refetchIntervalInBackground: false,
