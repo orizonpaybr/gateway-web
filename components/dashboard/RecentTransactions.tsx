@@ -8,6 +8,7 @@ import { Card } from '@/components/ui/Card'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { useBalanceVisibility } from '@/contexts/BalanceVisibilityContext'
 import { formatCurrencyBRL, formatDateBR, formatTimeBR } from '@/lib/format'
+import { formatarDescricao } from '@/lib/helpers/financialUtils'
 import { useRecentTransactions } from '@/hooks/useReactQuery'
 
 export interface Transaction {
@@ -147,7 +148,7 @@ export const RecentTransactions = memo(
                         </td>
                         <td className="px-4 py-3">
                           <span className="text-sm text-gray-900">
-                            {transaction.descricao}
+                            {formatarDescricao(transaction.descricao, transaction.tipo)}
                           </span>
                         </td>
                         <td className="px-4 py-3 whitespace-nowrap">
