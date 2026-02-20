@@ -27,12 +27,15 @@ export function usePixDeposit(options: UsePixDepositOptions = {}) {
   const [isPolling, setIsPolling] = useState(false)
 
   // Dados do usuário para preencher automaticamente
-  const userData = useMemo(() => ({
-    debtor_name: user?.name || '',
-    debtor_document_number: user?.cnpj || '',
-    email: user?.email || '',
-    phone: user?.phone || '',
-  }), [user])
+  const userData = useMemo(
+    () => ({
+      debtor_name: user?.name || '',
+      debtor_document_number: user?.cnpj || '',
+      email: user?.email || '',
+      phone: user?.phone || '',
+    }),
+    [user],
+  )
 
   // Mutation para gerar QR Code
   const generateMutation = useMutation({
@@ -41,7 +44,8 @@ export function usePixDeposit(options: UsePixDepositOptions = {}) {
       const fullData: PixDepositData = {
         ...data,
         debtor_name: data.debtor_name || userData.debtor_name,
-        debtor_document_number: data.debtor_document_number || userData.debtor_document_number,
+        debtor_document_number:
+          data.debtor_document_number || userData.debtor_document_number,
         email: data.email || userData.email,
         phone: data.phone || userData.phone,
       }
@@ -111,10 +115,9 @@ export function usePixDeposit(options: UsePixDepositOptions = {}) {
         // Invalidar queries relacionadas
         queryClient.invalidateQueries({ queryKey: ['balance'] })
         queryClient.invalidateQueries({ queryKey: ['transactions'] })
-        queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] })
-        queryClient.invalidateQueries({
-          queryKey: ['dashboard-stats-optimized'],
-        })
+        queryClient.invalidateQueries({ queryKey: ['dashboard'] })
+        queryClient.invalidateQueries({ queryKey: ['gamification'] })
+        queryClient.invalidateQueries({ queryKey: ['affiliate-link'] })
       }
     }
   }, [depositStatus, queryClient])
