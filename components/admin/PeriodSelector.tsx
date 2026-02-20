@@ -18,9 +18,7 @@ export function PeriodSelector({
     { value: 'ontem', label: 'Ontem' },
     { value: '7dias', label: 'Últimos 7 dias' },
     { value: '30dias', label: 'Últimos 30 dias' },
-    { value: 'mes_atual', label: 'Mês atual' },
-    { value: 'mes_anterior', label: 'Mês anterior' },
-    { value: 'total', label: 'Todo o período' },
+    { value: 'tudo', label: 'Todo o período' },
   ]
 
   return (
