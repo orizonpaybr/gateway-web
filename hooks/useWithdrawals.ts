@@ -8,8 +8,8 @@ export function useWithdrawals(filters?: WithdrawalFilters, enabled = true) {
     queryKey: ['withdrawals', filters],
     queryFn: () => withdrawalsAPI.list(filters),
     enabled,
-    staleTime: 20 * 1000,
-    refetchInterval: 30 * 1000,
+    staleTime: 10 * 1000,
+    refetchInterval: 15 * 1000,
     refetchIntervalInBackground: false,
     refetchOnWindowFocus: true,
   })
@@ -36,7 +36,8 @@ export function useWithdrawalStats(periodo: string = 'hoje', enabled = true) {
     queryKey: ['withdrawal-stats', periodo],
     queryFn: () => withdrawalsAPI.getStats(periodo),
     enabled,
-    staleTime: 20 * 1000,
+    staleTime: 10 * 1000,
+    refetchInterval: 15 * 1000,
     refetchOnWindowFocus: true,
   })
 }

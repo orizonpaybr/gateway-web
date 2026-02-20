@@ -146,7 +146,10 @@ const AprovarSaquesPage = memo(() => {
 
   // Buscar dados
   const { data, isLoading } = useWithdrawals(filters, isAdminOrManager)
-  const { data: stats } = useWithdrawalStats('hoje', isAdminOrManager)
+  const { data: stats, isLoading: statsLoading } = useWithdrawalStats(
+    'hoje',
+    isAdminOrManager,
+  )
 
   // Mutations
   const approveMutation = useApproveWithdrawal()
@@ -203,7 +206,21 @@ const AprovarSaquesPage = memo(() => {
         </div>
       </div>
 
-      {stats?.data && (
+      {statsLoading ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <Card key={i} className="p-4">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex-1 min-w-0">
+                  <Skeleton className="h-4 w-20 mb-2" />
+                  <Skeleton className="h-8 w-12" />
+                </div>
+                <Skeleton className="h-12 w-12 rounded-lg shrink-0" />
+              </div>
+            </Card>
+          ))}
+        </div>
+      ) : stats?.data ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
           <Card className="p-4">
             <div className="flex items-center justify-between gap-2">
@@ -275,7 +292,7 @@ const AprovarSaquesPage = memo(() => {
             </div>
           </Card>
         </div>
-      )}
+      ) : null}
 
       <Card className="p-4">
         <div className="space-y-4">
@@ -631,14 +648,37 @@ const AprovarSaquesPage = memo(() => {
                 </thead>
                 <tbody>
                   {isLoading ? (
-                    <tr>
-                      <td colSpan={7} className="p-4">
-                        <div className="space-y-2">
-                          <Skeleton className="h-5 w-full" />
-                          <Skeleton className="h-5 w-5/6" />
-                        </div>
-                      </td>
-                    </tr>
+                    Array.from({ length: 5 }).map((_, i) => (
+                      <tr key={i} className="border-b border-gray-100">
+                        <td className="py-3 px-3">
+                          <Skeleton className="h-4 w-28" />
+                          <Skeleton className="h-3 w-20 mt-1" />
+                        </td>
+                        <td className="py-3 px-3">
+                          <Skeleton className="h-4 w-32" />
+                          <Skeleton className="h-3 w-16 mt-1" />
+                        </td>
+                        <td className="py-3 px-3">
+                          <Skeleton className="h-4 w-16" />
+                          <Skeleton className="h-3 w-14 mt-1" />
+                        </td>
+                        <td className="py-3 px-3">
+                          <Skeleton className="h-6 w-20 rounded-full" />
+                        </td>
+                        <td className="py-3 px-3">
+                          <Skeleton className="h-4 w-24" />
+                        </td>
+                        <td className="py-3 px-3">
+                          <Skeleton className="h-4 w-24" />
+                        </td>
+                        <td className="py-3 px-3">
+                          <div className="flex gap-2">
+                            <Skeleton className="h-8 w-8 rounded" />
+                            <Skeleton className="h-8 w-8 rounded" />
+                          </div>
+                        </td>
+                      </tr>
+                    ))
                   ) : (
                     processedData.items.map((saque) => (
                       <tr
@@ -678,7 +718,9 @@ const AprovarSaquesPage = memo(() => {
                         </td>
                         <td className="py-3 px-3">
                           <span className="text-sm text-gray-600">
-                            {saque.tipo_processamento}
+                            {saque.tipo_processamento === 'Manual'
+                              ? 'Saque manual'
+                              : 'Saque automático'}
                           </span>
                         </td>
                         <td className="py-3 px-3 text-sm text-gray-600">

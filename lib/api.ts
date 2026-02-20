@@ -1962,7 +1962,7 @@ export const adminDashboardAPI = {
   /**
    * Obter estatísticas do dashboard administrativo
    *
-   * @param periodo - 'hoje', 'ontem', '7dias', '30dias', 'mes_atual', 'mes_anterior', 'total' ou 'YYYY-MM-DD:YYYY-MM-DD'
+   * @param periodo - 'hoje' | 'ontem' | '7dias' | '30dias' | 'tudo' (todo o período) ou 'YYYY-MM-DD:YYYY-MM-DD' (custom)
    */
   async getStats(periodo: string = 'hoje'): Promise<{
     success: boolean
