@@ -41,16 +41,15 @@ export const Header = memo(() => {
   }, [])
 
   const isHomePage = pathname === '/dashboard'
-  const { data: stats } = useDashboardStats()
+  const { data: stats, refetch: refetchStats } = useDashboardStats()
 
-  // Formatar saldo disponível
-  const availableBalance = stats?.data?.saldo_disponivel || 0
+  const availableBalance = stats?.data?.saldo_disponivel ?? 0
   const formattedBalance = formatCurrencyBRL(availableBalance, {
     hide: isBalanceHidden,
   })
 
   const handleRefresh = () => {
-    window.location.reload()
+    refetchStats()
   }
 
   return (
