@@ -398,9 +398,6 @@ const EntradasPage = memo(() => {
               <thead className="bg-gray-50">
                 <tr>
                   <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">
-                    Meio
-                  </th>
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">
                     User ID
                   </th>
                   <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">
@@ -425,18 +422,34 @@ const EntradasPage = memo(() => {
               </thead>
               <tbody>
                 {isLoading ? (
-                  <tr>
-                    <td colSpan={8} className="p-4">
-                      <div className="space-y-3">
-                        <Skeleton className="h-12 w-full" />
-                        <Skeleton className="h-12 w-full" />
-                        <Skeleton className="h-12 w-full" />
-                      </div>
-                    </td>
-                  </tr>
+                  Array.from({ length: 5 }).map((_, i) => (
+                    <tr key={i} className="border-b border-gray-100">
+                      <td className="py-3 px-4">
+                        <Skeleton className="h-4 w-20" />
+                      </td>
+                      <td className="py-3 px-4">
+                        <Skeleton className="h-4 w-28" />
+                      </td>
+                      <td className="py-3 px-4">
+                        <Skeleton className="h-4 w-20" />
+                      </td>
+                      <td className="py-3 px-4">
+                        <Skeleton className="h-4 w-20" />
+                      </td>
+                      <td className="py-3 px-4">
+                        <Skeleton className="h-4 w-20" />
+                      </td>
+                      <td className="py-3 px-4">
+                        <Skeleton className="h-4 w-24" />
+                      </td>
+                      <td className="py-3 px-4">
+                        <Skeleton className="h-4 w-16" />
+                      </td>
+                    </tr>
+                  ))
                 ) : !hasData ? (
                   <tr>
-                    <td colSpan={8} className="py-16 text-center">
+                    <td colSpan={7} className="py-16 text-center">
                       <div className="flex items-center justify-center mb-4">
                         <div className="w-12 h-12 rounded-lg bg-blue-50 flex items-center justify-center">
                           <TrendingUp className="text-blue-400" />
@@ -456,7 +469,6 @@ const EntradasPage = memo(() => {
                       key={deposito.id}
                       className="border-b border-gray-100 hover:bg-gray-50"
                     >
-                      <td className="py-3 px-4 text-sm text-gray-900">PIX</td>
                       <td className="py-3 px-4 text-sm font-medium text-gray-900">
                         {deposito.cliente_id}
                       </td>

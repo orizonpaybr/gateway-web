@@ -10,6 +10,7 @@ import {
 import { FinancialTable } from '@/components/financial/FinancialTable'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
+import { Skeleton } from '@/components/ui/Skeleton'
 import { useAuth } from '@/contexts/AuthContext'
 import { useDebounce } from '@/hooks/useDebounce'
 import {
@@ -62,7 +63,8 @@ const TransacoesFinanceirasPage = memo(() => {
   ])
 
   const { data, isLoading } = useFinancialTransactions(filters, isAdmin)
-  const { data: stats } = useFinancialTransactionsStats('hoje', isAdmin)
+  const { data: stats, isLoading: statsLoading } =
+    useFinancialTransactionsStats('hoje', isAdmin)
 
   const processedData = useMemo(() => {
     if (!data?.data) {
@@ -151,7 +153,23 @@ const TransacoesFinanceirasPage = memo(() => {
         </p>
       </div>
 
-      {statsCards.length > 0 && <FinancialStatsCards stats={statsCards} />}
+      {statsLoading ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Card key={i} className="p-4">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex-1 min-w-0">
+                  <Skeleton className="h-4 w-24 mb-2" />
+                  <Skeleton className="h-7 w-16" />
+                </div>
+                <Skeleton className="h-12 w-12 rounded-lg shrink-0" />
+              </div>
+            </Card>
+          ))}
+        </div>
+      ) : statsCards.length > 0 ? (
+        <FinancialStatsCards stats={statsCards} />
+      ) : null}
 
       <Card className="p-4">
         <div className="space-y-4">
