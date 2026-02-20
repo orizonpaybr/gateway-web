@@ -56,14 +56,18 @@ export function FinancialTable<T extends Record<string, unknown>>(
             </tr>
           </thead>
           <tbody>
-            <tr>
-              <td colSpan={columns.length} className="p-4">
-                <div className="space-y-2">
-                  <Skeleton className="h-5 w-full" />
-                  <Skeleton className="h-5 w-5/6" />
-                </div>
-              </td>
-            </tr>
+            {Array.from({ length: 5 }).map((_, i) => (
+              <tr key={i} className="border-b border-gray-100">
+                {columns.map((col) => (
+                  <td key={col.key} className="py-3 px-3">
+                    <Skeleton className="h-4 w-full max-w-32" />
+                    {col.key === 'cliente_id' && (
+                      <Skeleton className="h-3 w-20 mt-1" />
+                    )}
+                  </td>
+                ))}
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>

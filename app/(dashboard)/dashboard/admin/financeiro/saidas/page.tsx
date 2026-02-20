@@ -446,15 +446,34 @@ const SaidasPage = memo(() => {
               </thead>
               <tbody>
                 {tableLoadingState ? (
-                  <tr>
-                    <td colSpan={8} className="p-4">
-                      <div className="space-y-3">
-                        <Skeleton className="h-12 w-full" />
-                        <Skeleton className="h-12 w-full" />
-                        <Skeleton className="h-12 w-full" />
-                      </div>
-                    </td>
-                  </tr>
+                  Array.from({ length: 5 }).map((_, i) => (
+                    <tr key={i} className="border-b border-gray-100">
+                      <td className="py-3 px-4">
+                        <Skeleton className="h-4 w-28" />
+                      </td>
+                      <td className="py-3 px-4">
+                        <Skeleton className="h-4 w-32" />
+                      </td>
+                      <td className="py-3 px-4">
+                        <Skeleton className="h-4 w-28" />
+                      </td>
+                      <td className="py-3 px-4">
+                        <Skeleton className="h-4 w-20" />
+                      </td>
+                      <td className="py-3 px-4">
+                        <Skeleton className="h-4 w-20" />
+                      </td>
+                      <td className="py-3 px-4">
+                        <Skeleton className="h-4 w-16" />
+                      </td>
+                      <td className="py-3 px-4">
+                        <Skeleton className="h-4 w-20" />
+                      </td>
+                      <td className="py-3 px-4">
+                        <Skeleton className="h-4 w-24" />
+                      </td>
+                    </tr>
+                  ))
                 ) : !hasData ? (
                   <tr>
                     <td colSpan={8} className="py-16 text-center">

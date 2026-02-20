@@ -286,15 +286,25 @@ const CarteirasPage = memo(() => {
               </thead>
               <tbody>
                 {isLoading ? (
-                  <tr>
-                    <td colSpan={5} className="p-4">
-                      <div className="space-y-3">
-                        <Skeleton className="h-12 w-full" />
-                        <Skeleton className="h-12 w-full" />
-                        <Skeleton className="h-12 w-full" />
-                      </div>
-                    </td>
-                  </tr>
+                  Array.from({ length: 5 }).map((_, i) => (
+                    <tr key={i} className="border-b border-gray-100">
+                      <td className="py-4 px-4">
+                        <Skeleton className="h-4 w-28" />
+                      </td>
+                      <td className="py-4 px-4">
+                        <Skeleton className="h-4 w-20" />
+                      </td>
+                      <td className="py-4 px-4">
+                        <Skeleton className="h-4 w-24" />
+                      </td>
+                      <td className="py-4 px-4">
+                        <Skeleton className="h-4 w-36" />
+                      </td>
+                      <td className="py-4 px-4">
+                        <Skeleton className="h-4 w-24" />
+                      </td>
+                    </tr>
+                  ))
                 ) : !hasData ? (
                   <tr>
                     <td colSpan={5} className="py-16 text-center">
