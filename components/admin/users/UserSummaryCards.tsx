@@ -79,7 +79,7 @@ export const UserSummaryCards = memo(
         <div className="bg-white rounded-lg border border-gray-200 p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600 mb-1">Usuários banidos</p>
+              <p className="text-sm text-gray-600 mb-1">Bloqueados / Inativos</p>
               <p className="text-2xl font-bold text-red-600">{bannedUsers}</p>
             </div>
             <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
