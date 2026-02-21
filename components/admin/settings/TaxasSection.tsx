@@ -23,6 +23,7 @@ export function TaxasSection({
   handleBlur,
 }: TaxasSectionProps) {
   const taxa = Number(settings.taxa_fixa_deposito) || Number(settings.taxa_fixa_pix) || 1
+  const comissaoAfiliado = Number(settings.taxa_comissao_afiliado_padrao) || 0.5
 
   return (
     <div className="mb-6">
@@ -67,13 +68,36 @@ export function TaxasSection({
         </div>
       </div>
 
+      <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <Label
+            htmlFor="taxa_comissao_afiliado_padrao"
+            className="min-h-[40px] leading-tight flex items-end pb-1"
+          >
+            Comissão Global de Afiliado (R$)
+          </Label>
+          <Input
+            id="taxa_comissao_afiliado_padrao"
+            type="text"
+            inputMode="decimal"
+            value={getDisplayValue('taxa_comissao_afiliado_padrao')}
+            onChange={handleChange('taxa_comissao_afiliado_padrao')}
+            onBlur={handleBlur('taxa_comissao_afiliado_padrao')}
+          />
+          <p className="text-sm text-gray-500 mt-1">
+            Comissão paga ao afiliado por transação indicada. Pode ser personalizada por afiliado.
+          </p>
+        </div>
+      </div>
+
       <div className="mt-4 p-4 bg-cyan-50 rounded-lg border border-cyan-200">
         <p className="text-sm text-cyan-800 font-medium mb-2">
-          💡 Como funcionam cash-in e cash-out
+          Como funcionam cash-in e cash-out
         </p>
         <p className="text-sm text-cyan-700">
-          Exemplo: saque de R$ 100,00, taxa é R$ {taxa.toFixed(2)} — R$ 0,02 para a
-          Treeal e R$ {(taxa - 0.02).toFixed(2)} para a Orizon.
+          Exemplo: saque de R$ 100,00, taxa R$ {taxa.toFixed(2)} — R$ 0,02 para a
+          Treeal, R$ {comissaoAfiliado.toFixed(2)} para o afiliado (se houver) e R${' '}
+          {Math.max(0, taxa - 0.02 - comissaoAfiliado).toFixed(2)} para a Orizon.
         </p>
       </div>
     </div>

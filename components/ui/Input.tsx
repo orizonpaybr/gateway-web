@@ -40,7 +40,7 @@ export const Input = memo(
       return (
         <div className="flex flex-col gap-1.5 w-full">
           {label && (
-            <label className="text-xs font-semibold text-gray-900 uppercase tracking-wider leading-tight h-4">
+            <label className="text-xs font-semibold text-gray-900 uppercase tracking-wider leading-tight min-h-4 break-words">
               {label}
             </label>
           )}

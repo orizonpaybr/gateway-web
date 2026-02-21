@@ -1840,6 +1840,9 @@ export interface AdminUser {
   affiliate_percentage?: number
   affiliate_code?: string
   affiliate_link?: string
+  // Comissão de afiliado personalizada
+  comissao_afiliado_personalizada?: boolean
+  taxa_comissao_afiliado?: number
   // Campos adicionais para tabela
   permission_text?: string
   adquirente?: string
@@ -1912,6 +1915,9 @@ export interface UpdateUserData {
   taxa_fixa_pix?: number | null
   limite_mensal_pf?: number
   observacoes_taxas?: string | null
+  // Comissão de afiliado personalizada
+  comissao_afiliado_personalizada?: boolean
+  taxa_comissao_afiliado?: number | null
   // Campos de adquirente
   preferred_adquirente?: string
   adquirente_override?: boolean
