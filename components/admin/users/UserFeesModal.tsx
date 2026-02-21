@@ -3,10 +3,12 @@ import { Button } from '@/components/ui/Button'
 import { Dialog } from '@/components/ui/Dialog'
 import { Input } from '@/components/ui/Input'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
+import { Switch } from '@/components/ui/Switch'
 import { type AdminUser, type UpdateUserData } from '@/lib/api'
 import { formatCurrencyInput, parseCurrencyInput } from '@/lib/format'
 
 const TAXA_PADRAO_REAIS = 1
+const COMISSAO_PADRAO_REAIS = 0.5
 
 interface UserFeesModalProps {
   open: boolean
@@ -27,18 +29,23 @@ export const UserFeesModal = memo(
       }
       const taxaDeposito = user.taxa_fixa_deposito ?? TAXA_PADRAO_REAIS
       const taxaSaque = user.taxa_fixa_pix ?? TAXA_PADRAO_REAIS
+      const comissaoAfiliado = user.taxa_comissao_afiliado ?? COMISSAO_PADRAO_REAIS
 
       setForm({
         taxa_fixa_deposito: taxaDeposito,
         taxa_fixa_pix: taxaSaque,
         taxas_personalizadas_ativas: user.taxas_personalizadas_ativas ?? false,
+        taxa_comissao_afiliado: comissaoAfiliado,
+        comissao_afiliado_personalizada: user.comissao_afiliado_personalizada ?? false,
       })
 
       const centsDeposito = Math.round(taxaDeposito * 100)
       const centsSaque = Math.round(taxaSaque * 100)
+      const centsComissao = Math.round(comissaoAfiliado * 100)
       setLocalValues({
         taxa_fixa_deposito: formatCurrencyInput(centsDeposito.toString()),
         taxa_fixa_pix: formatCurrencyInput(centsSaque.toString()),
+        taxa_comissao_afiliado: formatCurrencyInput(centsComissao.toString()),
       })
     }, [user])
 
@@ -63,9 +70,17 @@ export const UserFeesModal = memo(
     const handleCurrencyBlur = useCallback(
       (key: keyof UpdateUserData) => {
         const current = form[key] as number | undefined
+        const defaultValue =
+          key === 'taxa_comissao_afiliado'
+            ? COMISSAO_PADRAO_REAIS
+            : TAXA_PADRAO_REAIS
         if (current === undefined || current < 0) {
-          setLocalValues((prev) => ({ ...prev, [key]: '1,00' }))
-          handleChange(key, TAXA_PADRAO_REAIS)
+          const defaultCents = Math.round(defaultValue * 100)
+          setLocalValues((prev) => ({
+            ...prev,
+            [key]: formatCurrencyInput(defaultCents.toString()),
+          }))
+          handleChange(key, defaultValue)
         } else {
           const cents = Math.round(current * 100)
           setLocalValues((prev) => ({
@@ -86,10 +101,18 @@ export const UserFeesModal = memo(
       const taxaPix = (form.taxa_fixa_pix as number) ?? TAXA_PADRAO_REAIS
       const ehPadrao =
         taxaDeposito === TAXA_PADRAO_REAIS && taxaPix === TAXA_PADRAO_REAIS
+
+      const comissaoAfiliado =
+        (form.taxa_comissao_afiliado as number) ?? COMISSAO_PADRAO_REAIS
+      const comissaoPersonalizada =
+        (form.comissao_afiliado_personalizada as boolean) ?? false
+
       const dataToSend: UpdateUserData = {
         taxa_fixa_deposito: ehPadrao ? null : taxaDeposito,
         taxa_fixa_pix: ehPadrao ? null : taxaPix,
         taxas_personalizadas_ativas: !ehPadrao,
+        taxa_comissao_afiliado: comissaoPersonalizada ? comissaoAfiliado : null,
+        comissao_afiliado_personalizada: comissaoPersonalizada,
       }
       await onSubmit(user.id, dataToSend)
     }, [user, form, onSubmit])
@@ -174,6 +197,62 @@ export const UserFeesModal = memo(
                 onBlur={() => handleCurrencyBlur('taxa_fixa_pix')}
               />
             </div>
+
+            {user.is_affiliate && (
+              <div className="pt-3 border-t border-gray-100">
+                <p className="text-sm font-medium text-gray-700 mb-3">
+                  Comissão de Afiliado
+                </p>
+                <div className="flex items-center justify-between gap-3 mb-3">
+                  <span className="text-sm text-gray-600">
+                    Usar comissão personalizada para este afiliado
+                  </span>
+                  <Switch
+                    checked={
+                      (form.comissao_afiliado_personalizada as boolean) ?? false
+                    }
+                    onCheckedChange={(checked) =>
+                      handleChange(
+                        'comissao_afiliado_personalizada',
+                        checked,
+                      )
+                    }
+                  />
+                </div>
+                {(form.comissao_afiliado_personalizada as boolean) && (
+                  <div className="grid grid-cols-1 gap-4 mt-1">
+                    <Input
+                      label="Comissão por transação (R$)"
+                      type="text"
+                      inputMode="decimal"
+                      value={
+                        localValues.taxa_comissao_afiliado ??
+                        formatCurrencyInput(
+                          String(
+                            Math.round(
+                              ((form.taxa_comissao_afiliado as number) ??
+                                COMISSAO_PADRAO_REAIS) * 100,
+                            ),
+                          ),
+                        )
+                      }
+                      onChange={(e) =>
+                        handleCurrencyChange(
+                          'taxa_comissao_afiliado',
+                          e.target.value,
+                        )
+                      }
+                      onBlur={() => handleCurrencyBlur('taxa_comissao_afiliado')}
+                    />
+                  </div>
+                )}
+                {!(form.comissao_afiliado_personalizada as boolean) && (
+                  <p className="text-xs text-gray-400">
+                    Usando a comissão global padrão do sistema.
+                  </p>
+                )}
+              </div>
+            )}
           </div>
         )}
       </Dialog>

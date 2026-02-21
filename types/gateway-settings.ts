@@ -3,6 +3,9 @@ export interface GatewaySettings {
   taxa_fixa_deposito: number
   taxa_fixa_pix: number
 
+  // Taxa global de comissão de afiliado por transação (em reais)
+  taxa_comissao_afiliado_padrao: number
+
   // Personalização de Relatórios - Entradas
   relatorio_entradas_mostrar_meio: boolean
   relatorio_entradas_mostrar_transacao_id: boolean
@@ -31,6 +34,7 @@ export interface GatewaySettings {
 export type NumericSettingsField =
   | 'taxa_fixa_deposito'
   | 'taxa_fixa_pix'
+  | 'taxa_comissao_afiliado_padrao'
 
 export type BooleanSettingsField = keyof Pick<
   GatewaySettings,
