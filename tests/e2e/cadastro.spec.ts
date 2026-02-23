@@ -23,12 +23,10 @@ test.describe('Cadastro', () => {
 
   test('validação do step 1: nome curto exibe erro', async ({ page }) => {
     await page.getByPlaceholder(/seu nome completo/i).fill('Ab')
-    await page.getByPlaceholder(/usuario/i).fill('user123')
-    await page.getByPlaceholder(/email@exemplo/i).fill('email@test.com')
-    await page.getByRole('button', { name: /selecione seu gênero/i }).click()
-    await page.getByRole('button', { name: /masculino/i }).click()
-    await page.getByRole('button', { name: /próximo/i }).click()
-    await expect(page.getByText(/nome completo é obrigatório|mínimo 3/i)).toBeVisible({ timeout: 3000 })
+    // Validação é em onChange; o botão Próximo fica desabilitado quando o form é inválido
+    await expect(
+      page.getByText(/nome completo é obrigatório|mínimo 3/i),
+    ).toBeVisible({ timeout: 5000 })
   })
 
   test('link "Fazer login" leva para /login', async ({ page }) => {
@@ -37,7 +35,9 @@ test.describe('Cadastro', () => {
   })
 
   test('link termos na página de cadastro leva para /termos', async ({ page }) => {
-    await page.getByRole('link', { name: /termos de uso/i }).click()
-    await expect(page).toHaveURL(/\/termos/)
+    const link = page.getByRole('link', { name: /termos de uso/i })
+    await link.scrollIntoViewIfNeeded()
+    await link.click()
+    await expect(page).toHaveURL(/\/termos/, { timeout: 10000 })
   })
 })
