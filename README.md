@@ -27,6 +27,14 @@ yarn dev
 
 Acesse: http://localhost:3000
 
+**Antes de subir (push/PR)** — rode os mesmos passos do CI para evitar quebra em produção:
+
+```bash
+yarn ci:local          # type-check + lint + build (igual ao pipeline)
+yarn test:e2e          # opcional: E2E (sobe o app se não estiver rodando)
+yarn audit --level high   # opcional: ver vulnerabilidades
+```
+
 Para mais detalhes, consulte [SETUP.md](./SETUP.md)
 
 ## 🏗️ Estrutura do Projeto
