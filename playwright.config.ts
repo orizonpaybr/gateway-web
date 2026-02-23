@@ -28,25 +28,47 @@ export default defineConfig({
 
   projects: [
     {
-      name: 'chromium',
+      name: 'setup',
+      testMatch: /auth\.setup\.ts/,
       use: { ...devices['Desktop Chrome'] },
     },
-    // Desabilitar Firefox e WebKit temporariamente para focar em Chromium
-    // {
-    //   name: 'firefox',
-    //   use: { ...devices['Desktop Firefox'] },
-    // },
-    // {
-    //   name: 'webkit',
-    //   use: { ...devices['Desktop Safari'] },
-    // },
+    {
+      name: 'chromium',
+      use: { ...devices['Desktop Chrome'] },
+      testIgnore: [
+        /auth\.setup\.ts/,
+        /dashboard-logado\.spec\.ts/,
+        /extrato\.spec\.ts/,
+        /pix\.spec\.ts/,
+        /conta\.spec\.ts/,
+        /admin\.spec\.ts/,
+        /configuracoes\.spec\.ts/,
+      ],
+    },
+    {
+      name: 'chromium-authenticated',
+      use: {
+        ...devices['Desktop Chrome'],
+        storageState: '.auth/user.json',
+      },
+      dependencies: ['setup'],
+      testMatch: [
+        /dashboard-logado\.spec\.ts/,
+        /extrato\.spec\.ts/,
+        /pix\.spec\.ts/,
+        /conta\.spec\.ts/,
+        /admin\.spec\.ts/,
+        /configuracoes\.spec\.ts/,
+      ],
+    },
   ],
 
-  // webServer desabilitado - servidor já está rodando
-  // webServer: {
-  //   command: 'npm run dev',
-  //   url: 'http://localhost:3000',
-  //   reuseExistingServer: !process.env.CI,
-  //   timeout: 120 * 1000,
-  // },
+  webServer: process.env.CI
+    ? {
+        command: 'yarn start',
+        url: process.env.FRONTEND_URL || 'http://localhost:3000',
+        reuseExistingServer: false,
+        timeout: 60 * 1000,
+      }
+    : undefined,
 })
