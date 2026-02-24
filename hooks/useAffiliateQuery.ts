@@ -13,10 +13,10 @@ export function useAffiliateLink() {
     queryKey: ['affiliate-link'],
     queryFn: () => affiliateAPI.getLink(),
     enabled: authReady,
-    staleTime: 20 * 1000,
-    gcTime: 10 * 60 * 1000,
+    staleTime: 10 * 1000,
+    gcTime: 2 * 60 * 1000,
     refetchOnWindowFocus: true,
-    refetchInterval: 30 * 1000,
+    refetchInterval: 15 * 1000,
     refetchIntervalInBackground: false,
     retry: 2,
   })
