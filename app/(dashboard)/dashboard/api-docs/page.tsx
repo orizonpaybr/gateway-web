@@ -252,13 +252,30 @@ export default function ApiDocsPage() {
               <span className="flex-shrink-0 w-6 h-6 bg-primary text-white text-xs font-bold rounded-full flex items-center justify-center">
                 1
               </span>
-              <p>
-                Descubra o IP do seu servidor executando{' '}
-                <code className="bg-gray-200 px-1 rounded text-xs">
-                  curl ifconfig.me
-                </code>{' '}
-                no terminal.
-              </p>
+              <div>
+                <p className="font-medium mb-1">
+                  Descubra o IPv4 do seu servidor
+                </p>
+                <p className="mb-2">
+                  A API aceita apenas <strong>IPv4</strong>. Use um destes
+                  comandos no terminal:
+                </p>
+                <div className="space-y-1.5 text-xs">
+                  <p>
+                    <span className="text-gray-500">Linux / Mac:</span>{' '}
+                    <code className="bg-gray-200 px-1 rounded">
+                      curl https://api.ipify.org
+                    </code>
+                  </p>
+                  <p>
+                    <span className="text-gray-500">Windows (PowerShell):</span>{' '}
+                    <code className="bg-gray-200 px-1 rounded block mt-1 break-all">
+                      (Invoke-WebRequest -Uri &quot;https://api.ipify.org&quot;
+                      -UseBasicParsing).Content.Trim()
+                    </code>
+                  </p>
+                </div>
+              </div>
             </div>
             <div className="flex items-start gap-3">
               <span className="flex-shrink-0 w-6 h-6 bg-primary text-white text-xs font-bold rounded-full flex items-center justify-center">
@@ -269,19 +286,6 @@ export default function ApiDocsPage() {
                 <strong>Configurações → Integração → IPs Autorizados</strong> e
                 clique em
                 <strong> + Adicionar IP</strong>.
-              </p>
-            </div>
-            <div className="flex items-start gap-3">
-              <span className="flex-shrink-0 w-6 h-6 bg-primary text-white text-xs font-bold rounded-full flex items-center justify-center">
-                3
-              </span>
-              <p>
-                Para <strong>testes com Postman</strong>, adicione o IP público
-                da sua máquina. Execute{' '}
-                <code className="bg-gray-200 px-1 rounded text-xs">
-                  curl ifconfig.me
-                </code>{' '}
-                no seu terminal para descobri-lo.
               </p>
             </div>
           </div>
