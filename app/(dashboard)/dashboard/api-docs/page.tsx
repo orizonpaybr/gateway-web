@@ -179,7 +179,8 @@ export default function ApiDocsPage() {
               >
                 Configurações → Integração
               </a>
-              .
+              . Não existe rota separada para &quot;gerar token&quot; — envie
+              as credenciais em cada chamada (Cash In e Cash Out).
             </p>
           </div>
 
