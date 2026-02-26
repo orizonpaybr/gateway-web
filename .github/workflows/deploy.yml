@@ -1,51 +1,25 @@
+# Deploy: em push para main roda CI (uma vez) e depois deploy.
+# CI em PR é feito pelo workflow ci.yml.
 name: 🚀 Deploy to Production
 
 on:
   push:
     branches:
       - main
-  workflow_dispatch: # Permite execução manual
-
-env:
-  NODE_VERSION: '20'
+  workflow_dispatch:
 
 jobs:
-  # Job 1: Verificação antes do deploy
-  pre-deploy:
-    name: ✅ Pre-Deploy Checks
-    runs-on: ubuntu-latest
-    
-    steps:
-      - name: 📥 Checkout code
-        uses: actions/checkout@v4
+  ci:
+    name: Run CI
+    uses: ./.github/workflows/run-ci.yml
 
-      - name: 📦 Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'yarn'
-
-      - name: 📥 Install dependencies
-        run: yarn install --frozen-lockfile
-
-      - name: 🔍 Type Check
-        run: yarn type-check
-
-      - name: 🧹 Lint
-        run: yarn lint:strict
-
-      - name: 🏗️ Build Next.js
-        run: yarn build
-        env:
-          NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
-
-  # Job 2: Deploy via SSH (desabilitado - front está na Vercel, não há VPS para o front)
+  # Deploy via SSH (desabilitado - front está na Vercel, não há VPS para o front)
   deploy:
     name: 🚀 Deploy to Production
-    needs: pre-deploy
+    needs: ci
     runs-on: ubuntu-latest
     if: false
-    
+
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v4
@@ -68,36 +42,36 @@ jobs:
           SERVER_HOST: ${{ secrets.SERVER_HOST }}
           SERVER_USER: ${{ secrets.SERVER_USER }}
           APP_DIR: ${{ secrets.APP_DIR }}
-          NODE_VERSION: ${{ env.NODE_VERSION }}
+          NODE_VERSION: '20'
         run: |
           echo "🚀 Iniciando deploy do front-end..."
-          
+
           ssh $SERVER_USER@$SERVER_HOST bash << 'EOF'
             set -e
             cd $APP_DIR || exit 1
-            
+
             echo "📥 Fazendo pull do código..."
             git fetch origin
             git checkout main
             git pull origin main
-            
+
             echo "📦 Instalando dependências..."
             yarn install --frozen-lockfile
-            
+
             echo "🏗️ Construindo aplicação..."
             export NEXT_PUBLIC_API_URL="${{ secrets.NEXT_PUBLIC_API_URL }}"
             yarn build
-            
+
             echo "🔄 Reiniciando serviço (PM2/Systemd)..."
             # Ajuste o comando abaixo conforme seu gerenciador de processos
             # Para PM2:
             # pm2 restart gateway-web || pm2 start npm --name gateway-web -- start
             # Para Systemd:
             # sudo systemctl restart gateway-web || true
-            
+
             echo "🧹 Limpando cache do Next.js..."
             rm -rf .next/cache || true
-            
+
             echo "✅ Deploy concluído com sucesso!"
           EOF
 
