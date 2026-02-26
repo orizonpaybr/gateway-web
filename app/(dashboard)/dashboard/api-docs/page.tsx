@@ -141,13 +141,16 @@ export default function ApiDocsPage() {
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-2 mb-6">
-          <div className="flex-1 bg-gray-900 text-green-400 p-3 rounded-lg font-mono text-sm">
-            {BASE_URL}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 mb-6">
+          <div className="min-w-0 flex-1 overflow-hidden rounded-lg bg-gray-900">
+            <div className="overflow-x-auto p-3 font-mono text-sm text-green-400">
+              {BASE_URL}
+            </div>
           </div>
           <Button
             variant="outline"
             size="sm"
+            className="flex-shrink-0"
             icon={<Copy size={16} />}
             onClick={() => handleCopy(BASE_URL)}
           >
@@ -252,28 +255,42 @@ export default function ApiDocsPage() {
               <span className="flex-shrink-0 w-6 h-6 bg-primary text-white text-xs font-bold rounded-full flex items-center justify-center">
                 1
               </span>
-              <div>
-                <p className="font-medium mb-1">
+              <div className="min-w-0 flex-1 space-y-3">
+                <p className="font-medium">
                   Descubra o IPv4 do seu servidor
                 </p>
-                <p className="mb-2">
-                  A API aceita apenas <strong>IPv4</strong>. Use um destes
-                  comandos no terminal:
+                <p className="text-gray-600 text-sm">
+                  A API aceita apenas <strong>IPv4</strong>. Rode no terminal o
+                  comando do seu sistema; a resposta será só o número do IP
+                  (ex.: 45.233.86.159). Use esse valor ao adicionar o IP.
                 </p>
-                <div className="space-y-1.5 text-xs">
-                  <p>
-                    <span className="text-gray-500">Linux / Mac:</span>{' '}
-                    <code className="bg-gray-200 px-1 rounded">
-                      curl https://api.ipify.org
-                    </code>
-                  </p>
-                  <p>
-                    <span className="text-gray-500">Windows (PowerShell):</span>{' '}
-                    <code className="bg-gray-200 px-1 rounded block mt-1 break-all">
-                      (Invoke-WebRequest -Uri &quot;https://api.ipify.org&quot;
-                      -UseBasicParsing).Content.Trim()
-                    </code>
-                  </p>
+                <div className="grid gap-3">
+                  <div className="min-w-0 rounded-lg border border-gray-200 bg-white p-3">
+                    <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-gray-500">
+                      Linux e Mac
+                    </p>
+                    <p className="mb-1.5 text-xs text-gray-600">
+                      No Terminal, cole e execute. O resultado é o seu IPv4.
+                    </p>
+                    <div className="min-w-0 overflow-hidden rounded bg-gray-900">
+                      <pre className="overflow-x-auto px-3 py-2 text-sm font-mono text-green-400 whitespace-pre">
+                        curl https://api.ipify.org
+                      </pre>
+                    </div>
+                  </div>
+                  <div className="min-w-0 rounded-lg border border-gray-200 bg-white p-3">
+                    <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-gray-500">
+                      Windows (PowerShell)
+                    </p>
+                    <p className="mb-1.5 text-xs text-gray-600">
+                      No PowerShell, cole e execute. O resultado é o seu IPv4.
+                    </p>
+                    <div className="min-w-0 overflow-hidden rounded bg-gray-900">
+                      <pre className="max-w-full overflow-x-auto break-all whitespace-pre-wrap px-3 py-2 text-xs font-mono text-green-400">
+                        (Invoke-WebRequest -Uri &quot;https://api.ipify.org&quot; -UseBasicParsing).Content.Trim()
+                      </pre>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
