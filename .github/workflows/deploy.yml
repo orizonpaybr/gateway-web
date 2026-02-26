@@ -1,5 +1,5 @@
-# Deploy: em push para main roda CI (uma vez) e depois deploy.
-# CI em PR é feito pelo workflow ci.yml.
+# Deploy: em push para main só faz o deploy (sem rodar CI de novo).
+# CI (quality + build + E2E) roda só no PR via ci.yml — evita rodar duas vezes.
 name: 🚀 Deploy to Production
 
 on:
@@ -9,14 +9,9 @@ on:
   workflow_dispatch:
 
 jobs:
-  ci:
-    name: Run CI
-    uses: ./.github/workflows/run-ci.yml
-
   # Deploy via SSH (desabilitado - front está na Vercel, não há VPS para o front)
   deploy:
     name: 🚀 Deploy to Production
-    needs: ci
     runs-on: ubuntu-latest
     if: false
 
