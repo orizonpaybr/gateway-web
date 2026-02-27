@@ -64,12 +64,12 @@ const ERRORS = [
 const cashInBody = `{
   "token": "{{CLIENT_KEY}}",
   "secret": "{{CLIENT_SECRET}}",
-  "amount": 150.00,
-  "debtor_name": "João Silva",
-  "email": "joao@email.com",
-  "debtor_document_number": "12345678901",
+  "amount": 100.00,
+  "debtor_name": "Nome do pagador",
+  "email": "email@exemplo.com",
+  "debtor_document_number": "00000000000",
   "phone": "11999999999",
-  "postback": "https://seusite.com/webhook/pix"
+  "postback": "https://seu-dominio.com/webhook/pix"
 }`
 
 const cashInResponse = `{
@@ -83,17 +83,17 @@ const cashInResponse = `{
 const cashOutBody = `{
   "token": "{{CLIENT_KEY}}",
   "secret": "{{CLIENT_SECRET}}",
-  "amount": 80.00,
-  "pixKey": "joao@email.com",
+  "amount": 50.00,
+  "pixKey": "chave-pix@exemplo.com",
   "pixKeyType": "email",
-  "baasPostbackUrl": "https://seusite.com/webhook/cashout"
+  "baasPostbackUrl": "https://seu-dominio.com/webhook/saque"
 }`
 
 const cashOutResponse = `{
   "idTransaction": "uuid-a1b2c3...",
   "status": "processing",
-  "amount": 80.00,
-  "pixKey": "joao@email.com",
+  "amount": 50.00,
+  "pixKey": "chave-pix@exemplo.com",
   "pixKeyType": "email"
 }`
 
@@ -105,11 +105,37 @@ const statusResponse = `{
   "status": "PAID_OUT"
 }`
 
-const webhookPayload = `{
-  "idTransaction": "e2a3f1c8d94b...",
+const webhookPayloadCashIn = `{
+  "idTransaction": "61EEE0E510610020496486CDF83742AD",
   "status": "PAID_OUT",
   "amount": 150.00,
-  "paidAt": "2025-01-15T16:12:33Z"
+  "paidAt": "2025-01-15T16:12:33-03:00",
+  "typeTransaction": "PIX_IN",
+  "payer": {
+    "name": "Nome do pagador",
+    "document": "00000000000",
+    "email": "email@exemplo.com",
+    "phone": "11999999999"
+  },
+  "receiver": {
+    "user_id": "seu_user_id_orizon"
+  }
+}`
+
+const webhookPayloadCashOut = `{
+  "idTransaction": "7A95F2004C29C4B88EC03D82C19E405A",
+  "status": "PAID_OUT",
+  "amount": 0.03,
+  "paidAt": "2026-02-27T19:17:53-03:00",
+  "typeTransaction": "PIX_OUT",
+  "beneficiary": {
+    "name": "Nome do beneficiário",
+    "document": "000.000.000-00",
+    "pixKey": "chave-pix@exemplo.com"
+  },
+  "sender": {
+    "user_id": "seu_user_id_orizon"
+  }
 }`
 
 export default function ApiDocsPage() {
@@ -179,8 +205,8 @@ export default function ApiDocsPage() {
               >
                 Configurações → Integração
               </a>
-              . Não existe rota separada para &quot;gerar token&quot; — envie
-              as credenciais em cada chamada (Cash In e Cash Out).
+              . Não existe rota separada para &quot;gerar token&quot; — envie as
+              credenciais em cada chamada (Cash In e Cash Out).
             </p>
           </div>
 
@@ -257,9 +283,7 @@ export default function ApiDocsPage() {
                 1
               </span>
               <div className="min-w-0 flex-1 space-y-3">
-                <p className="font-medium">
-                  Descubra o IPv4 do seu servidor
-                </p>
+                <p className="font-medium">Descubra o IPv4 do seu servidor</p>
                 <p className="text-gray-600 text-sm">
                   A API aceita apenas <strong>IPv4</strong>. Rode no terminal o
                   comando do seu sistema; a resposta será só o número do IP
@@ -288,7 +312,9 @@ export default function ApiDocsPage() {
                     </p>
                     <div className="min-w-0 overflow-hidden rounded bg-gray-900">
                       <pre className="max-w-full overflow-x-auto break-all whitespace-pre-wrap px-3 py-2 text-xs font-mono text-green-400">
-                        (Invoke-WebRequest -Uri &quot;https://api.ipify.org&quot; -UseBasicParsing).Content.Trim()
+                        (Invoke-WebRequest -Uri
+                        &quot;https://api.ipify.org&quot;
+                        -UseBasicParsing).Content.Trim()
                       </pre>
                     </div>
                   </div>
@@ -370,8 +396,9 @@ export default function ApiDocsPage() {
               </p>
               <p>
                 <span className="text-gray-400">○</span>{' '}
-                <strong>postback</strong> — URL para receber confirmação de
-                pagamento (opcional)
+                <strong>postback</strong> — URL para receber o webhook quando o
+                depósito for pago (recomendado). Veja a seção
+                &quot;Webhook&quot; abaixo.
               </p>
               <p className="sm:col-span-2">
                 <span className="text-gray-400">○</span>{' '}
@@ -477,7 +504,8 @@ export default function ApiDocsPage() {
               </p>
               <p className="sm:col-span-2">
                 <strong>baasPostbackUrl</strong> — URL do seu servidor para
-                receber a confirmação do saque.
+                receber o webhook quando o saque for processado (pago, cancelado
+                ou estornado). Veja a seção &quot;Webhook&quot; abaixo.
               </p>
             </div>
           </div>
@@ -590,46 +618,157 @@ export default function ApiDocsPage() {
           <div className="p-3 rounded-lg bg-purple-100 text-purple-600">
             <Bell size={24} />
           </div>
-          <h2 className="text-lg font-semibold text-gray-900">
-            Webhook / Postback
-          </h2>
+          <div>
+            <h2 className="text-lg font-semibold text-gray-900">
+              Webhook — Notificação de pagamento
+            </h2>
+            <p className="text-xs text-gray-500 mt-0.5">
+              Cash In e Cash Out: como configurar e o que você recebe
+            </p>
+          </div>
         </div>
 
         <p className="text-sm text-gray-600 mb-4">
-          Quando o pagamento é confirmado, a Orizon envia uma requisição{' '}
-          <strong>POST</strong> para a URL que você informou no campo{' '}
-          <code className="bg-gray-100 px-1 rounded text-xs">postback</code>{' '}
-          (cash in) ou{' '}
-          <code className="bg-gray-100 px-1 rounded text-xs">
-            baasPostbackUrl
-          </code>{' '}
-          (cash out).
+          Quando uma transação é confirmada (depósito pago ou saque processado),
+          a Orizon envia um <strong>POST</strong> para a URL que você informou:
+        </p>
+
+        <ul className="list-disc list-inside text-sm text-gray-600 mb-4 space-y-1">
+          <li>
+            <strong>Cash In (depósito):</strong> use o campo{' '}
+            <code className="bg-gray-100 px-1 rounded text-xs">postback</code>{' '}
+            na requisição de geração do QR Code.
+          </li>
+          <li>
+            <strong>Cash Out (saque):</strong> use o campo{' '}
+            <code className="bg-gray-100 px-1 rounded text-xs">
+              baasPostbackUrl
+            </code>{' '}
+            na requisição de saque.
+          </li>
+        </ul>
+
+        <p className="text-sm text-gray-600 mb-4">
+          Você pode usar a <strong>mesma URL</strong> para os dois tipos. O
+          payload inclui{' '}
+          <code className="bg-gray-100 px-1 rounded">typeTransaction</code> (
+          <code>PIX_IN</code> ou <code>PIX_OUT</code>) para você identificar o
+          tipo e os dados do <strong>pagador</strong> (depósito) ou do{' '}
+          <strong>beneficiário</strong> (saque).
         </p>
 
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4 text-xs text-yellow-800">
           <strong>Importante:</strong> Seu servidor deve responder com HTTP{' '}
-          <strong>200</strong> o mais rápido possível. Processar a lógica de
-          negócio de forma assíncrona (fila) é fortemente recomendado.
+          <strong>200</strong> o mais rápido possível. Processe a lógica de
+          negócio de forma assíncrona (fila) para não atrasar a resposta.
         </div>
 
-        <div>
-          <div className="flex items-center justify-between mb-2">
-            <p className="text-xs font-semibold text-gray-500 uppercase">
-              Payload recebido no seu servidor
+        <div className="space-y-6">
+          <div>
+            <p className="text-sm font-medium text-gray-800 mb-2">
+              Payload — Depósito confirmado (PIX IN)
             </p>
-            <Button
-              variant="ghost"
-              size="sm"
-              icon={<Copy size={14} />}
-              onClick={() => handleCopy(webhookPayload)}
-            >
-              Copiar
-            </Button>
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-xs font-semibold text-gray-500 uppercase">
+                Estrutura do payload — Cash In (postback)
+              </p>
+              <Button
+                variant="ghost"
+                size="sm"
+                icon={<Copy size={14} />}
+                onClick={() => handleCopy(webhookPayloadCashIn)}
+              >
+                Copiar
+              </Button>
+            </div>
+            <div className="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto">
+              <pre className="text-xs leading-relaxed whitespace-pre-wrap">
+                <code>{webhookPayloadCashIn}</code>
+              </pre>
+            </div>
+            <div className="mt-2 text-xs text-gray-600 space-y-1">
+              <p>
+                <strong>payer</strong> — dados de quem pagou o PIX (nome,
+                documento, email, telefone), quando informados na criação do
+                depósito.
+              </p>
+              <p>
+                <strong>receiver.user_id</strong> — identificador da conta
+                Orizon que recebeu o valor.
+              </p>
+            </div>
           </div>
-          <div className="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto">
-            <pre className="text-xs leading-relaxed">
-              <code>{webhookPayload}</code>
-            </pre>
+
+          <div>
+            <p className="text-sm font-medium text-gray-800 mb-2">
+              Payload — Saque processado (PIX OUT)
+            </p>
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-xs font-semibold text-gray-500 uppercase">
+                Estrutura do payload — Cash Out (baasPostbackUrl)
+              </p>
+              <Button
+                variant="ghost"
+                size="sm"
+                icon={<Copy size={14} />}
+                onClick={() => handleCopy(webhookPayloadCashOut)}
+              >
+                Copiar
+              </Button>
+            </div>
+            <div className="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto">
+              <pre className="text-xs leading-relaxed whitespace-pre-wrap">
+                <code>{webhookPayloadCashOut}</code>
+              </pre>
+            </div>
+            <div className="mt-2 text-xs text-gray-600 space-y-1">
+              <p>
+                <strong>beneficiary</strong> — dados de quem recebeu o PIX
+                (nome, documento, chave PIX informados na solicitação de saque).
+              </p>
+              <p>
+                <strong>sender.user_id</strong> — identificador da conta Orizon
+                que solicitou o saque.
+              </p>
+            </div>
+          </div>
+
+          <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 text-sm text-gray-700">
+            <p className="font-medium text-gray-800 mb-2">
+              Como replicar no seu sistema
+            </p>
+            <ol className="list-decimal list-inside space-y-2 text-gray-600">
+              <li>
+                Crie um endpoint público (ex.:{' '}
+                <code className="bg-gray-200 px-1 rounded">
+                  https://seusite.com/webhook/orizon
+                </code>
+                ) que aceite POST e responda 200 rapidamente.
+              </li>
+              <li>
+                No <strong>depósito</strong>, envie esse URL no campo{' '}
+                <code className="bg-gray-200 px-1 rounded">postback</code>.
+              </li>
+              <li>
+                No <strong>saque</strong>, envie esse URL no campo{' '}
+                <code className="bg-gray-200 px-1 rounded">
+                  baasPostbackUrl
+                </code>
+                .
+              </li>
+              <li>
+                No seu backend, leia{' '}
+                <code className="bg-gray-200 px-1 rounded">
+                  typeTransaction
+                </code>{' '}
+                para saber se é PIX_IN ou PIX_OUT; use{' '}
+                <code className="bg-gray-200 px-1 rounded">idTransaction</code>{' '}
+                para conciliar com sua base e{' '}
+                <code className="bg-gray-200 px-1 rounded">payer</code> /{' '}
+                <code className="bg-gray-200 px-1 rounded">beneficiary</code>{' '}
+                para exibir ou registrar dados do cliente.
+              </li>
+            </ol>
           </div>
         </div>
       </Card>
