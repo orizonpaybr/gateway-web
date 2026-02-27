@@ -8,6 +8,7 @@ import {
   SecurityIPsSection,
   TaxasSection,
 } from '@/components/admin/settings'
+import { formatDecimalReais, parseDecimalReais } from '@/lib/format'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { useAuth } from '@/contexts/AuthContext'
@@ -62,7 +63,10 @@ export default function ConfiguracoesGeraisPage() {
       return editingValues[field] ?? ''
     }
     const value = localSettings?.[field]
-    return value === null || value === undefined ? '' : String(value)
+    if (value === null || value === undefined) {
+      return ''
+    }
+    return formatDecimalReais(Number(value), 3)
   }
 
   const handleNumericChange =
@@ -86,8 +90,8 @@ export default function ConfiguracoesGeraisPage() {
         return
       }
 
-      const parsed = parseFloat(rawValue)
-      const finalValue = isNaN(parsed) || rawValue.trim() === '' ? 0 : parsed
+      const parsed = parseDecimalReais(rawValue)
+      const finalValue = rawValue.trim() === '' ? 0 : Math.round(parsed * 1000) / 1000
 
       setLocalSettings({
         ...localSettings,

@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/Input'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import { Switch } from '@/components/ui/Switch'
 import { type AdminUser, type UpdateUserData } from '@/lib/api'
-import { formatCurrencyInput, parseCurrencyInput } from '@/lib/format'
+import { formatDecimalReais, parseDecimalReais } from '@/lib/format'
 
 const TAXA_PADRAO_REAIS = 1
 const COMISSAO_PADRAO_REAIS = 0.5
@@ -29,23 +29,22 @@ export const UserFeesModal = memo(
       }
       const taxaDeposito = user.taxa_fixa_deposito ?? TAXA_PADRAO_REAIS
       const taxaSaque = user.taxa_fixa_pix ?? TAXA_PADRAO_REAIS
-      const comissaoAfiliado = user.taxa_comissao_afiliado ?? COMISSAO_PADRAO_REAIS
+      const comissaoAfiliado =
+        user.taxa_comissao_afiliado ?? COMISSAO_PADRAO_REAIS
 
       setForm({
         taxa_fixa_deposito: taxaDeposito,
         taxa_fixa_pix: taxaSaque,
         taxas_personalizadas_ativas: user.taxas_personalizadas_ativas ?? false,
         taxa_comissao_afiliado: comissaoAfiliado,
-        comissao_afiliado_personalizada: user.comissao_afiliado_personalizada ?? false,
+        comissao_afiliado_personalizada:
+          user.comissao_afiliado_personalizada ?? false,
       })
 
-      const centsDeposito = Math.round(taxaDeposito * 100)
-      const centsSaque = Math.round(taxaSaque * 100)
-      const centsComissao = Math.round(comissaoAfiliado * 100)
       setLocalValues({
-        taxa_fixa_deposito: formatCurrencyInput(centsDeposito.toString()),
-        taxa_fixa_pix: formatCurrencyInput(centsSaque.toString()),
-        taxa_comissao_afiliado: formatCurrencyInput(centsComissao.toString()),
+        taxa_fixa_deposito: formatDecimalReais(taxaDeposito, 3),
+        taxa_fixa_pix: formatDecimalReais(taxaSaque, 3),
+        taxa_comissao_afiliado: formatDecimalReais(comissaoAfiliado, 3),
       })
     }, [user])
 
@@ -56,18 +55,17 @@ export const UserFeesModal = memo(
       [],
     )
 
-    const handleCurrencyChange = useCallback(
+    const handleDecimalTaxChange = useCallback(
       (key: keyof UpdateUserData, value: string) => {
-        const cleaned = value.replace(/\D/g, '').slice(0, 8)
-        const formatted = formatCurrencyInput(cleaned)
-        setLocalValues((prev) => ({ ...prev, [key]: formatted }))
-        const numValue = parseCurrencyInput(cleaned) / 100
-        handleChange(key, numValue)
+        setLocalValues((prev) => ({ ...prev, [key]: value }))
+        const numValue = parseDecimalReais(value)
+        const rounded = Math.round(numValue * 1000) / 1000
+        handleChange(key, rounded)
       },
       [handleChange],
     )
 
-    const handleCurrencyBlur = useCallback(
+    const handleDecimalTaxBlur = useCallback(
       (key: keyof UpdateUserData) => {
         const current = form[key] as number | undefined
         const defaultValue =
@@ -75,18 +73,18 @@ export const UserFeesModal = memo(
             ? COMISSAO_PADRAO_REAIS
             : TAXA_PADRAO_REAIS
         if (current === undefined || current < 0) {
-          const defaultCents = Math.round(defaultValue * 100)
           setLocalValues((prev) => ({
             ...prev,
-            [key]: formatCurrencyInput(defaultCents.toString()),
+            [key]: formatDecimalReais(defaultValue, 3),
           }))
           handleChange(key, defaultValue)
         } else {
-          const cents = Math.round(current * 100)
+          const rounded = Math.round(current * 1000) / 1000
           setLocalValues((prev) => ({
             ...prev,
-            [key]: formatCurrencyInput(cents.toString()),
+            [key]: formatDecimalReais(rounded, 3),
           }))
+          handleChange(key, rounded)
         }
       },
       [form, handleChange],
@@ -162,19 +160,15 @@ export const UserFeesModal = memo(
                 inputMode="decimal"
                 value={
                   localValues.taxa_fixa_deposito ??
-                  formatCurrencyInput(
-                    String(
-                      Math.round(
-                        ((form.taxa_fixa_deposito as number) ??
-                          TAXA_PADRAO_REAIS) * 100,
-                      ),
-                    ),
+                  formatDecimalReais(
+                    (form.taxa_fixa_deposito as number) ?? TAXA_PADRAO_REAIS,
+                    3,
                   )
                 }
                 onChange={(e) =>
-                  handleCurrencyChange('taxa_fixa_deposito', e.target.value)
+                  handleDecimalTaxChange('taxa_fixa_deposito', e.target.value)
                 }
-                onBlur={() => handleCurrencyBlur('taxa_fixa_deposito')}
+                onBlur={() => handleDecimalTaxBlur('taxa_fixa_deposito')}
               />
               <Input
                 label="Taxa de saque (R$)"
@@ -182,19 +176,15 @@ export const UserFeesModal = memo(
                 inputMode="decimal"
                 value={
                   localValues.taxa_fixa_pix ??
-                  formatCurrencyInput(
-                    String(
-                      Math.round(
-                        ((form.taxa_fixa_pix as number) ?? TAXA_PADRAO_REAIS) *
-                          100,
-                      ),
-                    ),
+                  formatDecimalReais(
+                    (form.taxa_fixa_pix as number) ?? TAXA_PADRAO_REAIS,
+                    3,
                   )
                 }
                 onChange={(e) =>
-                  handleCurrencyChange('taxa_fixa_pix', e.target.value)
+                  handleDecimalTaxChange('taxa_fixa_pix', e.target.value)
                 }
-                onBlur={() => handleCurrencyBlur('taxa_fixa_pix')}
+                onBlur={() => handleDecimalTaxBlur('taxa_fixa_pix')}
               />
             </div>
 
@@ -212,10 +202,7 @@ export const UserFeesModal = memo(
                       (form.comissao_afiliado_personalizada as boolean) ?? false
                     }
                     onCheckedChange={(checked) =>
-                      handleChange(
-                        'comissao_afiliado_personalizada',
-                        checked,
-                      )
+                      handleChange('comissao_afiliado_personalizada', checked)
                     }
                   />
                 </div>
@@ -227,22 +214,21 @@ export const UserFeesModal = memo(
                       inputMode="decimal"
                       value={
                         localValues.taxa_comissao_afiliado ??
-                        formatCurrencyInput(
-                          String(
-                            Math.round(
-                              ((form.taxa_comissao_afiliado as number) ??
-                                COMISSAO_PADRAO_REAIS) * 100,
-                            ),
-                          ),
+                        formatDecimalReais(
+                          (form.taxa_comissao_afiliado as number) ??
+                            COMISSAO_PADRAO_REAIS,
+                          3,
                         )
                       }
                       onChange={(e) =>
-                        handleCurrencyChange(
+                        handleDecimalTaxChange(
                           'taxa_comissao_afiliado',
                           e.target.value,
                         )
                       }
-                      onBlur={() => handleCurrencyBlur('taxa_comissao_afiliado')}
+                      onBlur={() =>
+                        handleDecimalTaxBlur('taxa_comissao_afiliado')
+                      }
                     />
                   </div>
                 )}
