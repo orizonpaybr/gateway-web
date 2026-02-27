@@ -69,6 +69,29 @@ export function parseCurrencyInput(value: string): number {
   return cleaned ? parseFloat(cleaned) : 0
 }
 
+export function formatDecimalReais(
+  value: number,
+  decimals: number = 3,
+): string {
+  if (value === undefined || value === null || Number.isNaN(value)) {
+    return ''
+  }
+  const v = Number(value)
+  return v.toLocaleString('pt-BR', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: decimals,
+  })
+}
+
+export function parseDecimalReais(value: string): number {
+  if (!value || typeof value !== 'string') {
+    return 0
+  }
+  const normalized = value.trim().replace(',', '.')
+  const parsed = parseFloat(normalized)
+  return Number.isNaN(parsed) ? 0 : parsed
+}
+
 export function centsToBRL(cents: number): number {
   return cents / 100
 }

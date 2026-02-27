@@ -22,7 +22,8 @@ export function TaxasSection({
   handleChange,
   handleBlur,
 }: TaxasSectionProps) {
-  const taxa = Number(settings.taxa_fixa_deposito) || Number(settings.taxa_fixa_pix) || 1
+  const taxa =
+    Number(settings.taxa_fixa_deposito) || Number(settings.taxa_fixa_pix) || 1
   const comissaoAfiliado = Number(settings.taxa_comissao_afiliado_padrao) || 0.5
 
   return (
@@ -85,7 +86,8 @@ export function TaxasSection({
             onBlur={handleBlur('taxa_comissao_afiliado_padrao')}
           />
           <p className="text-sm text-gray-500 mt-1">
-            Comissão paga ao afiliado por transação indicada. Pode ser personalizada por afiliado.
+            Comissão paga ao afiliado por transação indicada. Pode ser
+            personalizada por afiliado.
           </p>
         </div>
       </div>
@@ -95,9 +97,10 @@ export function TaxasSection({
           Como funcionam cash-in e cash-out
         </p>
         <p className="text-sm text-cyan-700">
-          Exemplo: saque de R$ 100,00, taxa R$ {taxa.toFixed(2)} — R$ 0,02 para a
-          Treeal, R$ {comissaoAfiliado.toFixed(2)} para o afiliado (se houver) e R${' '}
-          {Math.max(0, taxa - 0.02 - comissaoAfiliado).toFixed(2)} para a Orizon.
+          Exemplo: saque de R$ 100,00, taxa R$ {taxa.toFixed(3)} — R$ 0,02 para
+          a Treeal, R$ {comissaoAfiliado.toFixed(3)} para o afiliado (se houver)
+          e R$ {Math.max(0, taxa - 0.02 - comissaoAfiliado).toFixed(3)} para a
+          Orizon.
         </p>
       </div>
     </div>
