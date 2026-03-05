@@ -1843,6 +1843,10 @@ export interface AdminUser {
   // Comissão de afiliado personalizada
   comissao_afiliado_personalizada?: boolean
   taxa_comissao_afiliado?: number
+  // Config de saque por usuário
+  saque_config_personalizada?: boolean
+  saque_automatico_usuario?: boolean
+  limite_saque_automatico_usuario?: number | null
   // Campos adicionais para tabela
   permission_text?: string
   adquirente?: string
@@ -1918,6 +1922,10 @@ export interface UpdateUserData {
   // Comissão de afiliado personalizada
   comissao_afiliado_personalizada?: boolean
   taxa_comissao_afiliado?: number | null
+  // Config de saque por usuário
+  saque_config_personalizada?: boolean
+  saque_automatico_usuario?: boolean
+  limite_saque_automatico_usuario?: number | null
   // Campos de adquirente
   preferred_adquirente?: string
   adquirente_override?: boolean
