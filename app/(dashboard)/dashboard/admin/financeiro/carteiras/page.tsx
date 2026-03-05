@@ -197,20 +197,13 @@ const CarteirasPage = memo(() => {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4">
         <StatsCard
           label="Total em carteiras"
           value={totalCarteiras}
           isLoading={isLoadingStats}
           gradient="bg-gradient-to-br from-green-50 to-green-100 border-green-200"
           textColor="text-green-700"
-        />
-        <StatsCard
-          label="Total no gateway"
-          value={totalCarteiras}
-          isLoading={isLoadingStats}
-          gradient="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200"
-          textColor="text-blue-700"
         />
       </div>
 
