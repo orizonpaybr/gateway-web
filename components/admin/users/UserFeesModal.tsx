@@ -1,10 +1,12 @@
 import React, { useEffect, useState, useCallback, memo } from 'react'
 import { Button } from '@/components/ui/Button'
+import { CurrencyInput } from '@/components/ui/CurrencyInput'
 import { Dialog } from '@/components/ui/Dialog'
 import { Input } from '@/components/ui/Input'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import { Switch } from '@/components/ui/Switch'
 import { type AdminUser, type UpdateUserData } from '@/lib/api'
+import { toReais, reaisToCentsString } from '@/lib/currency'
 import { formatDecimalReais, parseDecimalReais } from '@/lib/format'
 
 const TAXA_PADRAO_REAIS = 1
@@ -39,6 +41,12 @@ export const UserFeesModal = memo(
         taxa_comissao_afiliado: comissaoAfiliado,
         comissao_afiliado_personalizada:
           user.comissao_afiliado_personalizada ?? false,
+        saque_config_personalizada:
+          user.saque_config_personalizada ?? false,
+        saque_automatico_usuario:
+          user.saque_automatico_usuario ?? undefined,
+        limite_saque_automatico_usuario:
+          user.limite_saque_automatico_usuario ?? undefined,
       })
 
       setLocalValues({
@@ -105,12 +113,22 @@ export const UserFeesModal = memo(
       const comissaoPersonalizada =
         (form.comissao_afiliado_personalizada as boolean) ?? false
 
+      const saqueConfigPersonalizada =
+        (form.saque_config_personalizada as boolean) ?? false
+
       const dataToSend: UpdateUserData = {
         taxa_fixa_deposito: ehPadrao ? null : taxaDeposito,
         taxa_fixa_pix: ehPadrao ? null : taxaPix,
         taxas_personalizadas_ativas: !ehPadrao,
         taxa_comissao_afiliado: comissaoPersonalizada ? comissaoAfiliado : null,
         comissao_afiliado_personalizada: comissaoPersonalizada,
+        saque_config_personalizada: saqueConfigPersonalizada,
+        saque_automatico_usuario: saqueConfigPersonalizada
+          ? ((form.saque_automatico_usuario as boolean) ?? undefined)
+          : undefined,
+        limite_saque_automatico_usuario: saqueConfigPersonalizada
+          ? (form.limite_saque_automatico_usuario as number) ?? null
+          : null,
       }
       await onSubmit(user.id, dataToSend)
     }, [user, form, onSubmit])
@@ -239,6 +257,67 @@ export const UserFeesModal = memo(
                 )}
               </div>
             )}
+
+            <div className="pt-3 border-t border-gray-100">
+              <p className="text-sm font-medium text-gray-700 mb-3">
+                Configuração de Saque
+              </p>
+              <div className="flex items-center justify-between gap-3 mb-3">
+                <span className="text-sm text-gray-600">
+                  Configuração de saque personalizada
+                </span>
+                <Switch
+                  checked={
+                    (form.saque_config_personalizada as boolean) ?? false
+                  }
+                  onCheckedChange={(checked) =>
+                    handleChange('saque_config_personalizada', checked)
+                  }
+                />
+              </div>
+              {(form.saque_config_personalizada as boolean) ? (
+                <div className="space-y-3 mt-1">
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-sm text-gray-600">
+                      Saque automático
+                    </span>
+                    <Switch
+                      checked={
+                        (form.saque_automatico_usuario as boolean) ?? false
+                      }
+                      onCheckedChange={(checked) =>
+                        handleChange('saque_automatico_usuario', checked)
+                      }
+                    />
+                  </div>
+                  {(form.saque_automatico_usuario as boolean) && (
+                    <CurrencyInput
+                      label="Limite para saque automático (R$)"
+                      placeholder="0,00"
+                      value={
+                        form.limite_saque_automatico_usuario != null
+                          ? reaisToCentsString(
+                              form.limite_saque_automatico_usuario,
+                            )
+                          : ''
+                      }
+                      onChange={(centsStr) => {
+                        handleChange(
+                          'limite_saque_automatico_usuario',
+                          centsStr.trim() === ''
+                            ? null
+                            : toReais(centsStr),
+                        )
+                      }}
+                    />
+                  )}
+                </div>
+              ) : (
+                <p className="text-xs text-gray-400">
+                  Usando a configuração global de saque do sistema.
+                </p>
+              )}
+            </div>
           </div>
         )}
       </Dialog>
