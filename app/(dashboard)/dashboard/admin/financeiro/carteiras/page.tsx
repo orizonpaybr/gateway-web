@@ -100,7 +100,7 @@ const WalletTableRow = memo<{
     </td>
     <td className="py-4 px-4">
       <span className="text-sm font-bold text-gray-900">
-        {formatCurrencyBRL(wallet.total_transacoes)}
+        {formatCurrencyBRL(wallet.valor_sacado)}
       </span>
     </td>
     <td className="py-4 px-4">
@@ -264,7 +264,7 @@ const CarteirasPage = memo(() => {
                     User ID
                   </th>
                   <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">
-                    Faturamento
+                    Valor sacado
                   </th>
                   <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">
                     Saldo da Carteira
