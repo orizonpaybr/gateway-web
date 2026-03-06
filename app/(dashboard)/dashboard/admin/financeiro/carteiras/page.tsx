@@ -264,7 +264,7 @@ const CarteirasPage = memo(() => {
                     User ID
                   </th>
                   <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">
-                    Valor sacado
+                    Valor Sacado
                   </th>
                   <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">
                     Saldo da Carteira
