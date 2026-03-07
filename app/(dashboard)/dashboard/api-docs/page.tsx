@@ -11,6 +11,7 @@ import {
   Bell,
   AlertCircle,
   ExternalLink,
+  ListChecks,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/Button'
@@ -52,7 +53,7 @@ const ERRORS = [
   {
     code: '429',
     title: 'Too Many Requests',
-    desc: 'Rate limit atingido. Cash In: 60 req/min. Cash Out: 30 req/min. Status: 20 req/min.',
+    desc: 'Rate limit atingido. Aguarde alguns segundos e tente novamente.',
   },
   {
     code: '500',
@@ -613,12 +614,12 @@ export default function ApiDocsPage() {
         </div>
       </Card>
 
-      <Card>
-        <div className="flex items-center gap-3 mb-4">
-          <div className="p-3 rounded-lg bg-purple-100 text-purple-600">
+      <Card className="min-w-0 overflow-hidden">
+        <div className="flex items-center gap-3 mb-4 min-w-0">
+          <div className="p-3 shrink-0 rounded-lg bg-purple-100 text-purple-600">
             <Bell size={24} />
           </div>
-          <div>
+          <div className="min-w-0">
             <h2 className="text-lg font-semibold text-gray-900">
               Webhook — Notificação de pagamento
             </h2>
@@ -657,13 +658,13 @@ export default function ApiDocsPage() {
           <strong>beneficiário</strong> (saque).
         </p>
 
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4 text-xs text-yellow-800">
+        <div className="min-w-0 overflow-hidden rounded-lg border border-yellow-200 bg-yellow-50 p-3 mb-4 text-xs text-yellow-800">
           <strong>Importante:</strong> Seu servidor deve responder com HTTP{' '}
           <strong>200</strong> o mais rápido possível. Processe a lógica de
           negócio de forma assíncrona (fila) para não atrasar a resposta.
         </div>
 
-        <div className="space-y-6">
+        <div className="min-w-0 space-y-6 overflow-hidden">
           <div>
             <p className="text-sm font-medium text-gray-800 mb-2">
               Payload — Depósito confirmado (PIX IN)
@@ -733,42 +734,226 @@ export default function ApiDocsPage() {
             </div>
           </div>
 
-          <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 text-sm text-gray-700">
+          <div className="min-w-0 overflow-hidden rounded-lg border border-gray-200 bg-gray-50 p-4 text-sm text-gray-700">
             <p className="font-medium text-gray-800 mb-2">
               Como replicar no seu sistema
             </p>
-            <ol className="list-decimal list-inside space-y-2 text-gray-600">
-              <li>
+            <ol className="list-decimal list-inside space-y-2 break-words text-gray-600">
+              <li className="pl-0.5">
                 Crie um endpoint público (ex.:{' '}
-                <code className="bg-gray-200 px-1 rounded">
+                <code className="break-all bg-gray-200 px-1 rounded">
                   https://seusite.com/webhook/orizon
                 </code>
                 ) que aceite POST e responda 200 rapidamente.
               </li>
-              <li>
+              <li className="pl-0.5">
                 No <strong>depósito</strong>, envie esse URL no campo{' '}
-                <code className="bg-gray-200 px-1 rounded">postback</code>.
+                <code className="break-words bg-gray-200 px-1 rounded">postback</code>.
               </li>
-              <li>
+              <li className="pl-0.5">
                 No <strong>saque</strong>, envie esse URL no campo{' '}
-                <code className="bg-gray-200 px-1 rounded">
+                <code className="break-words bg-gray-200 px-1 rounded">
                   baasPostbackUrl
                 </code>
                 .
               </li>
-              <li>
+              <li className="pl-0.5">
                 No seu backend, leia{' '}
-                <code className="bg-gray-200 px-1 rounded">
+                <code className="break-words bg-gray-200 px-1 rounded">
                   typeTransaction
                 </code>{' '}
                 para saber se é PIX_IN ou PIX_OUT; use{' '}
-                <code className="bg-gray-200 px-1 rounded">idTransaction</code>{' '}
+                <code className="break-words bg-gray-200 px-1 rounded">idTransaction</code>{' '}
                 para conciliar com sua base e{' '}
-                <code className="bg-gray-200 px-1 rounded">payer</code> /{' '}
-                <code className="bg-gray-200 px-1 rounded">beneficiary</code>{' '}
+                <code className="break-words bg-gray-200 px-1 rounded">payer</code> /{' '}
+                <code className="break-words bg-gray-200 px-1 rounded">beneficiary</code>{' '}
                 para exibir ou registrar dados do cliente.
               </li>
             </ol>
+          </div>
+        </div>
+      </Card>
+
+      <Card>
+        <div className="flex items-center gap-3 mb-4">
+          <div className="p-3 rounded-lg bg-indigo-100 text-indigo-600">
+            <ListChecks size={24} />
+          </div>
+          <div>
+            <h2 className="text-lg font-semibold text-gray-900">
+              Mapeamento de Status
+            </h2>
+            <p className="text-xs text-gray-500 mt-0.5">
+              Todos os status possíveis das transações PIX
+            </p>
+          </div>
+        </div>
+
+        <p className="text-sm text-gray-600 mb-4">
+          Abaixo estão todos os status que uma transação pode assumir.
+          Use o campo{' '}
+          <code className="bg-gray-100 px-1 rounded text-xs">status</code>{' '}
+          retornado na consulta ou no webhook para identificar o estado atual.
+        </p>
+
+        <div className="mb-5">
+          <p className="text-sm font-medium text-gray-800 mb-3">
+            Status de Depósito (Cash In)
+          </p>
+          <div className="overflow-x-auto rounded-lg border border-gray-200">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="bg-gray-50 text-left">
+                  <th className="px-4 py-2.5 text-xs font-semibold text-gray-500 uppercase">Status</th>
+                  <th className="px-4 py-2.5 text-xs font-semibold text-gray-500 uppercase">Descrição</th>
+                  <th className="px-4 py-2.5 text-xs font-semibold text-gray-500 uppercase">Webhook</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                <tr>
+                  <td className="px-4 py-2.5">
+                    <code className="bg-yellow-50 text-yellow-700 px-1.5 py-0.5 rounded text-xs font-mono">WAITING_FOR_APPROVAL</code>
+                  </td>
+                  <td className="px-4 py-2.5 text-gray-600">QR Code gerado, aguardando pagamento</td>
+                  <td className="px-4 py-2.5 text-gray-400 text-xs">—</td>
+                </tr>
+                <tr>
+                  <td className="px-4 py-2.5">
+                    <code className="bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded text-xs font-mono">PROCESSING</code>
+                  </td>
+                  <td className="px-4 py-2.5 text-gray-600">Pagamento em processamento</td>
+                  <td className="px-4 py-2.5 text-gray-400 text-xs">—</td>
+                </tr>
+                <tr>
+                  <td className="px-4 py-2.5">
+                    <code className="bg-green-50 text-green-700 px-1.5 py-0.5 rounded text-xs font-mono">PAID_OUT</code>
+                  </td>
+                  <td className="px-4 py-2.5 text-gray-600">Pagamento confirmado e creditado</td>
+                  <td className="px-4 py-2.5 text-green-600 text-xs font-medium">Sim</td>
+                </tr>
+                <tr>
+                  <td className="px-4 py-2.5">
+                    <code className="bg-red-50 text-red-700 px-1.5 py-0.5 rounded text-xs font-mono">CANCELLED</code>
+                  </td>
+                  <td className="px-4 py-2.5 text-gray-600">Cobrança cancelada ou expirada</td>
+                  <td className="px-4 py-2.5 text-green-600 text-xs font-medium">Sim</td>
+                </tr>
+                <tr>
+                  <td className="px-4 py-2.5">
+                    <code className="bg-red-50 text-red-700 px-1.5 py-0.5 rounded text-xs font-mono">FAILED</code>
+                  </td>
+                  <td className="px-4 py-2.5 text-gray-600">Pagamento não realizado</td>
+                  <td className="px-4 py-2.5 text-green-600 text-xs font-medium">Sim</td>
+                </tr>
+                <tr>
+                  <td className="px-4 py-2.5">
+                    <code className="bg-orange-50 text-orange-700 px-1.5 py-0.5 rounded text-xs font-mono">REFUNDED</code>
+                  </td>
+                  <td className="px-4 py-2.5 text-gray-600">Depósito estornado (valor total debitado)</td>
+                  <td className="px-4 py-2.5 text-green-600 text-xs font-medium">Sim</td>
+                </tr>
+                <tr>
+                  <td className="px-4 py-2.5">
+                    <code className="bg-orange-50 text-orange-700 px-1.5 py-0.5 rounded text-xs font-mono">PARTIALLY_REFUNDED</code>
+                  </td>
+                  <td className="px-4 py-2.5 text-gray-600">Depósito estornado parcialmente</td>
+                  <td className="px-4 py-2.5 text-green-600 text-xs font-medium">Sim</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div className="mb-5">
+          <p className="text-sm font-medium text-gray-800 mb-3">
+            Status de Saque (Cash Out)
+          </p>
+          <div className="overflow-x-auto rounded-lg border border-gray-200">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="bg-gray-50 text-left">
+                  <th className="px-4 py-2.5 text-xs font-semibold text-gray-500 uppercase">Status</th>
+                  <th className="px-4 py-2.5 text-xs font-semibold text-gray-500 uppercase">Descrição</th>
+                  <th className="px-4 py-2.5 text-xs font-semibold text-gray-500 uppercase">Webhook</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                <tr>
+                  <td className="px-4 py-2.5">
+                    <code className="bg-yellow-50 text-yellow-700 px-1.5 py-0.5 rounded text-xs font-mono">PENDING</code>
+                  </td>
+                  <td className="px-4 py-2.5 text-gray-600">Saque aguardando aprovação manual</td>
+                  <td className="px-4 py-2.5 text-gray-400 text-xs">—</td>
+                </tr>
+                <tr>
+                  <td className="px-4 py-2.5">
+                    <code className="bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded text-xs font-mono">PROCESSING</code>
+                  </td>
+                  <td className="px-4 py-2.5 text-gray-600">PIX enviado, aguardando liquidação</td>
+                  <td className="px-4 py-2.5 text-green-600 text-xs font-medium">Sim</td>
+                </tr>
+                <tr>
+                  <td className="px-4 py-2.5">
+                    <code className="bg-green-50 text-green-700 px-1.5 py-0.5 rounded text-xs font-mono">PAID_OUT</code>
+                  </td>
+                  <td className="px-4 py-2.5 text-gray-600">Saque liquidado com sucesso</td>
+                  <td className="px-4 py-2.5 text-green-600 text-xs font-medium">Sim</td>
+                </tr>
+                <tr>
+                  <td className="px-4 py-2.5">
+                    <code className="bg-red-50 text-red-700 px-1.5 py-0.5 rounded text-xs font-mono">CANCELLED</code>
+                  </td>
+                  <td className="px-4 py-2.5 text-gray-600">Saque cancelado (ex: chave PIX inválida, saldo insuficiente)</td>
+                  <td className="px-4 py-2.5 text-green-600 text-xs font-medium">Sim</td>
+                </tr>
+                <tr>
+                  <td className="px-4 py-2.5">
+                    <code className="bg-red-50 text-red-700 px-1.5 py-0.5 rounded text-xs font-mono">FAILED</code>
+                  </td>
+                  <td className="px-4 py-2.5 text-gray-600">Saque não realizado (falha no processamento)</td>
+                  <td className="px-4 py-2.5 text-green-600 text-xs font-medium">Sim</td>
+                </tr>
+                <tr>
+                  <td className="px-4 py-2.5">
+                    <code className="bg-orange-50 text-orange-700 px-1.5 py-0.5 rounded text-xs font-mono">REFUNDED</code>
+                  </td>
+                  <td className="px-4 py-2.5 text-gray-600">Saque estornado (valor devolvido ao saldo)</td>
+                  <td className="px-4 py-2.5 text-green-600 text-xs font-medium">Sim</td>
+                </tr>
+                <tr>
+                  <td className="px-4 py-2.5">
+                    <code className="bg-orange-50 text-orange-700 px-1.5 py-0.5 rounded text-xs font-mono">PARTIALLY_REFUNDED</code>
+                  </td>
+                  <td className="px-4 py-2.5 text-gray-600">Saque estornado parcialmente</td>
+                  <td className="px-4 py-2.5 text-green-600 text-xs font-medium">Sim</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm text-blue-800">
+          <p className="font-medium mb-2">Fluxo típico de status</p>
+          <div className="space-y-1.5 text-xs">
+            <p><strong>Depósito:</strong>{' '}
+              <code className="bg-blue-100 px-1 rounded">WAITING_FOR_APPROVAL</code>{' → '}
+              <code className="bg-blue-100 px-1 rounded">PAID_OUT</code>{' '}
+              (ou <code className="bg-blue-100 px-1 rounded">CANCELLED</code> se expirar)
+            </p>
+            <p><strong>Saque automático:</strong>{' '}
+              <code className="bg-blue-100 px-1 rounded">PROCESSING</code>{' → '}
+              <code className="bg-blue-100 px-1 rounded">PAID_OUT</code>{' '}
+              (ou <code className="bg-blue-100 px-1 rounded">CANCELLED</code> / <code className="bg-blue-100 px-1 rounded">FAILED</code> se houver erro)
+            </p>
+            <p><strong>Saque manual:</strong>{' '}
+              <code className="bg-blue-100 px-1 rounded">PENDING</code>{' → '}
+              <code className="bg-blue-100 px-1 rounded">PROCESSING</code>{' → '}
+              <code className="bg-blue-100 px-1 rounded">PAID_OUT</code>
+            </p>
+            <p><strong>Estorno:</strong>{' '}
+              <code className="bg-blue-100 px-1 rounded">PAID_OUT</code>{' → '}
+              <code className="bg-blue-100 px-1 rounded">REFUNDED</code>
+            </p>
           </div>
         </div>
       </Card>
