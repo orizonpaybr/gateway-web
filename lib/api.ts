@@ -541,7 +541,7 @@ export interface PixDepositData {
   split_percentage?: number
 }
 
-interface TreealDepositResponse {
+interface DepositPaymentResponse {
   status: 'success' | 'error'
   message: string
   transaction_id?: string
@@ -574,11 +574,11 @@ export const pixAPI = {
     throw new Error('API não implementada')
   },
 
-  // Gerar QR Code para depósito (integração Treal)
+  // Gerar QR Code para depósito (HeartPay)
   generateDeposit: async (
     data: PixDepositData,
   ): Promise<PixDepositResponse> => {
-    const response = await apiRequestWithCredentials<TreealDepositResponse>(
+    const response = await apiRequestWithCredentials<DepositPaymentResponse>(
       '/wallet/deposit/payment',
       {
         method: 'POST',
