@@ -114,10 +114,10 @@ const statusResponse = `{
 }`
 
 const webhookPayloadCashIn = `{
-  "idTransaction": "61EEE0E510610020496486CDF83742AD",
+  "idTransaction": "e2a3f1c8d94b-xxx",
   "status": "PAID_OUT",
-  "amount": 150.00,
-  "paidAt": "2025-01-15T16:12:33-03:00",
+  "amount": 1.00,
+  "paidAt": "2026-03-10T14:30:00.000-03:00",
   "typeTransaction": "PIX_IN",
   "payer": {
     "name": "Nome do pagador",
@@ -127,23 +127,27 @@ const webhookPayloadCashIn = `{
   },
   "receiver": {
     "user_id": "seu_user_id_orizon"
-  }
+  },
+  "message": "Depósito PIX recebido com sucesso.",
+  "endToEndId": "E1234567820260310143000abc"
 }`
 
 const webhookPayloadCashOut = `{
-  "idTransaction": "7A95F2004C29C4B88EC03D82C19E405A",
+  "idTransaction": "PAYOUT_API_xxx...",
   "status": "PAID_OUT",
-  "amount": 0.03,
-  "paidAt": "2026-02-27T19:17:53-03:00",
+  "amount": 1.00,
+  "paidAt": "2026-03-10T14:32:00.000-03:00",
   "typeTransaction": "PIX_OUT",
   "beneficiary": {
     "name": "Nome do beneficiário",
-    "document": "000.000.000-00",
+    "document": "00000000000",
     "pixKey": "chave-pix@exemplo.com"
   },
   "sender": {
     "user_id": "seu_user_id_orizon"
-  }
+  },
+  "message": "Saque PIX liquidado com sucesso.",
+  "endToEndId": "E1234567820260310143200xyz"
 }`
 
 export default function ApiDocsPage() {
@@ -617,6 +621,10 @@ export default function ApiDocsPage() {
             </div>
           </div>
         </div>
+        <p className="mt-2 text-xs text-gray-600">
+          Se a transação não for encontrada, a API retorna 200 com{' '}
+          <code className="bg-gray-100 px-1 rounded">status: &quot;NOT_FOUND&quot;</code>. Valores possíveis: PAID_OUT, COMPLETED, PROCESSING, PENDING, CANCELLED, FAILED, NOT_FOUND, etc.
+        </p>
       </Card>
 
       <Card className="min-w-0 overflow-hidden">
@@ -694,6 +702,9 @@ export default function ApiDocsPage() {
             </div>
             <div className="mt-2 text-xs text-gray-600 space-y-1">
               <p>
+                <strong>amount</strong> — valor em reais. <strong>paidAt</strong> — data/hora ISO 8601.
+              </p>
+              <p>
                 <strong>payer</strong> — dados de quem pagou o PIX (nome,
                 documento, email, telefone), quando informados na criação do
                 depósito.
@@ -701,6 +712,9 @@ export default function ApiDocsPage() {
               <p>
                 <strong>receiver.user_id</strong> — identificador da conta
                 Orizon que recebeu o valor.
+              </p>
+              <p>
+                <strong>message</strong> — opcional; texto amigável do status. <strong>endToEndId</strong> — opcional; ID fim-a-fim do PIX.
               </p>
             </div>
           </div>
@@ -735,6 +749,9 @@ export default function ApiDocsPage() {
               <p>
                 <strong>sender.user_id</strong> — identificador da conta Orizon
                 que solicitou o saque.
+              </p>
+              <p>
+                <strong>message</strong> — opcional. <strong>endToEndId</strong> — opcional. Em caso de falha, o payload pode incluir <strong>error</strong> com o motivo.
               </p>
             </div>
           </div>
@@ -902,6 +919,13 @@ export default function ApiDocsPage() {
                     <code className="bg-green-50 text-green-700 px-1.5 py-0.5 rounded text-xs font-mono">PAID_OUT</code>
                   </td>
                   <td className="px-4 py-2.5 text-gray-600">Saque liquidado com sucesso</td>
+                  <td className="px-4 py-2.5 text-green-600 text-xs font-medium">Sim</td>
+                </tr>
+                <tr>
+                  <td className="px-4 py-2.5">
+                    <code className="bg-green-50 text-green-700 px-1.5 py-0.5 rounded text-xs font-mono">COMPLETED</code>
+                  </td>
+                  <td className="px-4 py-2.5 text-gray-600">Equivalente a PAID_OUT (saque concluído)</td>
                   <td className="px-4 py-2.5 text-green-600 text-xs font-medium">Sim</td>
                 </tr>
                 <tr>
