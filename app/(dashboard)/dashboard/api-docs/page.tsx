@@ -23,7 +23,7 @@ const SUPPORT_WHATSAPP_URL = 'https://wa.me/5549988906647'
 const getApiBaseUrl = () => {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || ''
   if (!apiUrl) {
-    return 'https://api.orizonpay.com.br'
+    return 'https://api.orizonpay.com'
   }
   return apiUrl.replace(/\/api\/?$/, '')
 }
@@ -65,7 +65,8 @@ const ERRORS = [
 const cashInBody = `{
   "token": "{{CLIENT_KEY}}",
   "secret": "{{CLIENT_SECRET}}",
-  "amount": 100.00,
+  "amount": 1,
+  "description": "Depósito via PIX",
   "debtor_name": "Nome do pagador",
   "email": "email@exemplo.com",
   "debtor_document_number": "00000000000",
@@ -74,28 +75,34 @@ const cashInBody = `{
 }`
 
 const cashInResponse = `{
-  "idTransaction": "e2a3f1c8d94b...",
-  "qrcode": "00020126580014br.gov.bcb.pix...",
-  "status": "WAITING_FOR_APPROVAL",
-  "amount": 150.00,
+  "status": "success",
+  "message": "QR Code gerado com sucesso",
+  "transaction_id": "e2a3f1c8d94b...",
+  "amount": 1,
+  "qr_code": "00020126580014br.gov.bcb.pix...",
+  "qr_code_image_url": "data:image/png;base64,...",
   "expires_at": "2025-01-15T16:30:00Z"
 }`
 
 const cashOutBody = `{
   "token": "{{CLIENT_KEY}}",
   "secret": "{{CLIENT_SECRET}}",
-  "amount": 50.00,
+  "amount": 1,
   "pixKey": "chave-pix@exemplo.com",
   "pixKeyType": "email",
   "baasPostbackUrl": "https://seu-dominio.com/webhook/saque"
 }`
 
 const cashOutResponse = `{
-  "idTransaction": "uuid-a1b2c3...",
-  "status": "processing",
-  "amount": 50.00,
+  "status": "success",
+  "message": "Saque solicitado com sucesso",
+  "id": "PAYOUT_API_xxx...",
+  "amount": 1,
   "pixKey": "chave-pix@exemplo.com",
-  "pixKeyType": "email"
+  "pixKeyType": "email",
+  "withdrawStatusId": "Processing",
+  "createdAt": "2026-03-10T10:22:34.000Z",
+  "updatedAt": "2026-03-10T10:22:34.000Z"
 }`
 
 const statusBody = `{
@@ -153,6 +160,9 @@ export default function ApiDocsPage() {
         </h1>
         <p className="text-gray-600 text-sm mt-1">
           Integre PIX Cash In e Cash Out ao seu negócio
+        </p>
+        <p className="text-gray-500 text-xs mt-1">
+          PIX disponível via adquirente HeartPay. Use token e secret em cada requisição.
         </p>
       </div>
 
@@ -383,13 +393,13 @@ export default function ApiDocsPage() {
               <p>
                 <span className="text-red-500 font-bold">*</span>{' '}
                 <strong>token</strong>, <strong>secret</strong>,{' '}
-                <strong>amount</strong>, <strong>debtor_name</strong>,{' '}
+                <strong>amount</strong> (mín. R$ 1,00), <strong>debtor_name</strong>,{' '}
                 <strong>email</strong> — obrigatórios
               </p>
               <p>
-                <span className="text-gray-400">○</span>{' '}
-                <strong>debtor_document_number</strong> — CPF ou CNPJ do pagador
-                (opcional)
+                <span className="text-red-500 font-bold">*</span>{' '}
+                <strong>debtor_document_number</strong> — CPF (11 dígitos) ou
+                CNPJ (14 dígitos) do pagador — obrigatório para PIX
               </p>
               <p>
                 <span className="text-gray-400">○</span> <strong>phone</strong>{' '}
@@ -429,22 +439,19 @@ export default function ApiDocsPage() {
             </div>
             <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1 text-xs text-gray-600">
               <p>
-                <strong>idTransaction</strong> — ID único. Guarde para consultar
+                <strong>transaction_id</strong> — ID único. Guarde para consultar
                 o status.
               </p>
               <p>
-                <strong>qrcode</strong> — código do QR Code PIX. Exiba para o
-                seu cliente.
+                <strong>qr_code</strong> — código PIX Copia e Cola.{' '}
+                <strong>qr_code_image_url</strong> — imagem do QR Code (base64).
               </p>
               <p>
-                <strong>status</strong> — sempre{' '}
-                <code className="bg-gray-100 px-1 rounded">
-                  WAITING_FOR_APPROVAL
-                </code>{' '}
-                na criação.
+                <strong>status</strong> — <code className="bg-gray-100 px-1 rounded">success</code> na
+                criação. O pagamento é confirmado via webhook.
               </p>
               <p>
-                <strong>expires_at</strong> — expira em 1 hora.
+                <strong>expires_at</strong> — QR Code expira em 1 hora.
               </p>
             </div>
           </div>
@@ -492,8 +499,10 @@ export default function ApiDocsPage() {
             </div>
             <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1 text-xs text-gray-600">
               <p>
-                <span className="text-red-500 font-bold">*</span> Todos os
-                campos são <strong>obrigatórios</strong>.
+                <span className="text-red-500 font-bold">*</span>{' '}
+                <strong>token</strong>, <strong>secret</strong>,{' '}
+                <strong>amount</strong> (mín. R$ 1,00), <strong>pixKey</strong>,{' '}
+                <strong>pixKeyType</strong>, <strong>baasPostbackUrl</strong> — obrigatórios.
               </p>
               <p>
                 <strong>pixKeyType</strong> aceita:{' '}
@@ -506,7 +515,7 @@ export default function ApiDocsPage() {
               <p className="sm:col-span-2">
                 <strong>baasPostbackUrl</strong> — URL do seu servidor para
                 receber o webhook quando o saque for processado (pago, cancelado
-                ou estornado). Veja a seção &quot;Webhook&quot; abaixo.
+                ou estornado). Use <code className="bg-gray-100 px-1 rounded">web</code> se for apenas pela interface.
               </p>
             </div>
           </div>
@@ -531,15 +540,14 @@ export default function ApiDocsPage() {
             </div>
             <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1 text-xs text-gray-600">
               <p>
-                <strong>status: processing</strong> — saque automático em
-                andamento.
+                <strong>withdrawStatusId: Processing</strong> — saque automático em
+                andamento (valor será enviado em instantes).
               </p>
               <p>
-                <strong>status: pending</strong> — aguardando aprovação manual.
+                <strong>withdrawStatusId: PendingProcessing</strong> — aguardando aprovação manual.
               </p>
               <p className="sm:col-span-2">
-                Use <strong>idTransaction</strong> para monitorar o status via
-                polling ou webhook.
+                Use o <strong>id</strong> retornado para consultar status via POST /api/status ou pelo webhook.
               </p>
             </div>
           </div>
