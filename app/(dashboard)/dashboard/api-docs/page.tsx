@@ -394,8 +394,9 @@ export default function ApiDocsPage() {
               <p>
                 <span className="text-red-500 font-bold">*</span>{' '}
                 <strong>token</strong>, <strong>secret</strong>,{' '}
-                <strong>amount</strong> (mín. R$ 1,00), <strong>debtor_name</strong>,{' '}
-                <strong>email</strong> — obrigatórios
+                <strong>amount</strong> (mín. R$ 1,00),{' '}
+                <strong>debtor_name</strong>, <strong>email</strong> —
+                obrigatórios
               </p>
               <p>
                 <span className="text-red-500 font-bold">*</span>{' '}
@@ -440,15 +441,16 @@ export default function ApiDocsPage() {
             </div>
             <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1 text-xs text-gray-600">
               <p>
-                <strong>transaction_id</strong> — ID único. Guarde para consultar
-                o status.
+                <strong>transaction_id</strong> — ID único. Guarde para
+                consultar o status.
               </p>
               <p>
                 <strong>qr_code</strong> — código PIX Copia e Cola.{' '}
                 <strong>qr_code_image_url</strong> — imagem do QR Code (base64).
               </p>
               <p>
-                <strong>status</strong> — <code className="bg-gray-100 px-1 rounded">success</code> na
+                <strong>status</strong> —{' '}
+                <code className="bg-gray-100 px-1 rounded">success</code> na
                 criação. O pagamento é confirmado via webhook.
               </p>
               <p>
@@ -503,7 +505,8 @@ export default function ApiDocsPage() {
                 <span className="text-red-500 font-bold">*</span>{' '}
                 <strong>token</strong>, <strong>secret</strong>,{' '}
                 <strong>amount</strong> (mín. R$ 1,00), <strong>pixKey</strong>,{' '}
-                <strong>pixKeyType</strong>, <strong>baasPostbackUrl</strong> — obrigatórios.
+                <strong>pixKeyType</strong>, <strong>baasPostbackUrl</strong> —
+                obrigatórios.
               </p>
               <p>
                 <strong>pixKeyType</strong> aceita:{' '}
@@ -516,7 +519,9 @@ export default function ApiDocsPage() {
               <p className="sm:col-span-2">
                 <strong>baasPostbackUrl</strong> — URL do seu servidor para
                 receber o webhook quando o saque for processado (pago, cancelado
-                ou estornado). Use <code className="bg-gray-100 px-1 rounded">web</code> se for apenas pela interface.
+                ou estornado). Use{' '}
+                <code className="bg-gray-100 px-1 rounded">web</code> se for
+                apenas pela interface.
               </p>
             </div>
           </div>
@@ -541,14 +546,16 @@ export default function ApiDocsPage() {
             </div>
             <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1 text-xs text-gray-600">
               <p>
-                <strong>withdrawStatusId: Processing</strong> — saque automático em
-                andamento (valor será enviado em instantes).
+                <strong>withdrawStatusId: Processing</strong> — saque automático
+                em andamento (valor será enviado em instantes).
               </p>
               <p>
-                <strong>withdrawStatusId: PendingProcessing</strong> — aguardando aprovação manual.
+                <strong>withdrawStatusId: PendingProcessing</strong> —
+                aguardando aprovação manual.
               </p>
               <p className="sm:col-span-2">
-                Use o <strong>id</strong> retornado para consultar status via POST /api/status ou pelo webhook.
+                Use o <strong>id</strong> retornado para consultar status via
+                POST /api/status ou pelo webhook.
               </p>
             </div>
           </div>
@@ -623,7 +630,11 @@ export default function ApiDocsPage() {
         </div>
         <p className="mt-2 text-xs text-gray-600">
           Se a transação não for encontrada, a API retorna 200 com{' '}
-          <code className="bg-gray-100 px-1 rounded">status: &quot;NOT_FOUND&quot;</code>. Valores possíveis: PAID_OUT, COMPLETED, PROCESSING, PENDING, CANCELLED, FAILED, NOT_FOUND, etc.
+          <code className="bg-gray-100 px-1 rounded">
+            status: &quot;NOT_FOUND&quot;
+          </code>
+          . Valores possíveis: PAID_OUT, COMPLETED, PROCESSING, PENDING,
+          CANCELLED, FAILED, NOT_FOUND, etc.
         </p>
       </Card>
 
@@ -702,7 +713,8 @@ export default function ApiDocsPage() {
             </div>
             <div className="mt-2 text-xs text-gray-600 space-y-1">
               <p>
-                <strong>amount</strong> — valor em reais. <strong>paidAt</strong> — data/hora ISO 8601.
+                <strong>amount</strong> — valor em reais.{' '}
+                <strong>paidAt</strong> — data/hora ISO 8601.
               </p>
               <p>
                 <strong>payer</strong> — dados de quem pagou o PIX (nome,
@@ -714,7 +726,8 @@ export default function ApiDocsPage() {
                 Orizon que recebeu o valor.
               </p>
               <p>
-                <strong>message</strong> — opcional; texto amigável do status. <strong>endToEndId</strong> — opcional; ID fim-a-fim do PIX.
+                <strong>message</strong> — opcional; texto amigável do status.{' '}
+                <strong>endToEndId</strong> — opcional; ID fim-a-fim do PIX.
               </p>
             </div>
           </div>
@@ -743,15 +756,20 @@ export default function ApiDocsPage() {
             </div>
             <div className="mt-2 text-xs text-gray-600 space-y-1">
               <p>
-                <strong>beneficiary</strong> — dados de quem recebeu o PIX
-                (nome, documento, chave PIX informados na solicitação de saque).
+                <strong>beneficiary</strong> — dados de quem recebeu o PIX.
+                <strong>beneficiary.pixKey</strong> está sempre presente;{' '}
+                <strong>beneficiary.name</strong> e{' '}
+                <strong>beneficiary.document</strong> são opcionais e podem vir
+                omitidos quando o processador não os retorna.
               </p>
               <p>
                 <strong>sender.user_id</strong> — identificador da conta Orizon
                 que solicitou o saque.
               </p>
               <p>
-                <strong>message</strong> — opcional. <strong>endToEndId</strong> — opcional. Em caso de falha, o payload pode incluir <strong>error</strong> com o motivo.
+                <strong>message</strong> — opcional. <strong>endToEndId</strong>{' '}
+                — opcional. Em caso de falha, o payload pode incluir{' '}
+                <strong>error</strong> com o motivo.
               </p>
             </div>
           </div>
@@ -770,7 +788,10 @@ export default function ApiDocsPage() {
               </li>
               <li className="pl-0.5">
                 No <strong>depósito</strong>, envie esse URL no campo{' '}
-                <code className="break-words bg-gray-200 px-1 rounded">postback</code>.
+                <code className="break-words bg-gray-200 px-1 rounded">
+                  postback
+                </code>
+                .
               </li>
               <li className="pl-0.5">
                 No <strong>saque</strong>, envie esse URL no campo{' '}
@@ -785,10 +806,17 @@ export default function ApiDocsPage() {
                   typeTransaction
                 </code>{' '}
                 para saber se é PIX_IN ou PIX_OUT; use{' '}
-                <code className="break-words bg-gray-200 px-1 rounded">idTransaction</code>{' '}
+                <code className="break-words bg-gray-200 px-1 rounded">
+                  idTransaction
+                </code>{' '}
                 para conciliar com sua base e{' '}
-                <code className="break-words bg-gray-200 px-1 rounded">payer</code> /{' '}
-                <code className="break-words bg-gray-200 px-1 rounded">beneficiary</code>{' '}
+                <code className="break-words bg-gray-200 px-1 rounded">
+                  payer
+                </code>{' '}
+                /{' '}
+                <code className="break-words bg-gray-200 px-1 rounded">
+                  beneficiary
+                </code>{' '}
                 para exibir ou registrar dados do cliente.
               </li>
             </ol>
@@ -812,9 +840,8 @@ export default function ApiDocsPage() {
         </div>
 
         <p className="text-sm text-gray-600 mb-4">
-          Abaixo estão todos os status que uma transação pode assumir.
-          Use o campo{' '}
-          <code className="bg-gray-100 px-1 rounded text-xs">status</code>{' '}
+          Abaixo estão todos os status que uma transação pode assumir. Use o
+          campo <code className="bg-gray-100 px-1 rounded text-xs">status</code>{' '}
           retornado na consulta ou no webhook para identificar o estado atual.
         </p>
 
@@ -826,60 +853,104 @@ export default function ApiDocsPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-gray-50 text-left">
-                  <th className="px-4 py-2.5 text-xs font-semibold text-gray-500 uppercase">Status</th>
-                  <th className="px-4 py-2.5 text-xs font-semibold text-gray-500 uppercase">Descrição</th>
-                  <th className="px-4 py-2.5 text-xs font-semibold text-gray-500 uppercase">Webhook</th>
+                  <th className="px-4 py-2.5 text-xs font-semibold text-gray-500 uppercase">
+                    Status
+                  </th>
+                  <th className="px-4 py-2.5 text-xs font-semibold text-gray-500 uppercase">
+                    Descrição
+                  </th>
+                  <th className="px-4 py-2.5 text-xs font-semibold text-gray-500 uppercase">
+                    Webhook
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
                 <tr>
                   <td className="px-4 py-2.5">
-                    <code className="bg-yellow-50 text-yellow-700 px-1.5 py-0.5 rounded text-xs font-mono">WAITING_FOR_APPROVAL</code>
+                    <code className="bg-yellow-50 text-yellow-700 px-1.5 py-0.5 rounded text-xs font-mono">
+                      WAITING_FOR_APPROVAL
+                    </code>
                   </td>
-                  <td className="px-4 py-2.5 text-gray-600">QR Code gerado, aguardando pagamento</td>
+                  <td className="px-4 py-2.5 text-gray-600">
+                    QR Code gerado, aguardando pagamento
+                  </td>
                   <td className="px-4 py-2.5 text-gray-400 text-xs">—</td>
                 </tr>
                 <tr>
                   <td className="px-4 py-2.5">
-                    <code className="bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded text-xs font-mono">PROCESSING</code>
+                    <code className="bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded text-xs font-mono">
+                      PROCESSING
+                    </code>
                   </td>
-                  <td className="px-4 py-2.5 text-gray-600">Pagamento em processamento</td>
+                  <td className="px-4 py-2.5 text-gray-600">
+                    Pagamento em processamento
+                  </td>
                   <td className="px-4 py-2.5 text-gray-400 text-xs">—</td>
                 </tr>
                 <tr>
                   <td className="px-4 py-2.5">
-                    <code className="bg-green-50 text-green-700 px-1.5 py-0.5 rounded text-xs font-mono">PAID_OUT</code>
+                    <code className="bg-green-50 text-green-700 px-1.5 py-0.5 rounded text-xs font-mono">
+                      PAID_OUT
+                    </code>
                   </td>
-                  <td className="px-4 py-2.5 text-gray-600">Pagamento confirmado e creditado</td>
-                  <td className="px-4 py-2.5 text-green-600 text-xs font-medium">Sim</td>
+                  <td className="px-4 py-2.5 text-gray-600">
+                    Pagamento confirmado e creditado
+                  </td>
+                  <td className="px-4 py-2.5 text-green-600 text-xs font-medium">
+                    Sim
+                  </td>
                 </tr>
                 <tr>
                   <td className="px-4 py-2.5">
-                    <code className="bg-red-50 text-red-700 px-1.5 py-0.5 rounded text-xs font-mono">CANCELLED</code>
+                    <code className="bg-red-50 text-red-700 px-1.5 py-0.5 rounded text-xs font-mono">
+                      CANCELLED
+                    </code>
                   </td>
-                  <td className="px-4 py-2.5 text-gray-600">Cobrança cancelada ou expirada</td>
-                  <td className="px-4 py-2.5 text-green-600 text-xs font-medium">Sim</td>
+                  <td className="px-4 py-2.5 text-gray-600">
+                    Cobrança cancelada ou expirada
+                  </td>
+                  <td className="px-4 py-2.5 text-green-600 text-xs font-medium">
+                    Sim
+                  </td>
                 </tr>
                 <tr>
                   <td className="px-4 py-2.5">
-                    <code className="bg-red-50 text-red-700 px-1.5 py-0.5 rounded text-xs font-mono">FAILED</code>
+                    <code className="bg-red-50 text-red-700 px-1.5 py-0.5 rounded text-xs font-mono">
+                      FAILED
+                    </code>
                   </td>
-                  <td className="px-4 py-2.5 text-gray-600">Pagamento não realizado</td>
-                  <td className="px-4 py-2.5 text-green-600 text-xs font-medium">Sim</td>
+                  <td className="px-4 py-2.5 text-gray-600">
+                    Pagamento não realizado
+                  </td>
+                  <td className="px-4 py-2.5 text-green-600 text-xs font-medium">
+                    Sim
+                  </td>
                 </tr>
                 <tr>
                   <td className="px-4 py-2.5">
-                    <code className="bg-orange-50 text-orange-700 px-1.5 py-0.5 rounded text-xs font-mono">REFUNDED</code>
+                    <code className="bg-orange-50 text-orange-700 px-1.5 py-0.5 rounded text-xs font-mono">
+                      REFUNDED
+                    </code>
                   </td>
-                  <td className="px-4 py-2.5 text-gray-600">Depósito estornado (valor total debitado)</td>
-                  <td className="px-4 py-2.5 text-green-600 text-xs font-medium">Sim</td>
+                  <td className="px-4 py-2.5 text-gray-600">
+                    Depósito estornado (valor total debitado)
+                  </td>
+                  <td className="px-4 py-2.5 text-green-600 text-xs font-medium">
+                    Sim
+                  </td>
                 </tr>
                 <tr>
                   <td className="px-4 py-2.5">
-                    <code className="bg-orange-50 text-orange-700 px-1.5 py-0.5 rounded text-xs font-mono">PARTIALLY_REFUNDED</code>
+                    <code className="bg-orange-50 text-orange-700 px-1.5 py-0.5 rounded text-xs font-mono">
+                      PARTIALLY_REFUNDED
+                    </code>
                   </td>
-                  <td className="px-4 py-2.5 text-gray-600">Depósito estornado parcialmente</td>
-                  <td className="px-4 py-2.5 text-green-600 text-xs font-medium">Sim</td>
+                  <td className="px-4 py-2.5 text-gray-600">
+                    Depósito estornado parcialmente
+                  </td>
+                  <td className="px-4 py-2.5 text-green-600 text-xs font-medium">
+                    Sim
+                  </td>
                 </tr>
               </tbody>
             </table>
@@ -894,67 +965,119 @@ export default function ApiDocsPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-gray-50 text-left">
-                  <th className="px-4 py-2.5 text-xs font-semibold text-gray-500 uppercase">Status</th>
-                  <th className="px-4 py-2.5 text-xs font-semibold text-gray-500 uppercase">Descrição</th>
-                  <th className="px-4 py-2.5 text-xs font-semibold text-gray-500 uppercase">Webhook</th>
+                  <th className="px-4 py-2.5 text-xs font-semibold text-gray-500 uppercase">
+                    Status
+                  </th>
+                  <th className="px-4 py-2.5 text-xs font-semibold text-gray-500 uppercase">
+                    Descrição
+                  </th>
+                  <th className="px-4 py-2.5 text-xs font-semibold text-gray-500 uppercase">
+                    Webhook
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
                 <tr>
                   <td className="px-4 py-2.5">
-                    <code className="bg-yellow-50 text-yellow-700 px-1.5 py-0.5 rounded text-xs font-mono">PENDING</code>
+                    <code className="bg-yellow-50 text-yellow-700 px-1.5 py-0.5 rounded text-xs font-mono">
+                      PENDING
+                    </code>
                   </td>
-                  <td className="px-4 py-2.5 text-gray-600">Saque aguardando aprovação manual</td>
+                  <td className="px-4 py-2.5 text-gray-600">
+                    Saque aguardando aprovação manual
+                  </td>
                   <td className="px-4 py-2.5 text-gray-400 text-xs">—</td>
                 </tr>
                 <tr>
                   <td className="px-4 py-2.5">
-                    <code className="bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded text-xs font-mono">PROCESSING</code>
+                    <code className="bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded text-xs font-mono">
+                      PROCESSING
+                    </code>
                   </td>
-                  <td className="px-4 py-2.5 text-gray-600">PIX enviado, aguardando liquidação</td>
-                  <td className="px-4 py-2.5 text-green-600 text-xs font-medium">Sim</td>
+                  <td className="px-4 py-2.5 text-gray-600">
+                    PIX enviado, aguardando liquidação
+                  </td>
+                  <td className="px-4 py-2.5 text-green-600 text-xs font-medium">
+                    Sim
+                  </td>
                 </tr>
                 <tr>
                   <td className="px-4 py-2.5">
-                    <code className="bg-green-50 text-green-700 px-1.5 py-0.5 rounded text-xs font-mono">PAID_OUT</code>
+                    <code className="bg-green-50 text-green-700 px-1.5 py-0.5 rounded text-xs font-mono">
+                      PAID_OUT
+                    </code>
                   </td>
-                  <td className="px-4 py-2.5 text-gray-600">Saque liquidado com sucesso</td>
-                  <td className="px-4 py-2.5 text-green-600 text-xs font-medium">Sim</td>
+                  <td className="px-4 py-2.5 text-gray-600">
+                    Saque liquidado com sucesso
+                  </td>
+                  <td className="px-4 py-2.5 text-green-600 text-xs font-medium">
+                    Sim
+                  </td>
                 </tr>
                 <tr>
                   <td className="px-4 py-2.5">
-                    <code className="bg-green-50 text-green-700 px-1.5 py-0.5 rounded text-xs font-mono">COMPLETED</code>
+                    <code className="bg-green-50 text-green-700 px-1.5 py-0.5 rounded text-xs font-mono">
+                      COMPLETED
+                    </code>
                   </td>
-                  <td className="px-4 py-2.5 text-gray-600">Equivalente a PAID_OUT (saque concluído)</td>
-                  <td className="px-4 py-2.5 text-green-600 text-xs font-medium">Sim</td>
+                  <td className="px-4 py-2.5 text-gray-600">
+                    Equivalente a PAID_OUT (saque concluído)
+                  </td>
+                  <td className="px-4 py-2.5 text-green-600 text-xs font-medium">
+                    Sim
+                  </td>
                 </tr>
                 <tr>
                   <td className="px-4 py-2.5">
-                    <code className="bg-red-50 text-red-700 px-1.5 py-0.5 rounded text-xs font-mono">CANCELLED</code>
+                    <code className="bg-red-50 text-red-700 px-1.5 py-0.5 rounded text-xs font-mono">
+                      CANCELLED
+                    </code>
                   </td>
-                  <td className="px-4 py-2.5 text-gray-600">Saque cancelado (ex: chave PIX inválida, saldo insuficiente)</td>
-                  <td className="px-4 py-2.5 text-green-600 text-xs font-medium">Sim</td>
+                  <td className="px-4 py-2.5 text-gray-600">
+                    Saque cancelado (ex: chave PIX inválida, saldo insuficiente)
+                  </td>
+                  <td className="px-4 py-2.5 text-green-600 text-xs font-medium">
+                    Sim
+                  </td>
                 </tr>
                 <tr>
                   <td className="px-4 py-2.5">
-                    <code className="bg-red-50 text-red-700 px-1.5 py-0.5 rounded text-xs font-mono">FAILED</code>
+                    <code className="bg-red-50 text-red-700 px-1.5 py-0.5 rounded text-xs font-mono">
+                      FAILED
+                    </code>
                   </td>
-                  <td className="px-4 py-2.5 text-gray-600">Saque não realizado (falha no processamento)</td>
-                  <td className="px-4 py-2.5 text-green-600 text-xs font-medium">Sim</td>
+                  <td className="px-4 py-2.5 text-gray-600">
+                    Saque não realizado (falha no processamento)
+                  </td>
+                  <td className="px-4 py-2.5 text-green-600 text-xs font-medium">
+                    Sim
+                  </td>
                 </tr>
                 <tr>
                   <td className="px-4 py-2.5">
-                    <code className="bg-orange-50 text-orange-700 px-1.5 py-0.5 rounded text-xs font-mono">REFUNDED</code>
+                    <code className="bg-orange-50 text-orange-700 px-1.5 py-0.5 rounded text-xs font-mono">
+                      REFUNDED
+                    </code>
                   </td>
-                  <td className="px-4 py-2.5 text-gray-600">Saque estornado (valor devolvido ao saldo)</td>
-                  <td className="px-4 py-2.5 text-green-600 text-xs font-medium">Sim</td>
+                  <td className="px-4 py-2.5 text-gray-600">
+                    Saque estornado (valor devolvido ao saldo)
+                  </td>
+                  <td className="px-4 py-2.5 text-green-600 text-xs font-medium">
+                    Sim
+                  </td>
                 </tr>
                 <tr>
                   <td className="px-4 py-2.5">
-                    <code className="bg-orange-50 text-orange-700 px-1.5 py-0.5 rounded text-xs font-mono">PARTIALLY_REFUNDED</code>
+                    <code className="bg-orange-50 text-orange-700 px-1.5 py-0.5 rounded text-xs font-mono">
+                      PARTIALLY_REFUNDED
+                    </code>
                   </td>
-                  <td className="px-4 py-2.5 text-gray-600">Saque estornado parcialmente</td>
-                  <td className="px-4 py-2.5 text-green-600 text-xs font-medium">Sim</td>
+                  <td className="px-4 py-2.5 text-gray-600">
+                    Saque estornado parcialmente
+                  </td>
+                  <td className="px-4 py-2.5 text-green-600 text-xs font-medium">
+                    Sim
+                  </td>
                 </tr>
               </tbody>
             </table>
@@ -964,23 +1087,41 @@ export default function ApiDocsPage() {
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm text-blue-800">
           <p className="font-medium mb-2">Fluxo típico de status</p>
           <div className="space-y-1.5 text-xs">
-            <p><strong>Depósito:</strong>{' '}
-              <code className="bg-blue-100 px-1 rounded">WAITING_FOR_APPROVAL</code>{' → '}
-              <code className="bg-blue-100 px-1 rounded">PAID_OUT</code>{' '}
-              (ou <code className="bg-blue-100 px-1 rounded">CANCELLED</code> se expirar)
+            <p>
+              <strong>Depósito:</strong>{' '}
+              <code className="bg-blue-100 px-1 rounded">
+                WAITING_FOR_APPROVAL
+              </code>
+              {' → '}
+              <code className="bg-blue-100 px-1 rounded">
+                PAID_OUT
+              </code> (ou{' '}
+              <code className="bg-blue-100 px-1 rounded">CANCELLED</code> se
+              expirar)
             </p>
-            <p><strong>Saque automático:</strong>{' '}
-              <code className="bg-blue-100 px-1 rounded">PROCESSING</code>{' → '}
-              <code className="bg-blue-100 px-1 rounded">PAID_OUT</code>{' '}
-              (ou <code className="bg-blue-100 px-1 rounded">CANCELLED</code> / <code className="bg-blue-100 px-1 rounded">FAILED</code> se houver erro)
+            <p>
+              <strong>Saque automático:</strong>{' '}
+              <code className="bg-blue-100 px-1 rounded">PROCESSING</code>
+              {' → '}
+              <code className="bg-blue-100 px-1 rounded">
+                PAID_OUT
+              </code> (ou{' '}
+              <code className="bg-blue-100 px-1 rounded">CANCELLED</code> /{' '}
+              <code className="bg-blue-100 px-1 rounded">FAILED</code> se houver
+              erro)
             </p>
-            <p><strong>Saque manual:</strong>{' '}
-              <code className="bg-blue-100 px-1 rounded">PENDING</code>{' → '}
-              <code className="bg-blue-100 px-1 rounded">PROCESSING</code>{' → '}
+            <p>
+              <strong>Saque manual:</strong>{' '}
+              <code className="bg-blue-100 px-1 rounded">PENDING</code>
+              {' → '}
+              <code className="bg-blue-100 px-1 rounded">PROCESSING</code>
+              {' → '}
               <code className="bg-blue-100 px-1 rounded">PAID_OUT</code>
             </p>
-            <p><strong>Estorno:</strong>{' '}
-              <code className="bg-blue-100 px-1 rounded">PAID_OUT</code>{' → '}
+            <p>
+              <strong>Estorno:</strong>{' '}
+              <code className="bg-blue-100 px-1 rounded">PAID_OUT</code>
+              {' → '}
               <code className="bg-blue-100 px-1 rounded">REFUNDED</code>
             </p>
           </div>
