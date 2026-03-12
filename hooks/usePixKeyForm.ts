@@ -10,6 +10,19 @@ import { useAuth } from '@/contexts/AuthContext'
 
 const DEFAULT_MAX_WITHDRAWAL_LIMIT = 100000
 
+const WITHDRAWAL_ERROR_MESSAGE =
+  'Não foi possível sacar, entre em contato com o suporte.'
+
+function normalizeWithdrawalErrorMessage(msg: string): string {
+  if (
+    /Disponível|Solicitado|R\$\s*[\d.,]+/.test(msg) ||
+    /saldo disponível|saldo insuficiente/i.test(msg)
+  ) {
+    return WITHDRAWAL_ERROR_MESSAGE
+  }
+  return msg
+}
+
 export type UsePixKeyFormOptions = {
   maxWithdrawalLimit?: number
 }
@@ -67,8 +80,9 @@ export function usePixKeyForm(options: UsePixKeyFormOptions = {}) {
       resetForm()
     },
     onError: (error: unknown) => {
-      const errorMessage =
+      const rawMessage =
         error instanceof Error ? error.message : 'Erro ao realizar saque'
+      const errorMessage = normalizeWithdrawalErrorMessage(rawMessage)
       toast.error(errorMessage)
     },
   })
