@@ -5,6 +5,8 @@ import Link from 'next/link'
 
 import { Button } from '@/components/ui/Button'
 
+const logoSrc = encodeURI('/Coratri - FINANCE - Site.png')
+
 export default function TermosPage() {
   return (
     <div className="min-h-screen bg-gray-light flex items-center justify-center p-4">
@@ -12,12 +14,12 @@ export default function TermosPage() {
         <div className="text-center mb-8">
           <Link href="/" className="inline-block">
             <Image
-              src="/Orizon Pay - Finance.png"
-              alt="Orizon Pay Finance"
-              width={180}
-              height={56}
+              src={logoSrc}
+              alt="Coratri Finance"
+              width={260}
+              height={72}
               priority
-              className="object-contain"
+              className="object-contain mx-auto"
             />
           </Link>
         </div>
@@ -33,12 +35,13 @@ export default function TermosPage() {
           <div className="prose prose-gray max-w-none">
             <div className="mb-8">
               <p className="text-gray-700 mb-4">
-                Bem-vindo à Orizon Pay!
+                Bem-vindo à Coratri IP S.A.
                 <br />
-                Ao utilizar o aplicativo da Orizon Pay, você concorda com os
-                termos e condições descritos abaixo. Por favor, leia atentamente
-                este documento, pois ele define os direitos e responsabilidades
-                de ambas as partes.
+                <br />
+                Ao utilizar o aplicativo da Coratri IP S.A., você concorda com
+                os termos e condições descritos abaixo. Por favor, leia
+                atentamente este documento, pois ele define os direitos e
+                responsabilidades de ambas as partes.
               </p>
               <div className="text-center text-gray-400 mb-6">⸻</div>
             </div>
@@ -49,24 +52,25 @@ export default function TermosPage() {
               </h2>
               <div className="space-y-3">
                 <p className="text-gray-700">
-                  <strong>&quot;Orizon Pay&quot;:</strong> Refere-se à Orizon
-                  Pay, sua instituição de pagamento, que oferece serviços de
-                  transações financeiras através deste aplicativo.
+                  <strong>&quot;Coratri IP S.A.&quot;:</strong> Refere-se à
+                  Coratri IP S.A., instituição de pagamento que oferece serviços
+                  de transações financeiras por meio deste aplicativo.
                 </p>
                 <p className="text-gray-700">
-                  <strong>&quot;Usuário&quot;:</strong> Qualquer pessoa que
-                  utilize o aplicativo da Orizon Pay.
+                  <strong>&quot;Usuário&quot;:</strong> Qualquer pessoa física
+                  ou jurídica que utilize o aplicativo da Coratri IP S.A.
                 </p>
                 <p className="text-gray-700">
                   <strong>&quot;Aplicativo&quot;:</strong> Refere-se ao software
-                  de propriedade da Orizon Pay disponibilizado para os usuários
-                  em dispositivos móveis.
+                  de propriedade da Coratri IP S.A. disponibilizado aos usuários
+                  em dispositivos móveis ou outros meios digitais.
                 </p>
                 <p className="text-gray-700">
                   <strong>&quot;Serviços&quot;:</strong> Todas as
-                  funcionalidades oferecidas pela Orizon Pay por meio do
+                  funcionalidades oferecidas pela Coratri IP S.A. por meio do
                   aplicativo, incluindo, mas não se limitando a transferências,
-                  pagamentos e consultas de saldo.
+                  pagamentos, consultas de saldo e demais serviços financeiros
+                  digitais.
                 </p>
               </div>
             </section>
@@ -79,17 +83,18 @@ export default function TermosPage() {
               </h2>
               <div className="space-y-3">
                 <p className="text-gray-700">
-                  Ao instalar, acessar ou utilizar o aplicativo Orizon Pay, você
-                  concorda com estes Termos de Uso.
+                  Ao instalar, acessar ou utilizar o aplicativo da Coratri IP
+                  S.A., o usuário declara que leu, compreendeu e concorda
+                  integralmente com estes Termos de Uso.
                 </p>
                 <p className="text-gray-700">
-                  A Orizon Pay reserva-se o direito de modificar os Termos de
-                  Uso a qualquer momento, sendo responsabilidade do usuário
-                  revisá-los periodicamente.
+                  A Coratri IP S.A. reserva-se o direito de modificar estes
+                  Termos de Uso a qualquer momento. É responsabilidade do
+                  usuário revisá-los periodicamente.
                 </p>
                 <p className="text-gray-700">
-                  O uso contínuo do aplicativo após alterações implica na
-                  aceitação dos novos termos.
+                  O uso contínuo do aplicativo após eventuais alterações implica
+                  na aceitação automática dos novos termos.
                 </p>
               </div>
             </section>
@@ -102,19 +107,24 @@ export default function TermosPage() {
               </h2>
               <div className="space-y-3">
                 <p className="text-gray-700">
-                  A Orizon Pay fornece serviços financeiros digitais, incluindo:
+                  A Coratri IP S.A. disponibiliza serviços financeiros digitais,
+                  incluindo:
                 </p>
                 <ul className="list-disc pl-6 space-y-2 text-gray-700">
-                  <li>Realização de transferências e pagamentos.</li>
-                  <li>Consulta de saldos e extratos.</li>
+                  <li>Realização de transferências e pagamentos;</li>
+                  <li>Consulta de saldos e extratos;</li>
                   <li>
                     Transações por meio de Pix e outros meios de pagamento
-                    disponíveis.
+                    disponíveis;
+                  </li>
+                  <li>
+                    Integração com plataformas e serviços financeiros digitais.
                   </li>
                 </ul>
                 <p className="text-gray-700">
-                  Os serviços podem ser expandidos ou modificados a critério
-                  exclusivo da Orizon Pay.
+                  Os serviços poderão ser ampliados, modificados ou
+                  descontinuados a qualquer momento, a exclusivo critério da
+                  Coratri IP S.A.
                 </p>
               </div>
             </section>
@@ -127,24 +137,26 @@ export default function TermosPage() {
               </h2>
               <div className="space-y-4">
                 <p className="text-gray-700">
-                  Para acessar os serviços da Orizon Pay, o usuário deverá criar
-                  uma conta e fornecer informações precisas e completas. O
-                  usuário compromete-se a:
+                  Para utilizar os serviços da Coratri IP S.A., o usuário deverá
+                  realizar cadastro e fornecer informações verdadeiras,
+                  completas e atualizadas.
                 </p>
+                <p className="text-gray-700">O usuário compromete-se a:</p>
                 <ul className="list-disc pl-6 space-y-2 text-gray-700">
-                  <li>Manter suas informações de cadastro atualizadas.</li>
+                  <li>Manter seus dados cadastrais atualizados;</li>
                   <li>
-                    Proteger suas credenciais de acesso (login e senha) e não
-                    compartilhá-las com terceiros.
+                    Proteger suas credenciais de acesso (login, senha e
+                    autenticações adicionais);
                   </li>
+                  <li>Não compartilhar suas credenciais com terceiros;</li>
                   <li>
-                    Notificar a Orizon Pay imediatamente em caso de qualquer uso
-                    não autorizado de sua conta.
+                    Notificar imediatamente a Coratri IP S.A. em caso de
+                    suspeita de acesso não autorizado à sua conta.
                   </li>
                 </ul>
                 <p className="text-gray-700">
-                  A Orizon Pay não se responsabiliza por perdas ou danos
-                  resultantes de falhas na proteção das credenciais do usuário.
+                  A Coratri IP S.A. não se responsabiliza por perdas decorrentes
+                  de falha do usuário em proteger suas credenciais.
                 </p>
               </div>
             </section>
@@ -157,27 +169,33 @@ export default function TermosPage() {
               </h2>
               <div className="space-y-4">
                 <p className="text-gray-700">
-                  O usuário concorda em utilizar o aplicativo exclusivamente
-                  para os fins permitidos por lei e de acordo com estes Termos
-                  de Uso.
+                  O usuário compromete-se a utilizar o aplicativo exclusivamente
+                  para fins lícitos e em conformidade com estes Termos de Uso.
                 </p>
                 <p className="text-gray-700">
-                  O uso do aplicativo é estritamente proibido para:
+                  É expressamente proibido utilizar o aplicativo para:
                 </p>
                 <ul className="list-disc pl-6 space-y-2 text-gray-700">
-                  <li>Qualquer atividade ilegal ou fraudulenta.</li>
                   <li>
-                    Tentar burlar, hackear ou explorar vulnerabilidades do
-                    sistema da Orizon Pay.
+                    Atividades ilegais, fraudulentas ou que violem a legislação
+                    vigente;
                   </li>
                   <li>
-                    Reverter a engenharia do software ou explorar indevidamente
-                    o conteúdo do aplicativo.
+                    Tentativas de invasão, fraude ou exploração de
+                    vulnerabilidades do sistema;
+                  </li>
+                  <li>
+                    Engenharia reversa, cópia ou exploração indevida do
+                    software;
+                  </li>
+                  <li>
+                    Uso do aplicativo para práticas que violem normas
+                    regulatórias do sistema financeiro.
                   </li>
                 </ul>
                 <p className="text-gray-700">
-                  A Orizon Pay se reserva o direito de suspender ou encerrar a
-                  conta de usuários que violarem estas proibições.
+                  A Coratri IP S.A. poderá suspender ou encerrar contas que
+                  violem estes termos.
                 </p>
               </div>
             </section>
@@ -190,18 +208,21 @@ export default function TermosPage() {
               </h2>
               <div className="space-y-3">
                 <p className="text-gray-700">
-                  A Orizon Pay está comprometida com a proteção de seus dados
-                  pessoais.
+                  A Coratri IP S.A. está comprometida com a proteção da
+                  privacidade e dos dados pessoais dos usuários.
+                </p>
+                <p className="text-gray-700">
+                  O tratamento de dados é realizado em conformidade com a Lei
+                  Geral de Proteção de Dados (LGPD – Lei nº 13.709/2018).
                 </p>
                 <p className="text-gray-700">
                   Nossa Política de Privacidade descreve como coletamos,
                   utilizamos, armazenamos e protegemos as informações dos
-                  usuários, de acordo com a Lei Geral de Proteção de Dados
-                  (LGPD).
+                  usuários.
                 </p>
                 <p className="text-gray-700">
-                  Ao utilizar o aplicativo, você concorda com o processamento de
-                  seus dados conforme descrito em nossa Política de Privacidade.
+                  Ao utilizar o aplicativo, o usuário concorda com o tratamento
+                  de seus dados conforme descrito nesta política.
                 </p>
               </div>
             </section>
@@ -214,13 +235,16 @@ export default function TermosPage() {
               </h2>
               <div className="space-y-3">
                 <p className="text-gray-700">
-                  O uso de determinados serviços oferecidos pela Orizon Pay pode
-                  estar sujeito a tarifas ou encargos, que serão comunicados ao
-                  usuário no momento da transação ou de forma antecipada.
+                  Determinados serviços disponibilizados pela Coratri IP S.A.
+                  podem estar sujeitos à cobrança de tarifas ou encargos.
                 </p>
                 <p className="text-gray-700">
-                  A Orizon Pay reserva-se o direito de alterar as tarifas a
-                  qualquer momento, mediante notificação prévia aos usuários.
+                  As tarifas aplicáveis serão informadas previamente ao usuário
+                  ou no momento da realização da transação.
+                </p>
+                <p className="text-gray-700">
+                  A Coratri IP S.A. poderá atualizar ou alterar as tarifas
+                  mediante comunicação prévia.
                 </p>
               </div>
             </section>
@@ -233,28 +257,29 @@ export default function TermosPage() {
               </h2>
               <div className="space-y-4">
                 <p className="text-gray-700">
-                  A Orizon Pay se empenha em fornecer um serviço seguro e
-                  contínuo. No entanto, a empresa não se responsabiliza por:
+                  A Coratri IP S.A. empenha-se em fornecer serviços seguros,
+                  eficientes e contínuos.
+                </p>
+                <p className="text-gray-700">
+                  No entanto, não se responsabiliza por:
                 </p>
                 <ul className="list-disc pl-6 space-y-2 text-gray-700">
                   <li>
-                    Indisponibilidade temporária do aplicativo devido a
-                    manutenção, atualizações ou falhas técnicas.
+                    Indisponibilidade temporária do aplicativo por motivos
+                    técnicos, manutenção ou atualização;
                   </li>
                   <li>
-                    Perdas financeiras decorrentes de falhas no serviço, exceto
-                    quando decorrentes de conduta dolosa por parte da Orizon
-                    Pay.
+                    Falhas decorrentes de serviços prestados por terceiros;
                   </li>
                   <li>
-                    Erros ou omissões em informações fornecidas por terceiros.
+                    Perdas financeiras decorrentes de fatores externos ou fora
+                    de seu controle;
+                  </li>
+                  <li>
+                    Danos indiretos, lucros cessantes ou perda de dados
+                    decorrentes do uso do aplicativo.
                   </li>
                 </ul>
-                <p className="text-gray-700">
-                  A Orizon Pay não se responsabiliza por perdas de dados, ganhos
-                  cessantes ou outros danos indiretos causados pelo uso ou
-                  incapacidade de uso do aplicativo.
-                </p>
               </div>
             </section>
 
@@ -266,20 +291,20 @@ export default function TermosPage() {
               </h2>
               <div className="space-y-4">
                 <p className="text-gray-700">
-                  A Orizon Pay reserva-se o direito de suspender temporariamente
-                  ou cancelar de forma permanente os serviços de um usuário, a
-                  seu exclusivo critério, nas seguintes situações:
+                  A Coratri IP S.A. poderá suspender ou cancelar o acesso do
+                  usuário aos serviços nas seguintes hipóteses:
                 </p>
                 <ul className="list-disc pl-6 space-y-2 text-gray-700">
-                  <li>Violação dos Termos de Uso.</li>
+                  <li>Violação destes Termos de Uso;</li>
                   <li>
-                    Suspeita de fraude, uso indevido ou atividades ilícitas.
+                    Suspeita de fraude, lavagem de dinheiro ou atividades
+                    ilícitas;
                   </li>
-                  <li>Manutenções programadas ou imprevistas no sistema.</li>
+                  <li>Determinação regulatória ou legal;</li>
+                  <li>Necessidade operacional ou manutenção do sistema.</li>
                 </ul>
                 <p className="text-gray-700">
-                  Os usuários serão notificados, sempre que possível, sobre
-                  suspensões planejadas ou cancelamentos de conta.
+                  Sempre que possível, o usuário será previamente notificado.
                 </p>
               </div>
             </section>
@@ -292,13 +317,13 @@ export default function TermosPage() {
               </h2>
               <div className="space-y-3">
                 <p className="text-gray-700">
-                  A Orizon Pay pode, a qualquer momento, modificar, suspender ou
-                  descontinuar qualquer funcionalidade do aplicativo, com ou sem
-                  aviso prévio aos usuários.
+                  A Coratri IP S.A. poderá, a qualquer momento, modificar,
+                  suspender ou descontinuar funcionalidades do aplicativo, com
+                  ou sem aviso prévio.
                 </p>
                 <p className="text-gray-700">
-                  Não nos responsabilizamos por perdas decorrentes de tais
-                  modificações ou descontinuações.
+                  A empresa não será responsável por eventuais impactos
+                  decorrentes dessas alterações.
                 </p>
               </div>
             </section>
@@ -311,18 +336,17 @@ export default function TermosPage() {
               </h2>
               <div className="space-y-3">
                 <p className="text-gray-700">
-                  Todos os direitos relativos ao aplicativo Orizon Pay,
-                  incluindo, mas não se limitando a, seu código-fonte, design,
-                  logotipos e conteúdo, são de propriedade exclusiva da Orizon
-                  Pay.
+                  Todos os direitos relativos ao aplicativo da Coratri IP S.A.,
+                  incluindo software, design, logotipos, sistemas e conteúdos,
+                  são de propriedade exclusiva da empresa.
                 </p>
                 <p className="text-gray-700">
                   O uso do aplicativo não concede ao usuário qualquer direito
-                  sobre a propriedade intelectual da empresa.
+                  sobre a propriedade intelectual da Coratri IP S.A.
                 </p>
                 <p className="text-gray-700">
-                  É proibido reproduzir, distribuir ou modificar qualquer parte
-                  do aplicativo sem autorização prévia da Orizon Pay.
+                  É proibida qualquer reprodução, distribuição ou modificação do
+                  aplicativo sem autorização expressa.
                 </p>
               </div>
             </section>
@@ -335,12 +359,13 @@ export default function TermosPage() {
               </h2>
               <div className="space-y-3">
                 <p className="text-gray-700">
-                  Estes Termos de Uso são regidos pela legislação brasileira.
+                  Estes Termos de Uso são regidos pelas leis da República
+                  Federativa do Brasil.
                 </p>
                 <p className="text-gray-700">
-                  Qualquer disputa relacionada a estes termos será resolvida no
-                  foro da comarca de São Paulo, SP, com exclusão de qualquer
-                  outro, por mais privilegiado que seja.
+                  Fica eleito o foro da Comarca de São Paulo – SP, com exclusão
+                  de qualquer outro, por mais privilegiado que seja, para
+                  dirimir eventuais controvérsias decorrentes destes termos.
                 </p>
               </div>
             </section>
@@ -353,14 +378,18 @@ export default function TermosPage() {
               </h2>
               <div className="bg-gray-50 p-6 rounded-lg">
                 <p className="text-gray-700 mb-4">
-                  Em caso de dúvidas sobre estes Termos de Uso ou sobre o
-                  aplicativo, entre em contato conosco pelo e-mail:
+                  Em caso de dúvidas sobre estes Termos de Uso ou sobre os
+                  serviços da Coratri IP S.A., entre em contato:
                 </p>
-                <div className="space-y-2 text-gray-700">
-                  <p>
-                    <strong>📧 Email:</strong> sac@orizonpayoficial.com
-                  </p>
-                </div>
+                <p className="text-gray-700">
+                  <strong>📧</strong>{' '}
+                  <a
+                    href="mailto:sac@coratri.com"
+                    className="text-[#101010] font-medium underline underline-offset-2 hover:opacity-80"
+                  >
+                    sac@coratri.com
+                  </a>
+                </p>
               </div>
             </section>
           </div>
@@ -371,7 +400,10 @@ export default function TermosPage() {
                 Ao utilizar nossos serviços, você concorda com estes termos de
                 uso.
               </p>
-              <Button onClick={() => window.history.back()} variant="outline">
+              <Button
+                onClick={() => window.history.back()}
+                variant="inkOutline"
+              >
                 Voltar
               </Button>
             </div>

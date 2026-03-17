@@ -59,23 +59,25 @@ export default function LoginPage() {
     }
   }
 
+  const logoSrc = encodeURI('/Coratri - FINANCE - Site.png')
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-light p-4">
+    <div className="min-h-screen flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <Link href="/" className="inline-block">
             <Image
-              src="/Orizon Pay - Finance.png"
-              alt="Orizon Pay Finance"
-              width={180}
-              height={56}
+              src={logoSrc}
+              alt="Coratri Finance"
+              width={260}
+              height={72}
               priority
-              className="object-contain"
+              className="object-contain mx-auto drop-shadow-sm"
             />
           </Link>
         </div>
 
-        <div className="bg-white rounded-xl shadow-md p-8">
+        <div className="bg-white rounded-xl shadow-md border border-gray-200/80 p-8">
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
             <Input
               {...register('username')}
@@ -96,6 +98,7 @@ export default function LoginPage() {
 
             <Button
               type="submit"
+              variant="inkSolid"
               fullWidth
               disabled={isLoading}
               icon={<ArrowRight size={18} />}
@@ -109,7 +112,7 @@ export default function LoginPage() {
           Ainda não tem uma conta?{' '}
           <Link
             href="/cadastro"
-            className="text-primary font-medium hover:underline"
+            className="font-semibold text-[#101010] underline-offset-2 hover:underline hover:opacity-80"
           >
             Criar conta
           </Link>
@@ -117,7 +120,7 @@ export default function LoginPage() {
 
         <div className="mt-6">
           <Button
-            variant="outline"
+            variant="inkOutline"
             fullWidth
             icon={<HelpCircle size={18} />}
             onClick={() => window.open('https://wa.me/5549988906647', '_blank', 'noopener,noreferrer')}
@@ -128,7 +131,10 @@ export default function LoginPage() {
 
         <p className="mt-6 text-center text-xs text-gray-500">
           Ao acessar a conta, você concorda com os nossos{' '}
-          <Link href="/termos" className="text-primary hover:underline">
+          <Link
+            href="/termos"
+            className="font-medium text-[#101010] underline-offset-2 hover:underline hover:opacity-80"
+          >
             termos de uso
           </Link>
           .

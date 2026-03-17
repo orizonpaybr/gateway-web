@@ -259,34 +259,35 @@ function CadastroContent() {
   }
 
   const progress = step === 1 ? 33 : step === 2 ? 67 : 100
+  const logoSrc = encodeURI('/Coratri - FINANCE - Site.png')
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-light p-4">
+    <div className="min-h-screen flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-6">
           <Link href="/" className="inline-block">
             <Image
-              src="/Orizon Pay - Finance.png"
-              alt="Orizon Pay Finance"
-              width={180}
-              height={56}
+              src={logoSrc}
+              alt="Coratri Finance"
+              width={260}
+              height={72}
               priority
-              className="object-contain"
+              className="object-contain mx-auto drop-shadow-sm"
             />
           </Link>
         </div>
 
-        <div className="bg-white rounded-xl shadow-md p-8">
+        <div className="bg-white rounded-xl shadow-md border border-gray-200/80 p-8">
           <div className="mb-6">
             <div className="flex justify-between items-center mb-2">
               <span className="text-xs text-gray-600">Etapa {step} de 3</span>
-              <span className="text-xs font-medium text-gray-900">
+              <span className="text-xs font-medium text-[#101010]">
                 {Math.round(progress)}%
               </span>
             </div>
             <div className="w-full h-1.5 bg-gray-200 rounded-full overflow-hidden">
               <div
-                className="h-full bg-primary transition-all duration-300"
+                className="h-full bg-[#1E96DE] transition-all duration-300"
                 style={{ width: `${progress}%` }}
               />
             </div>
@@ -295,7 +296,7 @@ function CadastroContent() {
           {step === 1 && (
             <>
               <div className="mb-6">
-                <h2 className="text-xl font-bold text-gray-900">
+                <h2 className="text-xl font-bold text-[#101010]">
                   Dados Pessoais
                 </h2>
                 <p className="text-sm text-gray-600 mt-1">
@@ -358,6 +359,7 @@ function CadastroContent() {
 
                 <Button
                   type="submit"
+                  variant="inkSolid"
                   fullWidth
                   icon={<ArrowRight size={18} />}
                   disabled={isValidating || !step1Form.formState.isValid}
@@ -371,7 +373,7 @@ function CadastroContent() {
           {step === 2 && (
             <>
               <div className="mb-6">
-                <h2 className="text-xl font-bold text-gray-900">Segurança</h2>
+                <h2 className="text-xl font-bold text-[#101010]">Segurança</h2>
                 <p className="text-sm text-gray-600 mt-1">
                   Defina sua senha, telefone e documento
                 </p>
@@ -428,7 +430,7 @@ function CadastroContent() {
                 <div className="flex gap-3">
                   <Button
                     type="button"
-                    variant="outline"
+                    variant="inkOutline"
                     onClick={() => {
                       setStep(1)
                     }}
@@ -438,6 +440,7 @@ function CadastroContent() {
                   </Button>
                   <Button
                     type="submit"
+                    variant="inkSolid"
                     fullWidth
                     icon={<ArrowRight size={18} />}
                     disabled={isValidating || !step2Form.formState.isValid}
@@ -452,7 +455,7 @@ function CadastroContent() {
           {step === 3 && (
             <>
               <div className="mb-6">
-                <h2 className="text-xl font-bold text-gray-900">Documentos</h2>
+                <h2 className="text-xl font-bold text-[#101010]">Documentos</h2>
                 <p className="text-sm text-gray-600 mt-1">
                   Envie fotos (JPG ou PNG) dos documentos para verificação.
                 </p>
@@ -497,7 +500,7 @@ function CadastroContent() {
                 <div className="flex gap-3">
                   <Button
                     type="button"
-                    variant="outline"
+                    variant="inkOutline"
                     onClick={() => {
                       setStep(2)
                     }}
@@ -507,6 +510,7 @@ function CadastroContent() {
                   </Button>
                   <Button
                     type="submit"
+                    variant="inkSolid"
                     fullWidth
                     disabled={isLoading}
                     icon={<User size={18} />}
@@ -523,7 +527,7 @@ function CadastroContent() {
           Já tem uma conta?{' '}
           <Link
             href="/login"
-            className="text-primary font-medium hover:underline"
+            className="font-semibold text-[#101010] underline-offset-2 hover:underline hover:opacity-80"
           >
             Fazer login
           </Link>
@@ -531,7 +535,7 @@ function CadastroContent() {
 
         <div className="mt-6">
           <Button
-            variant="outline"
+            variant="inkOutline"
             fullWidth
             icon={<HelpCircle size={18} />}
             onClick={() =>
@@ -548,7 +552,10 @@ function CadastroContent() {
 
         <p className="mt-6 text-center text-xs text-gray-500">
           Ao criar uma conta, você concorda com os nossos{' '}
-          <Link href="/termos" className="text-primary hover:underline">
+          <Link
+            href="/termos"
+            className="font-medium text-[#101010] underline-offset-2 hover:underline hover:opacity-80"
+          >
             termos de uso
           </Link>
           .
@@ -562,8 +569,8 @@ export default function CadastroPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen flex items-center justify-center bg-gray-50">
-          <p className="text-gray-500">Carregando...</p>
+        <div className="min-h-screen flex items-center justify-center bg-white">
+          <p className="text-gray-500 text-sm">Carregando...</p>
         </div>
       }
     >

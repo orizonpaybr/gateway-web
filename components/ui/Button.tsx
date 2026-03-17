@@ -1,7 +1,14 @@
 import React, { memo } from 'react'
 import { cn } from '@/lib/utils'
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'outline' | 'ghost'
+  variant?:
+    | 'primary'
+    | 'secondary'
+    | 'outline'
+    | 'ghost'
+    /** Login/cadastro: preto #101010, hover cinza (sem primary) */
+    | 'inkSolid'
+    | 'inkOutline'
   size?: 'sm' | 'md' | 'lg'
   fullWidth?: boolean
   icon?: React.ReactNode
@@ -26,6 +33,10 @@ export const Button = memo<ButtonProps>(
       outline:
         'bg-transparent text-primary border border-primary hover:bg-primary hover:text-white',
       ghost: 'bg-transparent text-gray-900 hover:bg-gray-100',
+      inkSolid:
+        'bg-[#101010] text-white border border-[#101010] hover:bg-[#2a2a2a] hover:border-[#2a2a2a]',
+      inkOutline:
+        'bg-white text-[#101010] border border-[#101010] hover:bg-[#101010] hover:text-white hover:border-[#101010]',
     }
 
     const sizes = {
