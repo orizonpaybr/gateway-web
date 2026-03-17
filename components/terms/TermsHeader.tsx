@@ -22,7 +22,7 @@ export const TermsHeader: React.FC<TermsHeaderProps> = ({
           {showBackButton && (
             <Link
               href={backHref}
-              className="flex items-center gap-2 text-primary hover:text-primary-hover transition-colors"
+              className="flex items-center gap-2 text-[#101010] hover:opacity-80 transition-opacity"
             >
               <ArrowLeft size={20} />
               <span className="font-medium">Voltar</span>
@@ -31,13 +31,13 @@ export const TermsHeader: React.FC<TermsHeaderProps> = ({
 
           <div className="flex items-center gap-3">
             <Image
-              src="/LOGO-ORIZON-AZUL-PRETA.png"
-              alt="Orizon Pay"
-              width={100}
-              height={30}
+              src={encodeURI('/Coratri - FINANCE - Site.png')}
+              alt="Coratri Finance"
+              width={200}
+              height={56}
               priority
+              className="object-contain"
             />
-            <span className="text-sm text-gray-600">Finance</span>
           </div>
         </div>
       </div>

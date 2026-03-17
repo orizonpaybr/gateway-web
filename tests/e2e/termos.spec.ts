@@ -13,9 +13,9 @@ test.describe('Termos de Uso', () => {
     await expect(page.getByRole('heading', { name: /2\. aceitação dos termos/i })).toBeVisible()
   })
 
-  test('exibe logo Orizon Pay', async ({ page }) => {
+  test('exibe logo Coratri Finance', async ({ page }) => {
     await page.goto('/termos')
-    await expect(page.getByRole('img', { name: /orizon pay finance/i })).toBeVisible()
+    await expect(page.getByRole('img', { name: /coratri finance/i })).toBeVisible()
   })
 
   test('botão Voltar está visível', async ({ page }) => {

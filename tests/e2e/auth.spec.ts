@@ -16,7 +16,7 @@ test.describe('Autenticação', () => {
 
   test('página de login carrega com formulário e logo', async ({ page }) => {
     await page.goto('/login')
-    await expect(page.getByRole('img', { name: /orizon pay finance/i })).toBeVisible()
+    await expect(page.getByRole('img', { name: /coratri finance/i })).toBeVisible()
     await expect(page.getByPlaceholder(/digite seu usuário ou email/i)).toBeVisible()
     await expect(page.getByPlaceholder(/digite sua senha/i)).toBeVisible()
     await expect(page.getByRole('button', { name: /entrar/i })).toBeVisible()
