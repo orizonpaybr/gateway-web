@@ -241,8 +241,8 @@ export function TwoFactorModal({
     >
       <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-4 sm:p-6 relative max-h-[90vh] overflow-y-auto mx-4">
         <div className="mb-4 sm:mb-6">
-          <div className="w-10 h-10 sm:w-12 sm:h-12 bg-primary/10 rounded-full flex items-center justify-center mb-3 sm:mb-4 mx-auto">
-            <Shield className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
+          <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gray-100 rounded-full flex items-center justify-center mb-3 sm:mb-4 mx-auto">
+            <Shield className="w-5 h-5 sm:w-6 sm:h-6 text-[#101010]" />
           </div>
           <h2 className="text-xl sm:text-2xl font-bold text-gray-900 text-center break-words">
             {headerContent.title}
@@ -294,6 +294,7 @@ export function TwoFactorModal({
             </div>
 
             <Button
+              variant="inkSolid"
               onClick={handleInitialSetup}
               className="w-full"
               disabled={
@@ -340,6 +341,7 @@ export function TwoFactorModal({
             </div>
 
             <Button
+              variant="inkSolid"
               onClick={handleVerifySetup}
               className="w-full"
               disabled={isLoading || pin.length !== 6}
@@ -348,7 +350,7 @@ export function TwoFactorModal({
             </Button>
 
             <Button
-              variant="outline"
+              variant="inkOutline"
               onClick={() => {
                 setStep('setup')
                 setPin('')
@@ -389,6 +391,7 @@ export function TwoFactorModal({
 
             <div className="flex flex-col sm:flex-row gap-3">
               <Button
+                variant="inkSolid"
                 onClick={handleSimpleAction}
                 disabled={isLoading || pin.length !== 6}
                 className="flex-1 w-full sm:w-auto order-2 sm:order-1"
@@ -403,7 +406,7 @@ export function TwoFactorModal({
                   : 'Desativar 2FA'}
               </Button>
               <Button
-                variant="outline"
+                variant="inkOutline"
                 onClick={handleClose}
                 disabled={isLoading}
                 className="flex-1 w-full sm:w-auto order-1 sm:order-2"

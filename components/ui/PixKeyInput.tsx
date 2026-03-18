@@ -138,13 +138,13 @@ export const PixKeyInput = memo(
                 autoComplete={keyType === 'email' ? 'email' : 'off'}
                 className={cn(
                   'w-full px-4 py-3.5 border border-gray-300 rounded-lg text-sm bg-white text-gray-900 transition-all duration-200',
-                  'focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10',
+                  'focus:outline-none focus-visible:outline-none focus:border-[#101010] focus-visible:border-[#101010] focus:ring-0 focus-visible:ring-0 focus:shadow-[0_0_0_3px_rgba(16,16,16,0.16)] focus-visible:shadow-[0_0_0_3px_rgba(16,16,16,0.16)]',
                   'placeholder:text-gray-400',
                   'disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed',
                   error
                     ? 'border-red-500'
                     : isValid === true
-                      ? 'border-green-300 focus:border-green-500 focus:ring-green-500/20'
+                      ? 'border-green-300 focus:border-green-500 focus-visible:border-green-500 focus:shadow-[0_0_0_3px_rgba(22,163,74,0.22)] focus-visible:shadow-[0_0_0_3px_rgba(22,163,74,0.22)]'
                       : isValid === false
                         ? 'border-red-500'
                         : 'border-gray-300 hover:border-gray-400',
@@ -190,13 +190,13 @@ export const PixKeyInput = memo(
                   autoComplete="off"
                   className={cn(
                     'w-full px-4 py-3.5 border border-gray-300 rounded-lg text-sm bg-white text-gray-900 transition-all duration-200',
-                    'focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10',
+                    'focus:outline-none focus-visible:outline-none focus:border-[#101010] focus-visible:border-[#101010] focus:ring-0 focus-visible:ring-0 focus:shadow-[0_0_0_3px_rgba(16,16,16,0.16)] focus-visible:shadow-[0_0_0_3px_rgba(16,16,16,0.16)]',
                     'placeholder:text-gray-400',
                     'disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed',
                     error
                       ? 'border-red-500'
                       : isValid === true
-                        ? 'border-green-300 focus:border-green-500 focus:ring-green-500/20'
+                        ? 'border-green-300 focus:border-green-500 focus-visible:border-green-500 focus:shadow-[0_0_0_3px_rgba(22,163,74,0.22)] focus-visible:shadow-[0_0_0_3px_rgba(22,163,74,0.22)]'
                         : isValid === false
                           ? 'border-red-500'
                           : 'border-gray-300 hover:border-gray-400',

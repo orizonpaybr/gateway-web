@@ -32,6 +32,8 @@ import { useMobileMenu } from '@/contexts/MobileMenuContext'
 import { useSidebarGamification } from '@/hooks/useSidebarGamification'
 import { cn } from '@/lib/utils'
 
+const sidebarLogoSrc = encodeURI('/Coratri - FINANCE v1.98.0.png')
+
 const SidebarProgress = lazy(
   () => import('@/components/gamification/SidebarProgress'),
 )
@@ -195,8 +197,8 @@ export const Sidebar = memo(() => {
             onClick={closeMobileMenu}
           >
             <Image
-              src="/Orizon-Pay---Logo---FINANCE-v1.98.0Prancheta-1.png"
-              alt="Orizon Pay Finance"
+              src={sidebarLogoSrc}
+              alt="Coratri Finance"
               width={180}
               height={56}
               priority
@@ -271,7 +273,7 @@ export const Sidebar = memo(() => {
                         className={cn(
                           'flex items-center justify-between w-full px-4 py-3 rounded-lg text-sm font-medium transition-colors',
                           isActive || hasActiveSubmenu
-                            ? 'bg-primary text-white hover:!bg-primary hover:!text-white'
+                            ? 'bg-[#101010] text-white hover:!bg-[#2a2a2a] hover:!text-white'
                             : 'text-gray-700 hover:bg-gray-100',
                         )}
                       >
@@ -298,7 +300,7 @@ export const Sidebar = memo(() => {
                                   className={cn(
                                     'block px-4 py-2.5 rounded-lg text-sm transition-colors',
                                     isSubActive
-                                      ? 'bg-primary text-white'
+                                      ? 'bg-[#101010] text-white'
                                       : 'text-gray-600 hover:bg-gray-100',
                                   )}
                                 >
@@ -317,7 +319,7 @@ export const Sidebar = memo(() => {
                       className={cn(
                         'flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors',
                         isActive
-                          ? 'bg-primary text-white'
+                          ? 'bg-[#101010] text-white'
                           : 'text-gray-700 hover:bg-gray-100',
                       )}
                     >
@@ -350,8 +352,8 @@ export const Sidebar = memo(() => {
                           className={cn(
                             'flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors',
                             pathname === '/dashboard/admin'
-                              ? 'bg-blue-600 text-white shadow-md'
-                              : 'text-gray-700 hover:bg-blue-50 hover:text-blue-700',
+                              ? 'bg-[#101010] text-white shadow-md'
+                              : 'text-gray-700 hover:bg-gray-100',
                           )}
                         >
                           <LayoutDashboard size={18} />
@@ -365,8 +367,8 @@ export const Sidebar = memo(() => {
                           className={cn(
                             'flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors',
                             pathname === '/dashboard/admin/usuarios'
-                              ? 'bg-blue-600 text-white shadow-md'
-                              : 'text-gray-700 hover:bg-blue-50 hover:text-blue-700',
+                              ? 'bg-[#101010] text-white shadow-md'
+                              : 'text-gray-700 hover:bg-gray-100',
                           )}
                         >
                           <Users size={18} />
@@ -382,8 +384,8 @@ export const Sidebar = memo(() => {
                       className={cn(
                         'flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors',
                         pathname === '/dashboard/admin/aprovar-saques'
-                          ? 'bg-blue-600 text-white shadow-md'
-                          : 'text-gray-700 hover:bg-blue-50 hover:text-blue-700',
+                          ? 'bg-[#101010] text-white shadow-md'
+                          : 'text-gray-700 hover:bg-gray-100',
                       )}
                     >
                       <Wallet size={18} />
@@ -396,7 +398,7 @@ export const Sidebar = memo(() => {
                       className={cn(
                         'flex items-center justify-between w-full px-4 py-3 rounded-lg text-sm font-medium transition-colors',
                         pathname.startsWith('/dashboard/admin/financeiro')
-                          ? 'bg-primary text-white hover:!bg-primary hover:!text-white'
+                          ? 'bg-[#101010] text-white hover:!bg-[#2a2a2a] hover:!text-white'
                           : 'text-gray-700 hover:bg-gray-100',
                       )}
                     >
@@ -420,7 +422,7 @@ export const Sidebar = memo(() => {
                               'block px-4 py-2.5 rounded-lg text-sm transition-colors',
                               pathname ===
                                 '/dashboard/admin/financeiro/transacoes'
-                                ? 'bg-primary text-white'
+                                ? 'bg-[#101010] text-white'
                                 : 'text-gray-600 hover:bg-gray-100',
                             )}
                           >
@@ -435,7 +437,7 @@ export const Sidebar = memo(() => {
                               'block px-4 py-2.5 rounded-lg text-sm transition-colors',
                               pathname ===
                                 '/dashboard/admin/financeiro/carteiras'
-                                ? 'bg-primary text-white'
+                                ? 'bg-[#101010] text-white'
                                 : 'text-gray-600 hover:bg-gray-100',
                             )}
                           >
@@ -450,7 +452,7 @@ export const Sidebar = memo(() => {
                               'block px-4 py-2.5 rounded-lg text-sm transition-colors',
                               pathname ===
                                 '/dashboard/admin/financeiro/entradas'
-                                ? 'bg-primary text-white'
+                                ? 'bg-[#101010] text-white'
                                 : 'text-gray-600 hover:bg-gray-100',
                             )}
                           >
@@ -464,7 +466,7 @@ export const Sidebar = memo(() => {
                             className={cn(
                               'block px-4 py-2.5 rounded-lg text-sm transition-colors',
                               pathname === '/dashboard/admin/financeiro/saidas'
-                                ? 'bg-primary text-white'
+                                ? 'bg-[#101010] text-white'
                                 : 'text-gray-600 hover:bg-gray-100',
                             )}
                           >
@@ -480,7 +482,7 @@ export const Sidebar = memo(() => {
                       className={cn(
                         'flex items-center justify-between w-full px-4 py-3 rounded-lg text-sm font-medium transition-colors',
                         pathname.startsWith('/dashboard/admin/configuracoes')
-                          ? 'bg-primary text-white hover:!bg-primary hover:!text-white'
+                          ? 'bg-[#101010] text-white hover:!bg-[#2a2a2a] hover:!text-white'
                           : 'text-gray-700 hover:bg-gray-100',
                       )}
                     >
@@ -504,7 +506,7 @@ export const Sidebar = memo(() => {
                               'block px-4 py-2.5 rounded-lg text-sm transition-colors',
                               pathname ===
                                 '/dashboard/admin/configuracoes/gerais'
-                                ? 'bg-primary text-white'
+                                ? 'bg-[#101010] text-white'
                                 : 'text-gray-600 hover:bg-gray-100',
                             )}
                           >
@@ -519,7 +521,7 @@ export const Sidebar = memo(() => {
                               'block px-4 py-2.5 rounded-lg text-sm transition-colors',
                               pathname ===
                                 '/dashboard/admin/configuracoes/adquirentes'
-                                ? 'bg-primary text-white'
+                                ? 'bg-[#101010] text-white'
                                 : 'text-gray-600 hover:bg-gray-100',
                             )}
                           >
@@ -534,7 +536,7 @@ export const Sidebar = memo(() => {
                               'block px-4 py-2.5 rounded-lg text-sm transition-colors',
                               pathname ===
                                 '/dashboard/admin/configuracoes/gerentes'
-                                ? 'bg-primary text-white'
+                                ? 'bg-[#101010] text-white'
                                 : 'text-gray-600 hover:bg-gray-100',
                             )}
                           >
@@ -569,11 +571,11 @@ export const Sidebar = memo(() => {
                     <div className="flex items-center gap-3">
                       <Icon />
                       <div className="flex flex-col">
-                        <span className="font-semibold text-blue-900">
+                        <span className="font-semibold text-gray-900">
                           {item.label}
                         </span>
                         {item.secondaryText && (
-                          <span className="text-xs text-blue-600">
+                          <span className="text-xs text-gray-600">
                             {item.secondaryText}
                           </span>
                         )}
@@ -597,7 +599,7 @@ export const Sidebar = memo(() => {
                 size="md"
               />
               <div className="flex flex-col">
-                <p className="text-sm font-semibold text-blue-900">
+                <p className="text-sm font-semibold text-gray-900">
                   {isHydrated && user?.name
                     ? user.name.split(' ')[0]
                     : 'Usuário'}

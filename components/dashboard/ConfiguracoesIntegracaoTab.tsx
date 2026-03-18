@@ -291,7 +291,7 @@ export const ConfiguracoesIntegracaoTab = memo(() => {
                 {credentials?.client_key}
               </div>
               <Button
-                variant="outline"
+                variant="inkOutline"
                 icon={<Copy size={18} />}
                 onClick={() =>
                   copyToClipboard(credentials?.client_key || '', 'Client Key')
@@ -317,7 +317,7 @@ export const ConfiguracoesIntegracaoTab = memo(() => {
                 {credentials?.client_secret}
               </div>
               <Button
-                variant="outline"
+                variant="inkOutline"
                 icon={<Copy size={18} />}
                 onClick={() =>
                   copyToClipboard(
@@ -409,6 +409,7 @@ export const ConfiguracoesIntegracaoTab = memo(() => {
                     data-cy="new-ip-input"
                   />
                   <Button
+                    variant="inkSolid"
                     onClick={handleAddIP}
                     disabled={addIPMutation.isPending}
                     className="w-full sm:w-auto shrink-0"
@@ -417,7 +418,7 @@ export const ConfiguracoesIntegracaoTab = memo(() => {
                     {addIPMutation.isPending ? 'Adicionando...' : 'Adicionar'}
                   </Button>
                   <Button
-                    variant="outline"
+                    variant="inkOutline"
                     onClick={() => {
                       setIsAddingIP(false)
                       setNovoIP('')
@@ -431,7 +432,7 @@ export const ConfiguracoesIntegracaoTab = memo(() => {
                 </div>
               ) : (
                 <Button
-                  variant="outline"
+                  variant="inkOutline"
                   size="sm"
                   icon={<Plus size={16} />}
                   onClick={() => setIsAddingIP(true)}

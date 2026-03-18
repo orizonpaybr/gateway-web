@@ -80,7 +80,7 @@ function PinInput({ value, onChange, onKeyPress, autoFocus }: PinInputProps) {
           onKeyDown={(e) => handleKeyDown(index, e)}
           onPaste={handlePaste}
           onFocus={() => setFocusedIndex(index)}
-          className="w-12 h-14 text-center text-2xl font-bold border-2 border-gray-300 rounded-lg focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all bg-white"
+          className="w-12 h-14 text-center text-2xl font-bold border-2 border-gray-300 rounded-lg outline-none transition-all bg-white hover:border-gray-400 focus:border-[#101010] focus:ring-2 focus:ring-[#101010]/25"
           maxLength={1}
         />
       ))}
@@ -245,8 +245,8 @@ export function TwoFactorVerify() {
           className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6"
         >
           <div className="mb-6">
-            <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4 mx-auto">
-              <Shield className="w-6 h-6 text-primary" />
+            <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-4 mx-auto">
+              <Shield className="w-6 h-6 text-[#101010]" />
             </div>
             <h2
               id="two-factor-modal-title"
@@ -257,8 +257,8 @@ export function TwoFactorVerify() {
             <p className="text-gray-600 mt-2">
               Digite o PIN de 6 dígitos para continuar
             </p>
-            <div className="mt-3 px-4 py-2 bg-blue-50 border border-blue-200 rounded-lg">
-              <p className="text-xs text-blue-800">
+            <div className="mt-3 px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg">
+              <p className="text-xs text-gray-800">
                 🔒 Esta verificação é necessária a cada login
               </p>
             </div>
@@ -280,6 +280,7 @@ export function TwoFactorVerify() {
             </div>
 
             <Button
+              variant="inkSolid"
               onClick={handleVerifyCode}
               className="w-full"
               disabled={isLoading || code.length !== 6}
@@ -304,7 +305,7 @@ export function TwoFactorVerify() {
                 href="https://wa.me/5549988906647"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-primary hover:underline"
+                className="text-[#101010] font-medium hover:underline hover:opacity-80"
               >
                 Entre em contato com o suporte
               </a>

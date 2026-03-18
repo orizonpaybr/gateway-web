@@ -5,7 +5,7 @@ import Link from 'next/link'
 
 import { Button } from '@/components/ui/Button'
 
-const logoSrc = encodeURI('/Coratri - FINANCE - Site.png')
+const logoSrc = encodeURI('/Logo Coratri Finance.png')
 
 export default function TermosPage() {
   return (

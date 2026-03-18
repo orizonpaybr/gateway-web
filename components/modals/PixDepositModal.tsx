@@ -1,6 +1,6 @@
 import { memo, useCallback, useEffect } from 'react'
 import Image from 'next/image'
-import { Copy, CheckCircle, Loader2 } from 'lucide-react'
+import { CheckCircle, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/Button'
 import { Dialog } from '@/components/ui/Dialog'
@@ -134,6 +134,7 @@ export const PixDepositModal = memo(
           <div className="flex gap-3">
             {isPaid ? (
               <Button
+                variant="inkSolid"
                 fullWidth
                 onClick={handleClose}
                 icon={<CheckCircle size={18} />}
@@ -143,17 +144,16 @@ export const PixDepositModal = memo(
             ) : (
               <>
                 <Button
-                  variant="outline"
+                  variant="inkOutline"
                   fullWidth
                   onClick={handleClose}
-                  className="border-red-500 text-red-600 hover:!bg-transparent hover:!text-red-600"
                 >
                   Cancelar
                 </Button>
                 <Button
+                  variant="inkSolid"
                   fullWidth
                   onClick={handleCopyPixCode}
-                  icon={<Copy size={18} />}
                 >
                   Copiar Código
                 </Button>
@@ -170,7 +170,7 @@ export const PixDepositModal = memo(
           renderQRCode()
         ) : (
           <div className="flex items-center justify-center py-12">
-            <Loader2 size={48} className="animate-spin text-primary" />
+            <Loader2 size={48} className="animate-spin text-[#101010]" />
           </div>
         )}
       </Dialog>

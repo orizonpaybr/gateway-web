@@ -10,21 +10,21 @@ import { useDashboardStats } from '@/hooks/useReactQuery'
 import { formatCurrencyBRL } from '@/lib/format'
 
 const pageTitles: Record<string, string> = {
-  '/dashboard': 'Dashboard Orizon',
-  '/dashboard/jornada': 'Dashboard Orizon',
-  '/dashboard/buscar': 'Dashboard Orizon',
-  '/dashboard/qr-codes': 'Dashboard Orizon',
-  '/dashboard/infracoes': 'Dashboard Orizon',
-  '/dashboard/conta': 'Dashboard Orizon',
-  '/dashboard/configuracoes': 'Dashboard Orizon',
-  '/dashboard/api-docs': 'Dashboard Orizon',
+  '/dashboard': 'Dashboard Coratri',
+  '/dashboard/jornada': 'Dashboard Coratri',
+  '/dashboard/buscar': 'Dashboard Coratri',
+  '/dashboard/qr-codes': 'Dashboard Coratri',
+  '/dashboard/infracoes': 'Dashboard Coratri',
+  '/dashboard/conta': 'Dashboard Coratri',
+  '/dashboard/configuracoes': 'Dashboard Coratri',
+  '/dashboard/api-docs': 'Dashboard Coratri',
 }
 
 export const Header = memo(() => {
   const { isBalanceHidden, toggleBalanceVisibility } = useBalanceVisibility()
   const { toggleMobileMenu } = useMobileMenu()
   const pathname = usePathname()
-  const pageTitle = pageTitles[pathname] || 'Dashboard Orizon'
+  const pageTitle = pageTitles[pathname] || 'Dashboard Coratri'
   const [isMobile, setIsMobile] = useState(false)
 
   // Detectar se está em mobile

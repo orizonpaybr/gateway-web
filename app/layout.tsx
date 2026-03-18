@@ -7,7 +7,7 @@ import { ErrorBoundaryWrapper } from '@/components/ErrorBoundary'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Orizon Pay - Finance',
+  title: 'Coratri - Finance',
   description: 'Sistema de pagamentos e gestão financeira',
   icons: {
     icon: '/LOGO-ORIZON.png',

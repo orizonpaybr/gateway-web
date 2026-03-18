@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react'
 
-import { Clock, CheckCircle, Info, Send } from 'lucide-react'
+import { Clock, CheckCircle, Info } from 'lucide-react'
 
 import { PixDepositModal } from '@/components/modals/PixDepositModal'
 import { Button } from '@/components/ui/Button'
@@ -107,12 +107,12 @@ export default function DepositarPage() {
               <button
                 key={amount}
                 onClick={() => handleQuickAmount(amount)}
-                className="bg-gray-50 hover:bg-primary/5 border border-gray-200 hover:border-primary rounded-lg p-4 transition-all duration-200 group"
+                className="bg-gray-50 hover:bg-gray-100 border border-gray-200 hover:border-[#101010] rounded-lg p-4 transition-all duration-200 group"
               >
-                <p className="text-sm text-gray-600 mb-1 group-hover:text-primary">
+                <p className="text-sm text-gray-600 mb-1 group-hover:text-[#101010]">
                   Depositar
                 </p>
-                <p className="text-xl font-bold text-gray-900 group-hover:text-primary">
+                <p className="text-xl font-bold text-gray-900 group-hover:text-[#101010]">
                   {formatCurrencyBRL(amount)}
                 </p>
               </button>
@@ -139,9 +139,9 @@ export default function DepositarPage() {
         <div className="mb-6">
           <div className="text-center">
             <Button
+              variant="inkSolid"
               onClick={handleGenerateQRCode}
               size="lg"
-              icon={<Send size={20} />}
               className="px-8"
               disabled={!selectedAmount}
             >

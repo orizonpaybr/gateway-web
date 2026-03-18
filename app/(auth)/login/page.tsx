@@ -59,7 +59,7 @@ export default function LoginPage() {
     }
   }
 
-  const logoSrc = encodeURI('/Coratri - FINANCE - Site.png')
+  const logoSrc = encodeURI('/Logo Coratri Finance.png')
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">

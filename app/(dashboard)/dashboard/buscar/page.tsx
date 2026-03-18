@@ -171,6 +171,7 @@ const BuscarPage = memo(() => {
           />
           <Button
             type="submit"
+            variant="inkSolid"
             disabled={isSearching}
             icon={<Search size={18} />}
           >
@@ -187,7 +188,7 @@ const BuscarPage = memo(() => {
       >
         <div className="space-y-3">
           <Button
-            variant="outline"
+            variant="inkOutline"
             className="w-full justify-center"
             onClick={async () => {
               setSelectedType('deposito')
@@ -198,7 +199,7 @@ const BuscarPage = memo(() => {
             Depósito
           </Button>
           <Button
-            variant="outline"
+            variant="inkOutline"
             className="w-full justify-center"
             onClick={async () => {
               setSelectedType('saque')

@@ -302,6 +302,7 @@ export const ConfiguracoesContaTab = memo(() => {
 
           <Button
             type="submit"
+            variant="inkSolid"
             icon={<Lock size={18} />}
             disabled={isSubmitting}
             className="w-full sm:w-auto"

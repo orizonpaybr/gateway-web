@@ -152,7 +152,7 @@ const PixInfracoesPage = memo(() => {
 
           <div className="relative flex flex-wrap items-center gap-2 w-full xl:w-auto xl:flex-nowrap xl:justify-end">
             <Button
-              variant={period === null ? 'primary' : 'outline'}
+              variant={period === null ? 'inkSolid' : 'inkOutline'}
               size="sm"
               className="shrink-0"
               onClick={() => {
@@ -165,7 +165,7 @@ const PixInfracoesPage = memo(() => {
               Todos
             </Button>
             <Button
-              variant={period === 'hoje' ? 'primary' : 'outline'}
+              variant={period === 'hoje' ? 'inkSolid' : 'inkOutline'}
               size="sm"
               className="shrink-0"
               onClick={() => {
@@ -178,7 +178,7 @@ const PixInfracoesPage = memo(() => {
               Hoje
             </Button>
             <Button
-              variant={period === '7d' ? 'primary' : 'outline'}
+              variant={period === '7d' ? 'inkSolid' : 'inkOutline'}
               size="sm"
               className="shrink-0"
               onClick={() => {
@@ -191,7 +191,7 @@ const PixInfracoesPage = memo(() => {
               7 dias
             </Button>
             <Button
-              variant={period === '30d' ? 'primary' : 'outline'}
+              variant={period === '30d' ? 'inkSolid' : 'inkOutline'}
               size="sm"
               className="shrink-0"
               onClick={() => {
@@ -204,17 +204,19 @@ const PixInfracoesPage = memo(() => {
               30 dias
             </Button>
             <Button
-              variant={period === 'custom' ? 'primary' : 'outline'}
+              variant={period === 'custom' ? 'inkSolid' : 'inkOutline'}
               size="sm"
               icon={<Calendar size={14} />}
               className="shrink-0"
+              aria-label="Período personalizado"
               onClick={() => setShowDatePicker((v) => !v)}
             />
             <Button
-              variant="outline"
+              variant="inkOutline"
               size="sm"
               icon={<RotateCcw size={14} />}
               className="shrink-0"
+              aria-label="Limpar filtros de data"
               onClick={resetDates}
             />
 
@@ -250,12 +252,15 @@ const PixInfracoesPage = memo(() => {
                   </div>
                   <div className="flex items-center justify-end gap-2 pt-1">
                     <Button
-                      variant="ghost"
+                      variant="inkOutline"
+                      size="sm"
                       onClick={() => setShowDatePicker(false)}
                     >
                       Cancelar
                     </Button>
                     <Button
+                      variant="inkSolid"
+                      size="sm"
                       onClick={() => {
                         setPeriod('custom')
                         setPage(1)
@@ -390,18 +395,20 @@ const PixInfracoesPage = memo(() => {
           </p>
           <div className="flex items-center gap-2">
             <Button
-              variant="outline"
+              variant="inkOutline"
               size="sm"
               disabled={!canPrev}
               onClick={() => canPrev && setPage((p) => p - 1)}
+              aria-label="Página anterior"
             >
               {'<'}
             </Button>
             <Button
-              variant="outline"
+              variant="inkOutline"
               size="sm"
               disabled={!canNext}
               onClick={() => canNext && setPage((p) => p + 1)}
+              aria-label="Próxima página"
             >
               {'>'}
             </Button>

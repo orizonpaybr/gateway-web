@@ -57,7 +57,7 @@ export const Input = memo(
               className={cn(
                 'w-full px-4 py-3.5 border border-gray-300 rounded-lg text-sm bg-white text-gray-900 transition-all duration-200',
                 'placeholder:text-gray-500 placeholder:opacity-80',
-                'focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10',
+                'focus:outline-none focus-visible:outline-none focus:border-[#101010] focus-visible:border-[#101010] focus:ring-0 focus-visible:ring-0 focus:shadow-[0_0_0_3px_rgba(16,16,16,0.16)] focus-visible:shadow-[0_0_0_3px_rgba(16,16,16,0.16)]',
                 'hover:border-gray-400',
                 icon && 'pl-11',
                 showPasswordToggle && 'pr-11',
