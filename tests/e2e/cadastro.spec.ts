@@ -12,6 +12,12 @@ test.describe('Cadastro', () => {
     await page.goto('/cadastro')
   })
 
+  test('exibe logo Coratri Finance', async ({ page }) => {
+    await expect(
+      page.getByRole('img', { name: /coratri finance/i }),
+    ).toBeVisible()
+  })
+
   test('página de cadastro carrega com etapa 1 (Dados Pessoais)', async ({ page }) => {
     await expect(page.getByRole('heading', { name: /dados pessoais/i })).toBeVisible()
     await expect(page.getByPlaceholder(/seu nome completo/i)).toBeVisible()

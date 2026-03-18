@@ -6,7 +6,6 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
     | 'secondary'
     | 'outline'
     | 'ghost'
-    /** Login/cadastro: preto #101010, hover cinza (sem primary) */
     | 'inkSolid'
     | 'inkOutline'
   size?: 'sm' | 'md' | 'lg'

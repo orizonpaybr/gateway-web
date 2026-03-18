@@ -185,6 +185,7 @@ const PixChavePage = memo(() => {
 
           <div className="flex justify-end">
             <Button
+              variant="inkSolid"
               onClick={handleConfirmWithdraw}
               disabled={!canAdvance || isWithdrawing}
               icon={

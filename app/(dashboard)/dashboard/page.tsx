@@ -158,7 +158,7 @@ export default function DashboardPage() {
               return (
                 <Button
                   key={action.label}
-                  variant="outline"
+                  variant="inkOutline"
                   className="justify-start h-auto py-4 md:flex-1"
                   icon={<Icon size={20} />}
                   onClick={action.onClick}

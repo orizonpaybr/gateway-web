@@ -77,7 +77,7 @@ export function AffiliateLink() {
               {data.affiliate_link}
             </div>
             <Button
-              variant="outline"
+              variant="inkOutline"
               size="md"
               onClick={() => copyToClipboard(data.affiliate_link)}
               icon={

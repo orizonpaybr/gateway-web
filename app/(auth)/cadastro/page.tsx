@@ -259,7 +259,7 @@ function CadastroContent() {
   }
 
   const progress = step === 1 ? 33 : step === 2 ? 67 : 100
-  const logoSrc = encodeURI('/Coratri - FINANCE - Site.png')
+  const logoSrc = encodeURI('/Logo Coratri Finance.png')
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">

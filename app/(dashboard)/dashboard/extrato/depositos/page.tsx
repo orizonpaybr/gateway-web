@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useCallback } from 'react'
 
-import { ArrowDownLeft, Filter, RotateCcw, Calendar } from 'lucide-react'
+import { ArrowDownLeft, RotateCcw, Calendar } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
@@ -103,14 +103,11 @@ export default function DepositosPage() {
               }}
               className="w-full xl:w-72"
             />
-            <Button variant="outline" size="sm" icon={<Filter size={14} />}>
-              Avançado
-            </Button>
           </div>
 
           <div className="relative flex flex-wrap items-center gap-2 w-full xl:w-auto xl:flex-nowrap xl:justify-end">
             <Button
-              variant={period === null ? 'primary' : 'outline'}
+              variant={period === null ? 'inkSolid' : 'inkOutline'}
               size="sm"
               className="shrink-0"
               onClick={() => {
@@ -123,7 +120,7 @@ export default function DepositosPage() {
               Todos
             </Button>
             <Button
-              variant={period === 'hoje' ? 'primary' : 'outline'}
+              variant={period === 'hoje' ? 'inkSolid' : 'inkOutline'}
               size="sm"
               className="shrink-0"
               onClick={() => {
@@ -136,7 +133,7 @@ export default function DepositosPage() {
               Hoje
             </Button>
             <Button
-              variant={period === '7d' ? 'primary' : 'outline'}
+              variant={period === '7d' ? 'inkSolid' : 'inkOutline'}
               size="sm"
               className="shrink-0"
               onClick={() => {
@@ -149,7 +146,7 @@ export default function DepositosPage() {
               7 dias
             </Button>
             <Button
-              variant={period === '30d' ? 'primary' : 'outline'}
+              variant={period === '30d' ? 'inkSolid' : 'inkOutline'}
               size="sm"
               className="shrink-0"
               onClick={() => {
@@ -162,17 +159,19 @@ export default function DepositosPage() {
               30 dias
             </Button>
             <Button
-              variant={period === 'custom' ? 'primary' : 'outline'}
+              variant={period === 'custom' ? 'inkSolid' : 'inkOutline'}
               size="sm"
               icon={<Calendar size={14} />}
               className="shrink-0"
+              aria-label="Período personalizado"
               onClick={() => setShowDatePicker((v) => !v)}
             />
             <Button
-              variant="outline"
+              variant="inkOutline"
               size="sm"
               icon={<RotateCcw size={14} />}
               className="shrink-0"
+              aria-label="Limpar filtros de data"
               onClick={resetDates}
             />
 
@@ -208,12 +207,15 @@ export default function DepositosPage() {
                   </div>
                   <div className="flex items-center justify-end gap-2 pt-1">
                     <Button
-                      variant="ghost"
+                      variant="inkOutline"
+                      size="sm"
                       onClick={() => setShowDatePicker(false)}
                     >
                       Cancelar
                     </Button>
                     <Button
+                      variant="inkSolid"
+                      size="sm"
                       onClick={() => {
                         setPeriod('custom')
                         setPage(1)
@@ -330,18 +332,20 @@ export default function DepositosPage() {
           </p>
           <div className="flex items-center gap-2">
             <Button
-              variant="outline"
+              variant="inkOutline"
               size="sm"
               disabled={!canPrev}
               onClick={() => canPrev && setPage((p) => p - 1)}
+              aria-label="Página anterior"
             >
               {'<'}
             </Button>
             <Button
-              variant="outline"
+              variant="inkOutline"
               size="sm"
               disabled={!canNext}
               onClick={() => canNext && setPage((p) => p + 1)}
+              aria-label="Próxima página"
             >
               {'>'}
             </Button>

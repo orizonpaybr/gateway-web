@@ -79,7 +79,7 @@ export function PinInput({
           onKeyDown={(e) => handleKeyDown(index, e)}
           onPaste={handlePaste}
           onFocus={() => setFocusedIndex(index)}
-          className="w-10 h-12 sm:w-12 sm:h-14 text-center text-xl sm:text-2xl font-bold border-2 border-gray-300 rounded-lg focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all bg-white shrink-0"
+          className="w-10 h-12 sm:w-12 sm:h-14 text-center text-xl sm:text-2xl font-bold border-2 border-gray-300 rounded-lg outline-none transition-all bg-white shrink-0 hover:border-gray-400 focus:border-[#101010] focus:ring-2 focus:ring-[#101010]/25"
           maxLength={1}
         />
       ))}

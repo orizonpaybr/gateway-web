@@ -134,7 +134,7 @@ const ComprovantePage = memo(() => {
     <div className="space-y-6 px-4 md:px-6 pt-4 md:pt-6 pb-6">
       <div className="flex items-center gap-4 mb-4">
         <Button
-          variant="primary"
+          variant="inkSolid"
           size="sm"
           icon={<ArrowLeft size={18} />}
           onClick={() => router.back()}

@@ -75,7 +75,7 @@ export const PhoneInput = forwardRef<HTMLInputElement, PhoneInputProps>(
                 autoComplete="tel"
                 className={cn(
                   'w-full px-4 py-3 border rounded-lg text-sm font-medium transition-colors',
-                  'focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary',
+                  'focus:outline-none focus-visible:outline-none focus:border-[#101010] focus-visible:border-[#101010] focus:ring-0 focus:shadow-[0_0_0_3px_rgba(16,16,16,0.16)] focus-visible:shadow-[0_0_0_3px_rgba(16,16,16,0.16)]',
                   'placeholder:text-gray-400',
                   'disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed',
                   error

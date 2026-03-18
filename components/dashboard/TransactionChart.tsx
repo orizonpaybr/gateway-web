@@ -143,7 +143,7 @@ export function TransactionChart({
             </p>
           </div>
           <Button
-            variant="outline"
+            variant="inkOutline"
             size="sm"
             icon={<Filter size={16} />}
             onClick={() => setShowFilters(!showFilters)}
@@ -157,7 +157,7 @@ export function TransactionChart({
             (key) => (
               <Button
                 key={key}
-                variant={period === key ? 'primary' : 'outline'}
+                variant={period === key ? 'inkSolid' : 'inkOutline'}
                 size="sm"
                 onClick={() => handlePeriodChange(key)}
                 className="text-xs sm:text-sm whitespace-nowrap"
@@ -172,7 +172,7 @@ export function TransactionChart({
           <div className="flex items-center gap-1 sm:gap-2 text-sm text-gray-700">
             <span className="text-xs sm:text-sm">Zoom:</span>
             <Button
-              variant="outline"
+              variant="inkOutline"
               size="sm"
               icon={<Minus size={14} />}
               onClick={handleZoomOut}
@@ -181,7 +181,7 @@ export function TransactionChart({
               {zoom}%
             </span>
             <Button
-              variant="outline"
+              variant="inkOutline"
               size="sm"
               icon={<Plus size={14} />}
               onClick={handleZoomIn}
@@ -189,7 +189,7 @@ export function TransactionChart({
           </div>
 
           <Button
-            variant={needsReset ? 'primary' : 'outline'}
+            variant={needsReset ? 'inkSolid' : 'inkOutline'}
             size="sm"
             onClick={handleReset}
             disabled={!needsReset}
