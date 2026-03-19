@@ -89,7 +89,7 @@ export const FinancialFilters = memo(
             <span className="text-xs font-semibold text-gray-600">Status</span>
             <div className="flex items-center gap-2 flex-wrap">
               <Button
-                variant={statusFilter === 'PAID_OUT' ? 'primary' : 'outline'}
+                variant={statusFilter === 'PAID_OUT' ? 'inkSolid' : 'inkOutline'}
                 size="sm"
                 onClick={() => handleStatusChange('PAID_OUT')}
               >
@@ -98,8 +98,8 @@ export const FinancialFilters = memo(
               <Button
                 variant={
                   statusFilter === 'WAITING_FOR_APPROVAL'
-                    ? 'primary'
-                    : 'outline'
+                    ? 'inkSolid'
+                    : 'inkOutline'
                 }
                 size="sm"
                 onClick={() => handleStatusChange('WAITING_FOR_APPROVAL')}
@@ -107,7 +107,7 @@ export const FinancialFilters = memo(
                 Pendente
               </Button>
               <Button
-                variant={statusFilter === 'all' ? 'primary' : 'outline'}
+                variant={statusFilter === 'all' ? 'inkSolid' : 'inkOutline'}
                 size="sm"
                 onClick={() => handleStatusChange('all')}
               >
@@ -121,21 +121,23 @@ export const FinancialFilters = memo(
               <span className="text-xs font-semibold text-gray-600">Tipo</span>
               <div className="flex items-center gap-2 flex-wrap">
                 <Button
-                  variant={tipoFilter === 'deposito' ? 'primary' : 'outline'}
+                  variant={
+                    tipoFilter === 'deposito' ? 'inkSolid' : 'inkOutline'
+                  }
                   size="sm"
                   onClick={() => handleTipoChange('deposito')}
                 >
                   Depósitos
                 </Button>
                 <Button
-                  variant={tipoFilter === 'saque' ? 'primary' : 'outline'}
+                  variant={tipoFilter === 'saque' ? 'inkSolid' : 'inkOutline'}
                   size="sm"
                   onClick={() => handleTipoChange('saque')}
                 >
                   Saques
                 </Button>
                 <Button
-                  variant={tipoFilter === 'all' ? 'primary' : 'outline'}
+                  variant={tipoFilter === 'all' ? 'inkSolid' : 'inkOutline'}
                   size="sm"
                   onClick={() => handleTipoChange('all')}
                 >
@@ -148,7 +150,7 @@ export const FinancialFilters = memo(
 
         <div className="relative flex flex-wrap items-center gap-2">
           <Button
-            variant={period === null ? 'primary' : 'outline'}
+            variant={period === null ? 'inkSolid' : 'inkOutline'}
             size="sm"
             className="shrink-0"
             onClick={() => handlePeriodChange(null)}
@@ -156,7 +158,7 @@ export const FinancialFilters = memo(
             Todas Datas
           </Button>
           <Button
-            variant={period === 'hoje' ? 'primary' : 'outline'}
+            variant={period === 'hoje' ? 'inkSolid' : 'inkOutline'}
             size="sm"
             className="shrink-0"
             onClick={() => handlePeriodChange('hoje')}
@@ -164,7 +166,7 @@ export const FinancialFilters = memo(
             Hoje
           </Button>
           <Button
-            variant={period === '7d' ? 'primary' : 'outline'}
+            variant={period === '7d' ? 'inkSolid' : 'inkOutline'}
             size="sm"
             className="shrink-0"
             onClick={() => handlePeriodChange('7d')}
@@ -172,7 +174,7 @@ export const FinancialFilters = memo(
             7 dias
           </Button>
           <Button
-            variant={period === '30d' ? 'primary' : 'outline'}
+            variant={period === '30d' ? 'inkSolid' : 'inkOutline'}
             size="sm"
             className="shrink-0"
             onClick={() => handlePeriodChange('30d')}
@@ -180,17 +182,19 @@ export const FinancialFilters = memo(
             30 dias
           </Button>
           <Button
-            variant={period === 'custom' ? 'primary' : 'outline'}
+            variant={period === 'custom' ? 'inkSolid' : 'inkOutline'}
             size="sm"
             icon={<Calendar size={14} />}
             className="shrink-0"
+            aria-label="Período personalizado"
             onClick={() => setShowDatePicker((v) => !v)}
           />
           <Button
-            variant="outline"
+            variant="inkOutline"
             size="sm"
             icon={<RotateCcw size={14} />}
             className="shrink-0"
+            aria-label="Limpar filtros de data"
             onClick={resetDates}
           />
 
@@ -226,12 +230,15 @@ export const FinancialFilters = memo(
                 </div>
                 <div className="flex items-center justify-end gap-2 pt-1">
                   <Button
-                    variant="ghost"
+                    variant="inkOutline"
+                    size="sm"
                     onClick={() => setShowDatePicker(false)}
                   >
                     Cancelar
                   </Button>
                   <Button
+                    variant="inkSolid"
+                    size="sm"
                     onClick={() => {
                       onPeriodChange('custom')
                       onPageReset()

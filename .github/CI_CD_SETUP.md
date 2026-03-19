@@ -34,7 +34,7 @@ Para que os workflows funcionem corretamente, você precisa configurar os seguin
 
 ### Como adicionar secrets:
 
-1. Acesse: `https://github.com/orizonpaybr/gateway-web/settings/secrets/actions`
+1. Acesse: `https://github.com/coratribr/gateway-web/settings/secrets/actions`
 2. Clique em **"New repository secret"**
 3. Adicione cada secret abaixo:
 
@@ -42,16 +42,16 @@ Para que os workflows funcionem corretamente, você precisa configurar os seguin
 
 #### Para CI (Build & Test):
 ```bash
-NEXT_PUBLIC_API_URL          # URL da API backend (ex: https://api.orizonpay.com.br)
+NEXT_PUBLIC_API_URL          # URL da API backend (ex: https://api.coratri.com.br)
 ```
 
 #### Para Deploy:
 ```bash
 SSH_PRIVATE_KEY              # Chave SSH privada para acesso ao servidor
-SERVER_HOST                  # IP ou domínio do servidor (ex: 192.168.1.100 ou app.orizonpay.com.br)
+SERVER_HOST                  # IP ou domínio do servidor (ex: 192.168.1.100 ou app.coratri.com.br)
 SERVER_USER                  # Usuário SSH (ex: deploy ou ubuntu)
 APP_DIR                     # Diretório da aplicação no servidor (ex: /var/www/gateway-web)
-APP_URL                     # URL da aplicação em produção (ex: https://app.orizonpay.com.br)
+APP_URL                     # URL da aplicação em produção (ex: https://app.coratri.com.br)
 NEXT_PUBLIC_API_URL         # URL da API backend em produção
 ```
 
@@ -127,7 +127,7 @@ Crie um arquivo `.env` no servidor com as seguintes variáveis:
 
 ```bash
 # API Backend
-NEXT_PUBLIC_API_URL=https://api.orizonpay.com.br
+NEXT_PUBLIC_API_URL=https://api.coratri.com.br
 
 # Ambiente
 NODE_ENV=production
@@ -156,7 +156,7 @@ npm run build
 
 ### Testar deploy manualmente:
 
-1. Vá em: `https://github.com/orizonpaybr/gateway-web/actions`
+1. Vá em: `https://github.com/coratribr/gateway-web/actions`
 2. Selecione o workflow **"🚀 Deploy to Production"**
 3. Clique em **"Run workflow"**
 4. Selecione a branch `main`

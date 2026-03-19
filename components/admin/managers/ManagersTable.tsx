@@ -56,7 +56,7 @@ export const ManagersTable = memo(
             )}
           </div>
           <div className="p-12 text-center">
-            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[#101010]" />
             <p className="mt-2 text-sm text-gray-500">Carregando gerentes...</p>
           </div>
         </div>
@@ -209,10 +209,11 @@ export const ManagersTable = memo(
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <div className="flex justify-end gap-2">
                       <Button
-                        variant="ghost"
+                        variant="inkOutline"
                         size="sm"
                         icon={<Edit size={16} />}
                         onClick={() => onEdit(manager)}
+                        className="px-2"
                         title="Editar"
                       />
                       <Button

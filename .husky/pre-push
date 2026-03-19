@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# 🚀 Script de Pré-Push - Orizon Pay Gateway Web
+# 🚀 Script de Pré-Push - Coratri Gateway Web
 # Este script valida o código antes de fazer push
 
 set -e

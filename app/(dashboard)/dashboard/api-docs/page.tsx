@@ -23,7 +23,7 @@ const SUPPORT_WHATSAPP_URL = 'https://wa.me/5549988906647'
 const getApiBaseUrl = () => {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || ''
   if (!apiUrl) {
-    return 'https://api.orizonpay.com'
+    return 'https://api.coratri.com'
   }
   return apiUrl.replace(/\/api\/?$/, '')
 }
@@ -126,7 +126,7 @@ const webhookPayloadCashIn = `{
     "phone": "11999999999"
   },
   "receiver": {
-    "user_id": "seu_user_id_orizon"
+    "user_id": "seu_user_id_coratri"
   },
   "message": "Depósito PIX recebido com sucesso.",
   "endToEndId": "E1234567820260310143000abc"
@@ -144,7 +144,7 @@ const webhookPayloadCashOut = `{
     "pixKey": "chave-pix@exemplo.com"
   },
   "sender": {
-    "user_id": "seu_user_id_orizon"
+    "user_id": "seu_user_id_coratri"
   },
   "message": "Saque PIX liquidado com sucesso.",
   "endToEndId": "E1234567820260310143200xyz"
@@ -365,8 +365,8 @@ export default function ApiDocsPage() {
 
         <p className="text-sm text-gray-600 mb-4">
           Gera um QR Code PIX para que o seu cliente efetue o pagamento. Após o
-          pagamento ser confirmado pelo banco, a Orizon notifica a URL informada
-          no campo{' '}
+          pagamento ser confirmado pelo banco, a Coratri notifica a URL
+          informada no campo{' '}
           <code className="bg-gray-100 px-1 rounded text-xs">postback</code>.
         </p>
 
@@ -655,7 +655,7 @@ export default function ApiDocsPage() {
 
         <p className="text-sm text-gray-600 mb-4">
           Quando uma transação é confirmada (depósito pago ou saque processado),
-          a Orizon envia um <strong>POST</strong> para a URL que você informou:
+          a Coratri envia um <strong>POST</strong> para a URL que você informou:
         </p>
 
         <ul className="list-disc list-inside text-sm text-gray-600 mb-4 space-y-1">
@@ -723,7 +723,7 @@ export default function ApiDocsPage() {
               </p>
               <p>
                 <strong>receiver.user_id</strong> — identificador da conta
-                Orizon que recebeu o valor.
+                Coratri que recebeu o valor.
               </p>
               <p>
                 <strong>message</strong> — opcional; texto amigável do status.{' '}
@@ -763,7 +763,7 @@ export default function ApiDocsPage() {
                 omitidos quando o processador não os retorna.
               </p>
               <p>
-                <strong>sender.user_id</strong> — identificador da conta Orizon
+                <strong>sender.user_id</strong> — identificador da conta Coratri
                 que solicitou o saque.
               </p>
               <p>
@@ -782,7 +782,7 @@ export default function ApiDocsPage() {
               <li className="pl-0.5">
                 Crie um endpoint público (ex.:{' '}
                 <code className="break-all bg-gray-200 px-1 rounded">
-                  https://seusite.com/webhook/orizon
+                  https://seusite.com/webhook/coratri
                 </code>
                 ) que aceite POST e responda 200 rapidamente.
               </li>

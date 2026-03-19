@@ -102,7 +102,7 @@ const BuscarPage = memo(() => {
               document: t.documento,
               bank: t.adquirente,
             },
-            receiver: { name: 'Você', document: '', bank: 'Orizon' },
+            receiver: { name: 'Você', document: '', bank: 'Coratri' },
           })
         } else {
           setSearchResult(null)

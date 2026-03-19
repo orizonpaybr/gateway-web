@@ -206,8 +206,8 @@ const SaidasPage = memo(() => {
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1">
           <div className="flex items-center gap-3 mb-2">
-            <TrendingDown className="text-red-600" size={28} />
-            <h1 className="text-2xl font-bold text-red-600">
+            <TrendingDown className="text-[#101010]" size={28} />
+            <h1 className="text-2xl font-bold text-gray-900">
               Relatórios de Saídas
             </h1>
           </div>
@@ -263,21 +263,21 @@ const SaidasPage = memo(() => {
               </span>
               <div className="flex items-center gap-2 flex-wrap">
                 <Button
-                  variant={statusFilter === 'PAID_OUT' ? 'primary' : 'outline'}
+                  variant={statusFilter === 'PAID_OUT' ? 'inkSolid' : 'inkOutline'}
                   size="sm"
                   onClick={() => handleStatusFilterChange('PAID_OUT')}
                 >
                   Pago
                 </Button>
                 <Button
-                  variant={statusFilter === 'PENDING' ? 'primary' : 'outline'}
+                  variant={statusFilter === 'PENDING' ? 'inkSolid' : 'inkOutline'}
                   size="sm"
                   onClick={() => handleStatusFilterChange('PENDING')}
                 >
                   Pendente
                 </Button>
                 <Button
-                  variant={statusFilter === 'all' ? 'primary' : 'outline'}
+                  variant={statusFilter === 'all' ? 'inkSolid' : 'inkOutline'}
                   size="sm"
                   onClick={() => handleStatusFilterChange('all')}
                 >
@@ -292,7 +292,7 @@ const SaidasPage = memo(() => {
               </span>
               <div className="flex items-center gap-2 flex-wrap">
                 <Button
-                  variant={periodFilter === 'all' ? 'primary' : 'outline'}
+                  variant={periodFilter === 'all' ? 'inkSolid' : 'inkOutline'}
                   size="sm"
                   className="shrink-0"
                   onClick={() => handlePeriodFilterChange('all')}
@@ -300,7 +300,7 @@ const SaidasPage = memo(() => {
                   Todas Datas
                 </Button>
                 <Button
-                  variant={periodFilter === 'hoje' ? 'primary' : 'outline'}
+                  variant={periodFilter === 'hoje' ? 'inkSolid' : 'inkOutline'}
                   size="sm"
                   className="shrink-0"
                   onClick={() => handlePeriodFilterChange('hoje')}
@@ -308,7 +308,7 @@ const SaidasPage = memo(() => {
                   Hoje
                 </Button>
                 <Button
-                  variant={periodFilter === '7d' ? 'primary' : 'outline'}
+                  variant={periodFilter === '7d' ? 'inkSolid' : 'inkOutline'}
                   size="sm"
                   className="shrink-0"
                   onClick={() => handlePeriodFilterChange('7d')}
@@ -316,7 +316,7 @@ const SaidasPage = memo(() => {
                   7 dias
                 </Button>
                 <Button
-                  variant={periodFilter === '30d' ? 'primary' : 'outline'}
+                  variant={periodFilter === '30d' ? 'inkSolid' : 'inkOutline'}
                   size="sm"
                   className="shrink-0"
                   onClick={() => handlePeriodFilterChange('30d')}
@@ -324,10 +324,11 @@ const SaidasPage = memo(() => {
                   30 dias
                 </Button>
                 <Button
-                  variant={periodFilter === 'custom' ? 'primary' : 'outline'}
+                  variant={periodFilter === 'custom' ? 'inkSolid' : 'inkOutline'}
                   size="sm"
                   icon={<Calendar size={14} />}
                   className="shrink-0"
+                  aria-label="Período personalizado"
                   onClick={() => {
                     if (!showDatePicker) {
                       setTempStartDate(startDate)
@@ -337,10 +338,11 @@ const SaidasPage = memo(() => {
                   }}
                 />
                 <Button
-                  variant="outline"
+                  variant="inkOutline"
                   size="sm"
                   icon={<RotateCcw size={14} />}
                   className="shrink-0"
+                  aria-label="Limpar filtros"
                   onClick={() => {
                     handleClearFilters()
                     setShowDatePicker(false)
@@ -384,7 +386,7 @@ const SaidasPage = memo(() => {
                       </div>
                       <div className="flex items-center justify-end gap-2 pt-1">
                         <Button
-                          variant="ghost"
+                          variant="inkOutline"
                           size="sm"
                           onClick={() => {
                             setTempStartDate(startDate)
@@ -395,6 +397,7 @@ const SaidasPage = memo(() => {
                           Cancelar
                         </Button>
                         <Button
+                          variant="inkSolid"
                           size="sm"
                           onClick={() => {
                             setStartDate(tempStartDate)
@@ -552,10 +555,11 @@ const SaidasPage = memo(() => {
             </p>
             <div className="flex items-center gap-2">
               <Button
-                variant="outline"
+                variant="inkOutline"
                 size="sm"
                 disabled={!canPrev}
                 onClick={() => canPrev && setPage((p) => p - 1)}
+                aria-label="Página anterior"
               >
                 {'<'}
               </Button>
@@ -563,10 +567,11 @@ const SaidasPage = memo(() => {
                 Página {page} de {processedData.totalPages}
               </span>
               <Button
-                variant="outline"
+                variant="inkOutline"
                 size="sm"
                 disabled={!canNext}
                 onClick={() => canNext && setPage((p) => p + 1)}
+                aria-label="Próxima página"
               >
                 {'>'}
               </Button>

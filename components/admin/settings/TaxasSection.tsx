@@ -100,7 +100,7 @@ export function TaxasSection({
           Exemplo: saque de R$ 100,00, taxa R$ {taxa.toFixed(3)} — R$ 0,025 para
           o adquirente (HeartPay), R$ {comissaoAfiliado.toFixed(3)} para o afiliado (se houver)
           e R$ {Math.max(0, taxa - 0.025 - comissaoAfiliado).toFixed(3)} para a
-          Orizon.
+          Coratri.
         </p>
       </div>
     </div>

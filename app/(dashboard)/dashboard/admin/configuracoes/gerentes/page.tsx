@@ -143,6 +143,7 @@ const ManagersPage = memo(() => {
           <p className="text-gray-600 mt-1">Gerencie os gerentes do sistema</p>
         </div>
         <Button
+          variant="inkSolid"
           icon={<Plus size={20} />}
           onClick={handleCreate}
           className="w-full lg:w-auto"
@@ -188,7 +189,7 @@ const ManagersPage = memo(() => {
         title="Excluir gerente"
         footer={
           <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={() => setIsDeleteOpen(false)}>
+            <Button variant="inkOutline" onClick={() => setIsDeleteOpen(false)}>
               Cancelar
             </Button>
             <Button

@@ -137,10 +137,15 @@ export const UserEditModal = memo(
         size="lg"
         footer={
           <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={onClose}>
+            <Button
+              variant="outline"
+              className="border-red-600 text-red-600 hover:bg-red-50 hover:text-red-700"
+              onClick={onClose}
+            >
               Cancelar
             </Button>
             <Button
+              variant="inkSolid"
               onClick={handleSave}
               disabled={adjustBalanceMutation.isPending}
             >

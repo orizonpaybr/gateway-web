@@ -211,7 +211,7 @@ export const WithdrawalDetailsModal = memo(
                     )}
                     {onApprove && (
                       <Button
-                        variant="primary"
+                        variant="inkSolid"
                         icon={<CheckCircle size={18} />}
                         onClick={() => {
                           onApprove(saque.id)

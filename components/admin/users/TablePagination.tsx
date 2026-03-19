@@ -39,20 +39,22 @@ export const TablePagination = memo(
         </p>
         <div className="flex items-center gap-2">
           <Button
-            variant="outline"
+            variant="inkOutline"
             size="sm"
             disabled={!canPrev}
             onClick={handlePrev}
             className="min-w-[40px]"
+            aria-label="Página anterior"
           >
             {'<'}
           </Button>
           <Button
-            variant="outline"
+            variant="inkOutline"
             size="sm"
             disabled={!canNext}
             onClick={handleNext}
             className="min-w-[40px]"
+            aria-label="Próxima página"
           >
             {'>'}
           </Button>

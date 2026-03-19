@@ -93,7 +93,7 @@ export function SecurityIPsSection({
           onChange={(e) => handleInputChange(e.target.value)}
           onKeyDown={handleKeyDown}
         />
-        <Button onClick={handleAddIP} variant="primary">
+        <Button onClick={handleAddIP} variant="inkSolid">
           Adicionar
         </Button>
       </div>

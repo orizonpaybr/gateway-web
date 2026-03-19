@@ -93,7 +93,7 @@ export default function JornadaPage() {
       <div className="space-y-8 p-4 sm:p-6">
         <div className="mb-6 sm:mb-8">
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
-            Jornada Orizon
+            Jornada Coratri
           </h1>
           <p className="text-sm sm:text-base text-gray-600">
             Sua evolução no mundo dos pagamentos
@@ -122,7 +122,7 @@ export default function JornadaPage() {
     <div className="space-y-6 sm:space-y-8 p-4 sm:p-6">
       <div className="mb-6 sm:mb-8">
         <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1 sm:mb-2">
-          Jornada Orizon
+          Jornada Coratri
         </h1>
         <p className="text-sm sm:text-base text-gray-600">
           Sua evolução no mundo dos pagamentos

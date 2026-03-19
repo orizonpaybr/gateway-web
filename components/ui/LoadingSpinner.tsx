@@ -15,7 +15,7 @@ export const LoadingSpinner = memo<LoadingSpinnerProps>(
 
     return (
       <div
-        className={`${sizes[size]} border-primary border-t-transparent rounded-full animate-spin ${className}`}
+        className={`${sizes[size]} border-[#101010] border-t-transparent rounded-full animate-spin ${className}`}
         role="status"
         aria-label="Carregando"
       >
