@@ -151,15 +151,15 @@ const ComprovantePage = memo(() => {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Image
-                src="/LOGO-ORIZON.png"
-                alt="Orizon Pay"
+                src={encodeURI('/Logo Coratri Finance.png')}
+                alt="Coratri"
                 width={120}
                 height={40}
                 className="w-10 h-10 rounded-lg object-contain bg-white"
               />
               <div>
                 <h2 className="text-sm font-semibold text-gray-900">
-                  ORIZON PAY
+                  CORATRI
                 </h2>
                 <p className="text-xs text-gray-600">Instituição de pagamento</p>
               </div>

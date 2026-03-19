@@ -1,4 +1,4 @@
-# Guia do Desenvolvedor - Orizon Pay
+# Guia do Desenvolvedor - Coratri
 
 Este documento contém informações técnicas detalhadas para desenvolvedores trabalhando no projeto.
 
@@ -448,7 +448,7 @@ useEffect(() => {
 
 ### Cores
 
-Use as cores do tema Orizon definidas no Tailwind:
+Use as cores do tema Coratri definidas no Tailwind:
 
 ```typescript
 // Primary

@@ -153,6 +153,7 @@ export const UsersTable = memo(
                       {u.status === USER_STATUS.PENDING && !u.banido && (
                         <Tooltip content="Aprovar">
                           <Button
+                            variant="inkSolid"
                             size="sm"
                             onClick={() => onApprove?.(u)}
                             className="px-1.5 sm:px-2 md:px-3"
@@ -171,9 +172,9 @@ export const UsersTable = memo(
                         >
                           <Button
                             size="sm"
-                            variant="outline"
+                            variant="inkOutline"
                             onClick={() => onToggleBlock?.(u)}
-                            className="px-1.5 sm:px-2 md:px-3 border-blue-600 text-blue-600 hover:bg-blue-50 hover:text-blue-700"
+                            className="px-1.5 sm:px-2 md:px-3"
                           >
                             <Unlock className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                           </Button>
@@ -194,9 +195,9 @@ export const UsersTable = memo(
                         <Tooltip content="Desbloquear saque">
                           <Button
                             size="sm"
-                            variant="outline"
+                            variant="inkOutline"
                             onClick={() => onToggleWithdrawBlock?.(u)}
-                            className="px-1.5 sm:px-2 md:px-3 border-blue-600 text-blue-600 hover:bg-blue-50 hover:text-blue-700"
+                            className="px-1.5 sm:px-2 md:px-3"
                           >
                             <CreditCard className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                           </Button>
@@ -216,7 +217,7 @@ export const UsersTable = memo(
                       <Tooltip content="Visualizar">
                         <Button
                           size="sm"
-                          variant="outline"
+                          variant="inkOutline"
                           onClick={() => onView?.(u)}
                           className="px-1.5 sm:px-2 md:px-3"
                         >
@@ -226,7 +227,7 @@ export const UsersTable = memo(
                       <Tooltip content="Editar">
                         <Button
                           size="sm"
-                          variant="outline"
+                          variant="inkOutline"
                           onClick={() => onEdit?.(u)}
                           className="px-1.5 sm:px-2 md:px-3"
                         >
@@ -236,7 +237,7 @@ export const UsersTable = memo(
                       <Tooltip content="Taxas">
                         <Button
                           size="sm"
-                          variant="outline"
+                          variant="inkOutline"
                           onClick={() => onFees?.(u)}
                           className="px-1.5 sm:px-2 md:px-3"
                         >

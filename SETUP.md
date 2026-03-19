@@ -1,4 +1,4 @@
-# Guia de Configuração - Orizon Pay
+# Guia de Configuração - Coratri
 
 ## 📋 Pré-requisitos
 
@@ -111,11 +111,11 @@ Se o usuário tiver 2FA ativado:
 
 ## 🎨 Configuração Visual
 
-### Cores Orizon
+### Cores da marca
 
 As cores estão configuradas no `tailwind.config.ts`:
 
-- **Primary**: `#007BC7` (Azul Orizon)
+- **Primary**: `#007BC7` (azul primário)
 - **Primary Hover**: `#006BA8`
 - **Dark**: `#0C243B`
 - **Secondary**: `#009EE0`
@@ -124,7 +124,7 @@ As cores estão configuradas no `tailwind.config.ts`:
 
 ### Logo
 
-A logo está localizada em `/public/LOGO-ORIZON-AZUL-PRETA.png` e é usada em:
+A logo está localizada em `/public/Logo Coratri Finance.png` (ou `Coratri - FINANCE v1.98.0.png`) e é usada em:
 - Página de login
 - Página de cadastro
 - Sidebar do dashboard

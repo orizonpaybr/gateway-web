@@ -149,10 +149,20 @@ export const ManagerEditModal = memo(
         title={isEdit ? 'Editar Gerente' : 'Novo Gerente'}
         footer={
           <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={onClose} disabled={isSaving}>
+            <Button
+              variant="outline"
+              className="border-red-600 text-red-600 hover:bg-red-50 hover:text-red-700"
+              onClick={onClose}
+              disabled={isSaving}
+            >
               Cancelar
             </Button>
-            <Button onClick={handleSubmit} disabled={isSaving}>
+            <Button
+              variant="inkSolid"
+              type="button"
+              onClick={handleSubmit}
+              disabled={isSaving}
+            >
               {isSaving ? 'Salvando...' : 'Salvar'}
             </Button>
           </div>

@@ -210,7 +210,7 @@ export default function ConfiguracoesGeraisPage() {
       <div className="flex justify-end">
         <Button
           onClick={handleSave}
-          variant="primary"
+          variant="inkSolid"
           size="sm"
           disabled={isUpdating}
           className="px-6"

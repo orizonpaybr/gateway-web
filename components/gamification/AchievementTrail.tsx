@@ -110,7 +110,7 @@ export const AchievementTrail = memo<AchievementTrailProps>(
               <div key={level.id} className="flex justify-center">
                 <div className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center shrink-0">
                   <Image
-                    src="/LOGO-ORIZON.png"
+                    src={encodeURI('/Logo Coratri Finance.png')}
                     alt={`Logo ${level.name}`}
                     width={48}
                     height={48}
@@ -165,7 +165,7 @@ export const AchievementTrail = memo<AchievementTrailProps>(
             >
               <div className="w-10 h-10 flex items-center justify-center shrink-0">
                 <Image
-                  src="/LOGO-ORIZON.png"
+                  src={encodeURI('/Logo Coratri Finance.png')}
                   alt={level.name}
                   width={40}
                   height={40}

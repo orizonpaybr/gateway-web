@@ -1,4 +1,4 @@
-# Orizon Pay - Gateway de Pagamentos
+# Coratri - Gateway de Pagamentos
 
 Sistema completo de gestão financeira e pagamentos desenvolvido com Next.js 14, TypeScript e Tailwind CSS.
 
@@ -48,7 +48,7 @@ gateway-web/
 │   ├── (dashboard)/         # Páginas do dashboard
 │   │   └── dashboard/
 │   │       ├── page.tsx              # Dashboard principal
-│   │       ├── jornada/              # Jornada Orizon (gamificação)
+│   │       ├── jornada/              # Jornada Coratri (gamificação)
 │   │       ├── buscar/               # Buscar transações
 │   │       ├── extrato/              # Extrato
 │   │       ├── pix/                  # Transferências e depósitos PIX
@@ -142,9 +142,9 @@ gateway-web/
 
 ## 🎨 Design System
 
-### Cores Orizon
+### Cores da marca
 
-- **Azul Orizon (Primary)**: `#007BC7`
+- **Azul primário (Primary)**: `#007BC7`
 - **Azul Escuro (Dark)**: `#0C243B`
 - **Azul Secundário**: `#009EE0`
 - **Laranja (Accent)**: `#FF8A00`
@@ -195,7 +195,7 @@ O frontend está integrado com o backend Laravel através de API REST. Consulte 
 
 ## 📄 Licença
 
-Este projeto é proprietário da Orizon Pay.
+Este projeto é proprietário da Coratri IP S.A.
 
 ## 👥 Suporte
 

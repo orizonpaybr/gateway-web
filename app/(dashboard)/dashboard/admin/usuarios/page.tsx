@@ -268,7 +268,7 @@ export default function AdminUsersPage() {
         title="Excluir usuário"
         footer={
           <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={() => setIsDeleteOpen(false)}>
+            <Button variant="inkOutline" onClick={() => setIsDeleteOpen(false)}>
               Cancelar
             </Button>
             <Button

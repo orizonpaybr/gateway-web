@@ -272,8 +272,8 @@ const AprovarSaquesPage = memo(() => {
                   {formatCurrencyBRL(stats.data.valor_aprovado)}
                 </p>
               </div>
-              <div className="p-3 bg-blue-100 rounded-lg shrink-0">
-                <TrendingUp className="text-blue-600" size={24} />
+              <div className="p-3 bg-gray-100 rounded-lg shrink-0">
+                <TrendingUp className="text-gray-800" size={24} />
               </div>
             </div>
           </Card>
@@ -309,7 +309,7 @@ const AprovarSaquesPage = memo(() => {
             {isAdmin && (
               <div className="w-full sm:w-auto flex justify-end">
                 <Button
-                  variant="outline"
+                  variant="inkOutline"
                   size="sm"
                   icon={<Settings size={14} />}
                   onClick={() => setShowConfig((v) => !v)}
@@ -327,7 +327,7 @@ const AprovarSaquesPage = memo(() => {
               </span>
               <div className="flex items-center gap-2 flex-wrap">
                 <Button
-                  variant={statusFilter === 'PENDING' ? 'primary' : 'outline'}
+                  variant={statusFilter === 'PENDING' ? 'inkSolid' : 'inkOutline'}
                   size="sm"
                   onClick={() => {
                     setStatusFilter('PENDING')
@@ -337,7 +337,7 @@ const AprovarSaquesPage = memo(() => {
                   Pendentes
                 </Button>
                 <Button
-                  variant={statusFilter === 'COMPLETED' ? 'primary' : 'outline'}
+                  variant={statusFilter === 'COMPLETED' ? 'inkSolid' : 'inkOutline'}
                   size="sm"
                   onClick={() => {
                     setStatusFilter('COMPLETED')
@@ -347,7 +347,7 @@ const AprovarSaquesPage = memo(() => {
                   Aprovados
                 </Button>
                 <Button
-                  variant={statusFilter === 'CANCELLED' ? 'primary' : 'outline'}
+                  variant={statusFilter === 'CANCELLED' ? 'inkSolid' : 'inkOutline'}
                   size="sm"
                   onClick={() => {
                     setStatusFilter('CANCELLED')
@@ -357,7 +357,7 @@ const AprovarSaquesPage = memo(() => {
                   Rejeitados
                 </Button>
                 <Button
-                  variant={statusFilter === 'all' ? 'primary' : 'outline'}
+                  variant={statusFilter === 'all' ? 'inkSolid' : 'inkOutline'}
                   size="sm"
                   onClick={() => {
                     setStatusFilter('all')
@@ -373,7 +373,7 @@ const AprovarSaquesPage = memo(() => {
               <span className="text-xs font-semibold text-gray-600">Tipo</span>
               <div className="flex items-center gap-2 flex-wrap">
                 <Button
-                  variant={tipoFilter === 'manual' ? 'primary' : 'outline'}
+                  variant={tipoFilter === 'manual' ? 'inkSolid' : 'inkOutline'}
                   size="sm"
                   onClick={() => {
                     setTipoFilter('manual')
@@ -383,7 +383,7 @@ const AprovarSaquesPage = memo(() => {
                   Manual
                 </Button>
                 <Button
-                  variant={tipoFilter === 'automatico' ? 'primary' : 'outline'}
+                  variant={tipoFilter === 'automatico' ? 'inkSolid' : 'inkOutline'}
                   size="sm"
                   onClick={() => {
                     setTipoFilter('automatico')
@@ -393,7 +393,7 @@ const AprovarSaquesPage = memo(() => {
                   Automático
                 </Button>
                 <Button
-                  variant={tipoFilter === 'all' ? 'primary' : 'outline'}
+                  variant={tipoFilter === 'all' ? 'inkSolid' : 'inkOutline'}
                   size="sm"
                   onClick={() => {
                     setTipoFilter('all')
@@ -408,7 +408,7 @@ const AprovarSaquesPage = memo(() => {
 
           <div className="relative flex flex-wrap items-center gap-2">
             <Button
-              variant={period === null ? 'primary' : 'outline'}
+              variant={period === null ? 'inkSolid' : 'inkOutline'}
               size="sm"
               className="shrink-0"
               onClick={() => {
@@ -421,7 +421,7 @@ const AprovarSaquesPage = memo(() => {
               Todas Datas
             </Button>
             <Button
-              variant={period === 'hoje' ? 'primary' : 'outline'}
+              variant={period === 'hoje' ? 'inkSolid' : 'inkOutline'}
               size="sm"
               className="shrink-0"
               onClick={() => {
@@ -434,7 +434,7 @@ const AprovarSaquesPage = memo(() => {
               Hoje
             </Button>
             <Button
-              variant={period === '7d' ? 'primary' : 'outline'}
+              variant={period === '7d' ? 'inkSolid' : 'inkOutline'}
               size="sm"
               className="shrink-0"
               onClick={() => {
@@ -447,7 +447,7 @@ const AprovarSaquesPage = memo(() => {
               7 dias
             </Button>
             <Button
-              variant={period === '30d' ? 'primary' : 'outline'}
+              variant={period === '30d' ? 'inkSolid' : 'inkOutline'}
               size="sm"
               className="shrink-0"
               onClick={() => {
@@ -460,17 +460,19 @@ const AprovarSaquesPage = memo(() => {
               30 dias
             </Button>
             <Button
-              variant={period === 'custom' ? 'primary' : 'outline'}
+              variant={period === 'custom' ? 'inkSolid' : 'inkOutline'}
               size="sm"
               icon={<Calendar size={14} />}
               className="shrink-0"
+              aria-label="Período personalizado"
               onClick={() => setShowDatePicker((v) => !v)}
             />
             <Button
-              variant="outline"
+              variant="inkOutline"
               size="sm"
               icon={<RotateCcw size={14} />}
               className="shrink-0"
+              aria-label="Limpar filtros de data"
               onClick={resetDates}
             />
 
@@ -507,12 +509,15 @@ const AprovarSaquesPage = memo(() => {
                   </div>
                   <div className="flex items-center justify-end gap-2 pt-1">
                     <Button
-                      variant="ghost"
+                      variant="inkOutline"
+                      size="sm"
                       onClick={() => setShowDatePicker(false)}
                     >
                       Cancelar
                     </Button>
                     <Button
+                      variant="inkSolid"
+                      size="sm"
                       onClick={() => {
                         setPeriod('custom')
                         setPage(1)
@@ -566,6 +571,7 @@ const AprovarSaquesPage = memo(() => {
                         className="max-w-xs"
                       />
                       <Button
+                        variant="inkSolid"
                         size="sm"
                         icon={<Save size={14} />}
                         className="ml-auto"
@@ -731,9 +737,9 @@ const AprovarSaquesPage = memo(() => {
                             <Tooltip content="Ver detalhes">
                               <Button
                                 size="sm"
-                                variant="outline"
+                                variant="inkOutline"
                                 onClick={() => handleViewDetails(saque.id)}
-                                className="px-1.5 sm:px-2 md:px-3 border-blue-600 text-blue-600 hover:bg-blue-50 hover:text-blue-700"
+                                className="px-1.5 sm:px-2 md:px-3"
                                 aria-label="Ver detalhes"
                               >
                                 <Eye className="w-4 h-4" />
@@ -786,10 +792,11 @@ const AprovarSaquesPage = memo(() => {
           </p>
           <div className="flex items-center gap-2">
             <Button
-              variant="outline"
+              variant="inkOutline"
               size="sm"
               disabled={!canPrev}
               onClick={() => canPrev && setPage((p) => p - 1)}
+              aria-label="Página anterior"
             >
               {'<'}
             </Button>
@@ -797,10 +804,11 @@ const AprovarSaquesPage = memo(() => {
               Página {page} de {processedData.totalPages}
             </span>
             <Button
-              variant="outline"
+              variant="inkOutline"
               size="sm"
               disabled={!canNext}
               onClick={() => canNext && setPage((p) => p + 1)}
+              aria-label="Próxima página"
             >
               {'>'}
             </Button>
@@ -829,7 +837,7 @@ const AprovarSaquesPage = memo(() => {
         }
         footer={
           <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={() => setConfirmAction(null)}>
+            <Button variant="inkOutline" onClick={() => setConfirmAction(null)}>
               Cancelar
             </Button>
             {confirmAction?.type === 'reject' ? (

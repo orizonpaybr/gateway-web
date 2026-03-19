@@ -331,10 +331,11 @@ const CarteirasPage = memo(() => {
             </p>
             <div className="flex items-center gap-2">
               <Button
-                variant="outline"
+                variant="inkOutline"
                 size="sm"
                 disabled={!canPrev}
                 onClick={() => canPrev && handlePageChange(page - 1)}
+                aria-label="Página anterior"
               >
                 {'<'}
               </Button>
@@ -342,10 +343,11 @@ const CarteirasPage = memo(() => {
                 Página {page} de {processedData.totalPages}
               </span>
               <Button
-                variant="outline"
+                variant="inkOutline"
                 size="sm"
                 disabled={!canNext}
                 onClick={() => canNext && handlePageChange(page + 1)}
+                aria-label="Próxima página"
               >
                 {'>'}
               </Button>

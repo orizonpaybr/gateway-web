@@ -21,9 +21,9 @@ export const ManagerSummaryCards = memo(
         title: 'Total de Gerentes',
         value: totalManagers,
         icon: Users,
-        bgColor: 'bg-blue-50',
-        textColor: 'text-blue-600',
-        iconColor: 'text-blue-500',
+        bgColor: 'bg-gray-100',
+        textColor: 'text-gray-900',
+        iconColor: 'text-gray-800',
       },
       {
         title: 'Gerentes Ativos',

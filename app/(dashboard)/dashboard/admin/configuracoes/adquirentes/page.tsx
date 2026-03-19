@@ -25,7 +25,10 @@ const AcquirersPage = memo(() => {
 
   const toggleStatusMutation = useToggleAcquirerStatus()
 
-  const acquirers = useMemo(() => data?.acquirers || [], [data?.acquirers])
+  const acquirers = useMemo(() => {
+    const list = data?.acquirers || []
+    return list.filter((a) => (a.referencia || '').toLowerCase() !== 'treeal')
+  }, [data?.acquirers])
 
   const handleToggleStatus = useCallback(
     async (acquirer: Acquirer) => {

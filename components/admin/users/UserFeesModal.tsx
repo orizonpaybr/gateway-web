@@ -141,10 +141,18 @@ export const UserFeesModal = memo(
         size="md"
         footer={
           <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={onClose}>
+            <Button
+              variant="outline"
+              className="border-red-600 text-red-600 hover:bg-red-50 hover:text-red-700"
+              onClick={onClose}
+            >
               Cancelar
             </Button>
-            <Button onClick={handleSave} disabled={isSaving}>
+            <Button
+              variant="inkSolid"
+              onClick={handleSave}
+              disabled={isSaving}
+            >
               {isSaving ? 'Salvando...' : 'Salvar taxas'}
             </Button>
           </div>

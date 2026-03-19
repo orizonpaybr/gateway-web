@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# 🎯 Script de Pré-Commit - Orizon Pay Gateway Web
+# 🎯 Script de Pré-Commit - Coratri Gateway Web
 # Este script valida o código antes de permitir o commit
 
 set -e
