@@ -215,29 +215,31 @@ export const ConfiguracoesIntegracaoTab = memo(() => {
   )
 
   const handleConfirmRemoveIP = useCallback(() => {
-    const ipToRemove = pendingRemoveIPRef.current
+    // Fluxo com 2FA usa refs; sem 2FA usa o IP do próprio dialog.
+    const ipToRemove = pendingRemoveIPRef.current ?? showConfirmRemoveIP
     const pinToUse = pendingRemoveIPPinRef.current
 
-    if (ipToRemove && pinToUse !== undefined) {
+    if (!ipToRemove) {
       setShowConfirmRemoveIP(null)
-      removeIPMutation.mutate(
-        { ip: ipToRemove, pin: pinToUse },
-        {
-          onSuccess: () => {
-            setPendingRemoveIP(null)
-            setPendingRemoveIPPin(undefined)
-            pendingRemoveIPRef.current = null
-            pendingRemoveIPPinRef.current = undefined
-          },
-          onError: () => {
-            // Em caso de erro, manter os estados para tentar novamente
-          },
-        },
-      )
-    } else {
-      setShowConfirmRemoveIP(null)
+      return
     }
-  }, [removeIPMutation])
+
+    setShowConfirmRemoveIP(null)
+    removeIPMutation.mutate(
+      { ip: ipToRemove, pin: pinToUse },
+      {
+        onSuccess: () => {
+          setPendingRemoveIP(null)
+          setPendingRemoveIPPin(undefined)
+          pendingRemoveIPRef.current = null
+          pendingRemoveIPPinRef.current = undefined
+        },
+        onError: () => {
+          // Em caso de erro, manter os estados para tentar novamente
+        },
+      },
+    )
+  }, [removeIPMutation, showConfirmRemoveIP])
 
   if (isLoadingCredentials || isLoadingIPs) {
     return (
