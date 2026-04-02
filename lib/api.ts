@@ -574,7 +574,7 @@ export const pixAPI = {
     throw new Error('API não implementada')
   },
 
-  // Gerar QR Code para depósito (HeartPay)
+  // Gerar QR Code para depósito (PIX)
   generateDeposit: async (
     data: PixDepositData,
   ): Promise<PixDepositResponse> => {

@@ -22,6 +22,10 @@ import { WithdrawalDetailsModal } from '@/components/modals/WithdrawalDetailsMod
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { CurrencyInput } from '@/components/ui/CurrencyInput'
+import {
+  DateRangeFilterPanel,
+  dateRangePopoverContainerClassName,
+} from '@/components/ui/DateRangeFilterPanel'
 import { Dialog } from '@/components/ui/Dialog'
 import { Input } from '@/components/ui/Input'
 import { Skeleton } from '@/components/ui/Skeleton'
@@ -477,57 +481,21 @@ const AprovarSaquesPage = memo(() => {
             />
 
             {showDatePicker && (
-              <div className="absolute right-0 top-11 z-10 bg-white border border-gray-200 rounded-lg shadow-md p-3 w-64">
-                <div className="space-y-2">
-                  <div>
-                    <label
-                      htmlFor="start-date-filter"
-                      className="block text-xs text-gray-600 mb-1"
-                    >
-                      Data inicial
-                    </label>
-                    <Input
-                      id="start-date-filter"
-                      type="date"
-                      value={startDate}
-                      onChange={(e) => setStartDate(e.target.value)}
-                    />
-                  </div>
-                  <div>
-                    <label
-                      htmlFor="end-date-filter"
-                      className="block text-xs text-gray-600 mb-1"
-                    >
-                      Data final
-                    </label>
-                    <Input
-                      id="end-date-filter"
-                      type="date"
-                      value={endDate}
-                      onChange={(e) => setEndDate(e.target.value)}
-                    />
-                  </div>
-                  <div className="flex items-center justify-end gap-2 pt-1">
-                    <Button
-                      variant="inkOutline"
-                      size="sm"
-                      onClick={() => setShowDatePicker(false)}
-                    >
-                      Cancelar
-                    </Button>
-                    <Button
-                      variant="inkSolid"
-                      size="sm"
-                      onClick={() => {
-                        setPeriod('custom')
-                        setPage(1)
-                        setShowDatePicker(false)
-                      }}
-                    >
-                      Aplicar
-                    </Button>
-                  </div>
-                </div>
+              <div className={dateRangePopoverContainerClassName}>
+                <DateRangeFilterPanel
+                  startDate={startDate}
+                  endDate={endDate}
+                  onStartDateChange={setStartDate}
+                  onEndDateChange={setEndDate}
+                  onApply={(s, e) => {
+                    setStartDate(s)
+                    setEndDate(e)
+                    setPeriod('custom')
+                    setPage(1)
+                    setShowDatePicker(false)
+                  }}
+                  onCancel={() => setShowDatePicker(false)}
+                />
               </div>
             )}
           </div>

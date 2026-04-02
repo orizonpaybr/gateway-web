@@ -28,10 +28,11 @@ test.describe('Cadastro', () => {
   })
 
   test('validação do step 1: nome curto exibe erro', async ({ page }) => {
-    await page.getByPlaceholder(/seu nome completo/i).fill('Ab')
-    // Validação é em onChange; o botão Próximo fica desabilitado quando o form é inválido
+    const nameInput = page.getByPlaceholder(/seu nome completo/i)
+    await nameInput.fill('Ab')
+    await nameInput.blur()
     await expect(
-      page.getByText(/nome completo é obrigatório|mínimo 3/i),
+      page.getByText(/nome completo é obrigatório|pelo menos 3|mínimo 3/i),
     ).toBeVisible({ timeout: 5000 })
   })
 

@@ -22,19 +22,27 @@ import { GENDER_OPTIONS } from '@/types/user'
 const step1Schema = z.object({
   name: z
     .string()
-    .min(3, 'Nome completo é obrigatório')
+    .trim()
+    .min(1, 'Nome completo é obrigatório')
+    .min(3, 'O nome deve ter pelo menos 3 caracteres')
     .regex(
       /^[a-zA-ZÀ-ÿ\s'-]+$/,
       'O nome deve conter apenas letras, espaços, apóstrofos e hífens.',
     ),
   username: z
     .string()
-    .min(3, 'Nome de usuário é obrigatório')
+    .trim()
+    .min(1, 'Nome de usuário é obrigatório')
+    .min(3, 'O nome de usuário deve ter pelo menos 3 caracteres')
     .regex(
       /^[a-zA-Z0-9À-ÿ\s'-]+$/,
       'O nome de usuário aceita apenas letras, números, espaços, apóstrofos e hífens.',
     ),
-  email: z.string().email('Email inválido'),
+  email: z
+    .string()
+    .trim()
+    .min(1, 'Email é obrigatório')
+    .email('Email inválido'),
   gender: z.enum(['male', 'female'], {
     required_error: 'Selecione seu gênero',
   }),
@@ -50,14 +58,38 @@ const step2Schema = z
         'A senha deve conter pelo menos uma letra minúscula, uma letra maiúscula, um número e um caractere especial',
       ),
     confirmPassword: z.string().min(1, 'Confirme sua senha'),
-    telefone: z
-      .string()
-      .refine((val) => val.length > 0, 'Telefone é obrigatório')
-      .refine(validatePhone, 'Número de telefone inválido'),
-    cpf_cnpj: z
-      .string()
-      .refine((val) => val.length > 0, 'CPF ou CNPJ é obrigatório')
-      .refine(validateDocument, 'CPF ou CNPJ inválido'),
+    telefone: z.string().superRefine((val, ctx) => {
+      const digits = val.replace(/\D/g, '')
+      if (digits.length === 0) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'Telefone é obrigatório',
+        })
+        return
+      }
+      if (!validatePhone(val)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'Número de telefone inválido',
+        })
+      }
+    }),
+    cpf_cnpj: z.string().superRefine((val, ctx) => {
+      const digits = val.replace(/\D/g, '')
+      if (digits.length === 0) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'CPF ou CNPJ é obrigatório',
+        })
+        return
+      }
+      if (!validateDocument(val)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'CPF ou CNPJ inválido',
+        })
+      }
+    }),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: 'As senhas não coincidem',
@@ -110,13 +142,19 @@ function CadastroContent() {
 
   const step1Form = useForm<Step1FormData>({
     resolver: zodResolver(step1Schema),
-    mode: 'onChange',
+    mode: 'onTouched',
     reValidateMode: 'onChange',
+    defaultValues: {
+      name: '',
+      username: '',
+      email: '',
+      gender: undefined,
+    },
   })
 
   const step2Form = useForm<Step2FormData>({
     resolver: zodResolver(step2Schema),
-    mode: 'onChange',
+    mode: 'onTouched',
     reValidateMode: 'onChange',
     defaultValues: {
       password: '',

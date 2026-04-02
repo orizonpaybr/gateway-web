@@ -6,6 +6,10 @@ import { DepositStatsCard } from '@/components/financial/DepositStatsCard'
 import { DepositStatusBadge } from '@/components/financial/DepositStatusBadge'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
+import {
+  DateRangeFilterPanel,
+  dateRangePopoverContainerClassName,
+} from '@/components/ui/DateRangeFilterPanel'
 import { Input } from '@/components/ui/Input'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { useAuth } from '@/contexts/AuthContext'
@@ -265,23 +269,24 @@ const EntradasPage = memo(() => {
               </div>
             </div>
 
-            <div className="space-y-2 relative">
+            <div className="w-full min-w-0 max-w-full space-y-2">
               <span className="text-xs font-semibold text-gray-600">
                 Período
               </span>
-              <div className="flex items-center gap-2 flex-wrap">
+              <div className="relative flex w-full min-w-0 max-w-full flex-wrap items-center gap-1.5 sm:gap-2">
                 <Button
                   variant={periodFilter === 'all' ? 'inkSolid' : 'inkOutline'}
                   size="sm"
-                  className="shrink-0"
+                  className="shrink-0 px-2.5 !text-xs sm:px-4 sm:!text-sm"
                   onClick={() => handlePeriodFilterChange('all')}
                 >
-                  Todas Datas
+                  <span className="sm:hidden">Todas</span>
+                  <span className="hidden sm:inline">Todas Datas</span>
                 </Button>
                 <Button
                   variant={periodFilter === 'hoje' ? 'inkSolid' : 'inkOutline'}
                   size="sm"
-                  className="shrink-0"
+                  className="shrink-0 px-2.5 !text-xs sm:px-4 sm:!text-sm"
                   onClick={() => handlePeriodFilterChange('hoje')}
                 >
                   Hoje
@@ -289,24 +294,26 @@ const EntradasPage = memo(() => {
                 <Button
                   variant={periodFilter === '7d' ? 'inkSolid' : 'inkOutline'}
                   size="sm"
-                  className="shrink-0"
+                  className="shrink-0 px-2.5 !text-xs sm:px-4 sm:!text-sm"
                   onClick={() => handlePeriodFilterChange('7d')}
                 >
-                  7 dias
+                  <span className="sm:hidden">7d</span>
+                  <span className="hidden sm:inline">7 dias</span>
                 </Button>
                 <Button
                   variant={periodFilter === '30d' ? 'inkSolid' : 'inkOutline'}
                   size="sm"
-                  className="shrink-0"
+                  className="shrink-0 px-2.5 !text-xs sm:px-4 sm:!text-sm"
                   onClick={() => handlePeriodFilterChange('30d')}
                 >
-                  30 dias
+                  <span className="sm:hidden">30d</span>
+                  <span className="hidden sm:inline">30 dias</span>
                 </Button>
                 <Button
                   variant={periodFilter === 'custom' ? 'inkSolid' : 'inkOutline'}
                   size="sm"
                   icon={<Calendar size={14} />}
-                  className="shrink-0"
+                  className="shrink-0 px-2.5 sm:px-4"
                   aria-label="Período personalizado"
                   onClick={() => {
                     if (!showDatePicker) {
@@ -320,7 +327,7 @@ const EntradasPage = memo(() => {
                   variant="inkOutline"
                   size="sm"
                   icon={<RotateCcw size={14} />}
-                  className="shrink-0"
+                  className="shrink-0 px-2.5 sm:px-4"
                   aria-label="Limpar filtros"
                   onClick={() => {
                     handleClearFilters()
@@ -329,67 +336,25 @@ const EntradasPage = memo(() => {
                 />
 
                 {showDatePicker && (
-                  <div className="absolute right-0 top-11 z-10 bg-white border border-gray-200 rounded-lg shadow-md p-3 w-64">
-                    <div className="space-y-2">
-                      <div>
-                        <label
-                          htmlFor="entradas-start-date"
-                          className="block text-xs text-gray-600 mb-1"
-                        >
-                          Data inicial
-                        </label>
-                        <Input
-                          id="entradas-start-date"
-                          type="date"
-                          value={tempStartDate}
-                          onChange={(e) => {
-                            setTempStartDate(e.target.value)
-                          }}
-                        />
-                      </div>
-                      <div>
-                        <label
-                          htmlFor="entradas-end-date"
-                          className="block text-xs text-gray-600 mb-1"
-                        >
-                          Data final
-                        </label>
-                        <Input
-                          id="entradas-end-date"
-                          type="date"
-                          value={tempEndDate}
-                          onChange={(e) => {
-                            setTempEndDate(e.target.value)
-                          }}
-                        />
-                      </div>
-                      <div className="flex items-center justify-end gap-2 pt-1">
-                        <Button
-                          variant="inkOutline"
-                          size="sm"
-                          onClick={() => {
-                            setTempStartDate(startDate)
-                            setTempEndDate(endDate)
-                            setShowDatePicker(false)
-                          }}
-                        >
-                          Cancelar
-                        </Button>
-                        <Button
-                          variant="inkSolid"
-                          size="sm"
-                          onClick={() => {
-                            setStartDate(tempStartDate)
-                            setEndDate(tempEndDate)
-                            setPeriodFilter('custom')
-                            setPage(1)
-                            setShowDatePicker(false)
-                          }}
-                        >
-                          Aplicar
-                        </Button>
-                      </div>
-                    </div>
+                  <div className={dateRangePopoverContainerClassName}>
+                    <DateRangeFilterPanel
+                      startDate={tempStartDate}
+                      endDate={tempEndDate}
+                      onStartDateChange={setTempStartDate}
+                      onEndDateChange={setTempEndDate}
+                      onApply={(s, e) => {
+                        setStartDate(s)
+                        setEndDate(e)
+                        setPeriodFilter('custom')
+                        setPage(1)
+                        setShowDatePicker(false)
+                      }}
+                      onCancel={() => {
+                        setTempStartDate(startDate)
+                        setTempEndDate(endDate)
+                        setShowDatePicker(false)
+                      }}
+                    />
                   </div>
                 )}
               </div>
