@@ -3,6 +3,10 @@
 import { memo, useState } from 'react'
 import { Calendar, RotateCcw } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
+import {
+  DateRangeFilterPanel,
+  dateRangePopoverContainerClassName,
+} from '@/components/ui/DateRangeFilterPanel'
 import { Input } from '@/components/ui/Input'
 import { createResetDatesHandler } from '@/lib/dateUtils'
 export interface FinancialFiltersProps {
@@ -148,109 +152,80 @@ export const FinancialFilters = memo(
           )}
         </div>
 
-        <div className="relative flex flex-wrap items-center gap-2">
-          <Button
-            variant={period === null ? 'inkSolid' : 'inkOutline'}
-            size="sm"
-            className="shrink-0"
-            onClick={() => handlePeriodChange(null)}
-          >
-            Todas Datas
-          </Button>
-          <Button
-            variant={period === 'hoje' ? 'inkSolid' : 'inkOutline'}
-            size="sm"
-            className="shrink-0"
-            onClick={() => handlePeriodChange('hoje')}
-          >
-            Hoje
-          </Button>
-          <Button
-            variant={period === '7d' ? 'inkSolid' : 'inkOutline'}
-            size="sm"
-            className="shrink-0"
-            onClick={() => handlePeriodChange('7d')}
-          >
-            7 dias
-          </Button>
-          <Button
-            variant={period === '30d' ? 'inkSolid' : 'inkOutline'}
-            size="sm"
-            className="shrink-0"
-            onClick={() => handlePeriodChange('30d')}
-          >
-            30 dias
-          </Button>
-          <Button
-            variant={period === 'custom' ? 'inkSolid' : 'inkOutline'}
-            size="sm"
-            icon={<Calendar size={14} />}
-            className="shrink-0"
-            aria-label="Período personalizado"
-            onClick={() => setShowDatePicker((v) => !v)}
-          />
-          <Button
-            variant="inkOutline"
-            size="sm"
-            icon={<RotateCcw size={14} />}
-            className="shrink-0"
-            aria-label="Limpar filtros de data"
-            onClick={resetDates}
-          />
+        <div className="w-full min-w-0 max-w-full space-y-2">
+          <span className="text-xs font-semibold text-gray-600">Período</span>
+          <div className="relative flex w-full min-w-0 max-w-full flex-wrap items-center gap-1.5 sm:gap-2">
+            <Button
+              variant={period === null ? 'inkSolid' : 'inkOutline'}
+              size="sm"
+              className="shrink-0 px-2.5 !text-xs sm:px-4 sm:!text-sm"
+              onClick={() => handlePeriodChange(null)}
+            >
+              <span className="sm:hidden">Todas</span>
+              <span className="hidden sm:inline">Todas Datas</span>
+            </Button>
+            <Button
+              variant={period === 'hoje' ? 'inkSolid' : 'inkOutline'}
+              size="sm"
+              className="shrink-0 px-2.5 !text-xs sm:px-4 sm:!text-sm"
+              onClick={() => handlePeriodChange('hoje')}
+            >
+              Hoje
+            </Button>
+            <Button
+              variant={period === '7d' ? 'inkSolid' : 'inkOutline'}
+              size="sm"
+              className="shrink-0 px-2.5 !text-xs sm:px-4 sm:!text-sm"
+              onClick={() => handlePeriodChange('7d')}
+            >
+              <span className="sm:hidden">7d</span>
+              <span className="hidden sm:inline">7 dias</span>
+            </Button>
+            <Button
+              variant={period === '30d' ? 'inkSolid' : 'inkOutline'}
+              size="sm"
+              className="shrink-0 px-2.5 !text-xs sm:px-4 sm:!text-sm"
+              onClick={() => handlePeriodChange('30d')}
+            >
+              <span className="sm:hidden">30d</span>
+              <span className="hidden sm:inline">30 dias</span>
+            </Button>
+            <Button
+              variant={period === 'custom' ? 'inkSolid' : 'inkOutline'}
+              size="sm"
+              icon={<Calendar size={14} />}
+              className="shrink-0 px-2.5 sm:px-4"
+              aria-label="Período personalizado"
+              onClick={() => setShowDatePicker((v) => !v)}
+            />
+            <Button
+              variant="inkOutline"
+              size="sm"
+              icon={<RotateCcw size={14} />}
+              className="shrink-0 px-2.5 sm:px-4"
+              aria-label="Limpar filtros de data"
+              onClick={resetDates}
+            />
 
-          {showDatePicker && (
-            <div className="absolute right-0 top-11 z-10 bg-white border border-gray-200 rounded-lg shadow-md p-3 w-64">
-              <div className="space-y-2">
-                <div>
-                  <label
-                    htmlFor="financial-start-date"
-                    className="block text-xs text-gray-600 mb-1"
-                  >
-                    Data inicial
-                  </label>
-                  <Input
-                    id="financial-start-date"
-                    type="date"
-                    value={startDate}
-                    onChange={(e) => onStartDateChange(e.target.value)}
-                  />
-                </div>
-                <div>
-                  <label
-                    htmlFor="financial-end-date"
-                    className="block text-xs text-gray-600 mb-1"
-                  >
-                    Data final
-                  </label>
-                  <Input
-                    type="date"
-                    value={endDate}
-                    onChange={(e) => onEndDateChange(e.target.value)}
-                  />
-                </div>
-                <div className="flex items-center justify-end gap-2 pt-1">
-                  <Button
-                    variant="inkOutline"
-                    size="sm"
-                    onClick={() => setShowDatePicker(false)}
-                  >
-                    Cancelar
-                  </Button>
-                  <Button
-                    variant="inkSolid"
-                    size="sm"
-                    onClick={() => {
-                      onPeriodChange('custom')
-                      onPageReset()
-                      setShowDatePicker(false)
-                    }}
-                  >
-                    Aplicar
-                  </Button>
-                </div>
-              </div>
+            {showDatePicker && (
+            <div className={dateRangePopoverContainerClassName}>
+              <DateRangeFilterPanel
+                startDate={startDate}
+                endDate={endDate}
+                onStartDateChange={onStartDateChange}
+                onEndDateChange={onEndDateChange}
+                onApply={(s, e) => {
+                  onStartDateChange(s)
+                  onEndDateChange(e)
+                  onPeriodChange('custom')
+                  onPageReset()
+                  setShowDatePicker(false)
+                }}
+                onCancel={() => setShowDatePicker(false)}
+              />
             </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
     )

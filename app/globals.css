@@ -117,3 +117,216 @@ input[type='password'] {
     font-size: 0.95rem;
   }
 }
+
+/* DateRangeFilterPanel: só marca início e fim; dias intermediários como dias normais */
+.date-range-filter-panel .rdp-range_middle {
+  background-color: transparent !important;
+}
+
+.date-range-filter-panel .rdp-range_middle .rdp-day_button {
+  border-radius: var(--rdp-day_button-border-radius, 100%);
+  border: 2px solid transparent;
+  background-color: transparent !important;
+  color: inherit !important;
+}
+
+/* Cabeçalho: só selects mês/ano (space-between) — sem setas */
+.date-range-filter-panel .rdp-root.rdp-coratri {
+  --rdp-nav-height: 2.75rem;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.date-range-filter-panel .rdp-months {
+  max-width: 100%;
+  min-width: 0;
+}
+
+.date-range-filter-panel .rdp-month {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+/*
+ * table-layout:fixed + width:100% = colunas distribuídas igualmente
+ * pelo container, independente do viewport. NUNCA estoura.
+ */
+.date-range-filter-panel .rdp-month_grid {
+  width: 100%;
+  table-layout: fixed;
+}
+
+.date-range-filter-panel .rdp-day_button {
+  max-width: 100%;
+}
+
+.date-range-filter-panel .rdp-month_caption {
+  width: 100%;
+  max-width: 100%;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+.date-range-filter-panel .rdp-dropdowns {
+  display: flex;
+  width: 100%;
+  max-width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding-inline: 0.125rem;
+  box-sizing: border-box;
+}
+
+.date-range-filter-panel .rdp-dropdown_root {
+  flex: 1 1 0;
+  min-width: 0;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  background: #fff;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.04);
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.date-range-filter-panel .rdp-dropdown_root:hover:not([data-disabled='true']) {
+  border-color: #9ca3af;
+}
+
+.date-range-filter-panel .rdp-dropdown_root:focus-within {
+  border-color: #101010;
+  box-shadow: 0 0 0 3px rgb(16 16 16 / 0.12);
+  outline: none;
+}
+
+.date-range-filter-panel .rdp-dropdown_root[data-disabled='true'] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.date-range-filter-panel .rdp-caption_label {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.35rem;
+  width: 100%;
+  padding: 0.375rem 0.5rem 0.375rem 0.625rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: #111827;
+  line-height: 1.25;
+}
+
+.date-range-filter-panel .rdp-caption_label .rdp-chevron {
+  flex-shrink: 0;
+  opacity: 0.55;
+}
+
+/* sm+ (≥640px): rótulos com largura mínima confortável */
+@media (min-width: 640px) {
+  .date-range-filter-panel .rdp-dropdowns > .rdp-dropdown_root:first-of-type .rdp-caption_label {
+    min-width: 6.5rem;
+  }
+
+  .date-range-filter-panel .rdp-dropdowns > .rdp-dropdown_root:last-of-type .rdp-caption_label {
+    justify-content: center;
+    min-width: 3.75rem;
+  }
+}
+
+/*
+ * <sm (≤639px): dropdowns compactos + alturas menores.
+ * Largura das colunas é gerenciada por table-layout:fixed —
+ * nenhum --rdp-day-width ou --rdp-day_button-width aqui.
+ */
+@media (max-width: 639px) {
+  .date-range-filter-panel .rdp-dropdowns {
+    flex-direction: row;
+    align-items: stretch;
+    justify-content: space-between;
+    gap: 0.375rem;
+    padding-inline: 0;
+  }
+
+  .date-range-filter-panel .rdp-dropdowns > .rdp-dropdown_root {
+    flex: 1 1 calc(50% - 0.2rem);
+    min-width: 0;
+    max-width: calc(50% - 0.2rem);
+    border-radius: 0.375rem;
+  }
+
+  .date-range-filter-panel .rdp-dropdowns > .rdp-dropdown_root:first-of-type .rdp-caption_label,
+  .date-range-filter-panel .rdp-dropdowns > .rdp-dropdown_root:last-of-type .rdp-caption_label {
+    min-width: 0 !important;
+    padding: 0.3rem 0.35rem 0.3rem 0.4rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    gap: 0.25rem;
+    line-height: 1.25;
+  }
+
+  .date-range-filter-panel .rdp-dropdowns > .rdp-dropdown_root:last-of-type .rdp-caption_label {
+    justify-content: space-between;
+  }
+
+  .date-range-filter-panel .rdp-caption_label .rdp-chevron {
+    width: 0.75rem;
+    height: 0.75rem;
+    opacity: 0.5;
+  }
+
+  .date-range-filter-panel .rdp-dropdown_root:focus-within {
+    box-shadow: 0 0 0 2px rgb(16 16 16 / 0.15);
+  }
+
+  .date-range-filter-panel .rdp-root.rdp-coratri {
+    --rdp-nav-height: 2.25rem;
+    --rdp-day-height: 2.25rem;
+    --rdp-day_button-height: 2.125rem;
+  }
+
+  .date-range-filter-panel .rdp-weekday {
+    font-size: 0.65rem;
+    padding: 0.35rem 0;
+  }
+}
+
+/* ≤380px: dropdowns mais apertados */
+@media (max-width: 380px) {
+  .date-range-filter-panel .rdp-dropdowns {
+    gap: 0.25rem;
+  }
+
+  .date-range-filter-panel .rdp-dropdowns > .rdp-dropdown_root {
+    flex-basis: calc(50% - 0.125rem);
+    max-width: calc(50% - 0.125rem);
+  }
+
+  .date-range-filter-panel .rdp-dropdowns > .rdp-dropdown_root:first-of-type .rdp-caption_label,
+  .date-range-filter-panel .rdp-dropdowns > .rdp-dropdown_root:last-of-type .rdp-caption_label {
+    font-size: 0.65rem;
+    padding: 0.2rem 0.25rem;
+  }
+
+  .date-range-filter-panel .rdp-root.rdp-coratri {
+    --rdp-day-height: 2.125rem;
+    --rdp-day_button-height: 2rem;
+  }
+}
+
+/* ≤360px: alturas mínimas para caber no popover estreito */
+@media (max-width: 360px) {
+  .date-range-filter-panel .rdp-root.rdp-coratri {
+    --rdp-day-height: 2rem;
+    --rdp-day_button-height: 1.875rem;
+  }
+
+  .date-range-filter-panel .rdp-weekday {
+    font-size: 0.6rem;
+  }
+}

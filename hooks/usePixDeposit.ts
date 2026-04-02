@@ -72,9 +72,9 @@ export function usePixDeposit(options: UsePixDepositOptions = {}) {
       onSuccess?.(data)
     },
     onError: (error: Error) => {
-      toast.error('Erro ao gerar QR Code', {
-        description: error.message || 'Tente novamente mais tarde.',
-      })
+      toast.error(
+        error.message || 'PIX temporariamente indisponível. Tente novamente em instantes.',
+      )
       onError?.(error)
     },
   })
