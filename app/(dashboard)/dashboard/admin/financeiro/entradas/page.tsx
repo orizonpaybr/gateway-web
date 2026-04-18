@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, useCallback, memo } from 'react'
+import { useState, useMemo, useCallback, memo, useEffect } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   TrendingUp,
@@ -51,12 +51,18 @@ const EntradasPage = memo(() => {
   const [dismissedRefundIds, setDismissedRefundIds] = useState<Set<number>>(
     () => new Set(),
   )
+  const [refundingDepositIds, setRefundingDepositIds] = useState<Set<number>>(
+    () => new Set(),
+  )
   const [refundTarget, setRefundTarget] = useState<Deposit | null>(null)
   const [refundReason, setRefundReason] = useState('')
 
   const refundMutation = useMutation({
     mutationFn: ({ id, reason }: { id: number; reason?: string }) =>
       financialAPI.refundDeposit(id, reason),
+    onMutate: ({ id }) => {
+      setRefundingDepositIds((prev) => new Set(prev).add(id))
+    },
     onSuccess: (res: {
       data?: { message?: string }
       message?: string
@@ -69,8 +75,13 @@ const EntradasPage = memo(() => {
       setRefundTarget(null)
       setRefundReason('')
     },
-    onError: (e: Error) => {
+    onError: (e: Error, { id }) => {
       toast.error(e.message || 'Falha ao solicitar estorno.')
+      setRefundingDepositIds((prev) => {
+        const next = new Set(prev)
+        next.delete(id)
+        return next
+      })
     },
   })
 
@@ -120,6 +131,23 @@ const EntradasPage = memo(() => {
       totalItems: data.data.total || 0,
     }
   }, [data])
+
+  useEffect(() => {
+    setRefundingDepositIds((prev) => {
+      if (prev.size === 0) {
+        return prev
+      }
+      const next = new Set(prev)
+      for (const id of prev) {
+        const row = processedData.items.find((d) => d.id === id)
+        const st = String(row?.status ?? '').toUpperCase()
+        if (st === 'REFUNDED' || st === 'PARTIALLY_REFUNDED') {
+          next.delete(id)
+        }
+      }
+      return next.size === prev.size ? prev : next
+    })
+  }, [processedData.items])
 
   const handleClearFilters = useCallback(() => {
     setSearch('')
@@ -510,32 +538,43 @@ const EntradasPage = memo(() => {
                         {formatCurrencyBRL(deposito.taxa)}
                       </td>
                       <td className="py-3 px-4">
-                        {deposito.pode_estornar &&
-                        !dismissedRefundIds.has(deposito.id) ? (
-                          <div className="flex items-center gap-1">
-                            <button
-                              type="button"
-                              className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-green-200 bg-green-50 text-green-700 hover:bg-green-100 disabled:opacity-50"
-                              title="Confirmar estorno"
-                              disabled={refundMutation.isPending}
-                              onClick={() => setRefundTarget(deposito)}
-                              aria-label="Confirmar estorno"
-                            >
-                              <CheckIcon size={16} />
-                            </button>
-                            <button
-                              type="button"
-                              className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-gray-200 bg-gray-50 text-gray-600 hover:bg-gray-100"
-                              title="Não estornar"
-                              onClick={() => dismissRefundRow(deposito.id)}
-                              aria-label="Não estornar"
-                            >
-                              <XIcon size={16} />
-                            </button>
-                          </div>
-                        ) : (
-                          <span className="text-sm text-gray-400">—</span>
-                        )}
+                        {(() => {
+                          const estornoEmAndamento =
+                            refundingDepositIds.has(deposito.id)
+                          const mostrarAcoesEstorno =
+                            estornoEmAndamento ||
+                            (deposito.pode_estornar &&
+                              !dismissedRefundIds.has(deposito.id))
+                          if (!mostrarAcoesEstorno) {
+                            return (
+                              <span className="text-sm text-gray-400">—</span>
+                            )
+                          }
+                          return (
+                            <div className="flex items-center gap-1">
+                              <button
+                                type="button"
+                                className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-green-200 bg-green-50 text-green-700 hover:bg-green-100 disabled:pointer-events-none disabled:opacity-40"
+                                title="Confirmar estorno"
+                                disabled={estornoEmAndamento}
+                                onClick={() => setRefundTarget(deposito)}
+                                aria-label="Confirmar estorno"
+                              >
+                                <CheckIcon size={16} />
+                              </button>
+                              <button
+                                type="button"
+                                className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-gray-200 bg-gray-50 text-gray-600 hover:bg-gray-100 disabled:pointer-events-none disabled:opacity-40"
+                                title="Não estornar"
+                                disabled={estornoEmAndamento}
+                                onClick={() => dismissRefundRow(deposito.id)}
+                                aria-label="Não estornar"
+                              >
+                                <XIcon size={16} />
+                              </button>
+                            </div>
+                          )
+                        })()}
                       </td>
                     </tr>
                   ))
