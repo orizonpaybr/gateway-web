@@ -1,7 +1,16 @@
 'use client'
 
 import { useState, useMemo, useCallback, memo } from 'react'
-import { TrendingUp, CheckCircle, RotateCcw, Calendar } from 'lucide-react'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import {
+  TrendingUp,
+  CheckCircle,
+  RotateCcw,
+  Calendar,
+  Check as CheckIcon,
+  X as XIcon,
+} from 'lucide-react'
+import { toast } from 'sonner'
 import { DepositStatsCard } from '@/components/financial/DepositStatsCard'
 import { DepositStatusBadge } from '@/components/financial/DepositStatusBadge'
 import { Button } from '@/components/ui/Button'
@@ -12,6 +21,7 @@ import {
 } from '@/components/ui/DateRangeFilterPanel'
 import { Input } from '@/components/ui/Input'
 import { Skeleton } from '@/components/ui/Skeleton'
+import { Dialog } from '@/components/ui/Dialog'
 import { useAuth } from '@/contexts/AuthContext'
 import { useDebounce } from '@/hooks/useDebounce'
 import { useDeposits, useDepositsStats } from '@/hooks/useFinancial'
@@ -21,6 +31,7 @@ import {
   computeFinancialDateRange,
   formatTransactionDateTime,
 } from '@/lib/helpers/financialUtils'
+import { financialAPI, type Deposit } from '@/lib/api'
 
 const EntradasPage = memo(() => {
   const { user } = useAuth()
@@ -35,6 +46,37 @@ const EntradasPage = memo(() => {
   const [page, setPage] = useState(1)
   const [showDatePicker, setShowDatePicker] = useState(false)
   const perPage = 20
+
+  const queryClient = useQueryClient()
+  const [dismissedRefundIds, setDismissedRefundIds] = useState<Set<number>>(
+    () => new Set(),
+  )
+  const [refundTarget, setRefundTarget] = useState<Deposit | null>(null)
+  const [refundReason, setRefundReason] = useState('')
+
+  const refundMutation = useMutation({
+    mutationFn: ({ id, reason }: { id: number; reason?: string }) =>
+      financialAPI.refundDeposit(id, reason),
+    onSuccess: (res: {
+      data?: { message?: string }
+      message?: string
+    }) => {
+      toast.success(
+        res.data?.message || res.message || 'Estorno solicitado com sucesso.',
+      )
+      queryClient.invalidateQueries({ queryKey: ['financial-deposits'] })
+      queryClient.invalidateQueries({ queryKey: ['financial-deposits-stats'] })
+      setRefundTarget(null)
+      setRefundReason('')
+    },
+    onError: (e: Error) => {
+      toast.error(e.message || 'Falha ao solicitar estorno.')
+    },
+  })
+
+  const dismissRefundRow = useCallback((id: number) => {
+    setDismissedRefundIds((prev) => new Set(prev).add(id))
+  }, [])
 
   const isAdmin = useMemo(() => {
     return !!user && Number(user.permission) === USER_PERMISSION.ADMIN
@@ -386,6 +428,9 @@ const EntradasPage = memo(() => {
                   <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">
                     Taxa
                   </th>
+                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">
+                    Ações
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -413,11 +458,14 @@ const EntradasPage = memo(() => {
                       <td className="py-3 px-4">
                         <Skeleton className="h-4 w-16" />
                       </td>
+                      <td className="py-3 px-4">
+                        <Skeleton className="h-4 w-16" />
+                      </td>
                     </tr>
                   ))
                 ) : !hasData ? (
                   <tr>
-                    <td colSpan={7} className="py-16 text-center">
+                    <td colSpan={8} className="py-16 text-center">
                       <div className="flex items-center justify-center mb-4">
                         <div className="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center">
                           <TrendingUp className="text-gray-500" />
@@ -461,12 +509,113 @@ const EntradasPage = memo(() => {
                       <td className="py-3 px-4 text-sm font-bold text-gray-900">
                         {formatCurrencyBRL(deposito.taxa)}
                       </td>
+                      <td className="py-3 px-4">
+                        {deposito.pode_estornar &&
+                        !dismissedRefundIds.has(deposito.id) ? (
+                          <div className="flex items-center gap-1">
+                            <button
+                              type="button"
+                              className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-green-200 bg-green-50 text-green-700 hover:bg-green-100 disabled:opacity-50"
+                              title="Confirmar estorno"
+                              disabled={refundMutation.isPending}
+                              onClick={() => setRefundTarget(deposito)}
+                              aria-label="Confirmar estorno"
+                            >
+                              <CheckIcon size={16} />
+                            </button>
+                            <button
+                              type="button"
+                              className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-gray-200 bg-gray-50 text-gray-600 hover:bg-gray-100"
+                              title="Não estornar"
+                              onClick={() => dismissRefundRow(deposito.id)}
+                              aria-label="Não estornar"
+                            >
+                              <XIcon size={16} />
+                            </button>
+                          </div>
+                        ) : (
+                          <span className="text-sm text-gray-400">—</span>
+                        )}
+                      </td>
                     </tr>
                   ))
                 )}
               </tbody>
             </table>
           </div>
+
+          <Dialog
+            open={!!refundTarget}
+            onClose={() => {
+              if (!refundMutation.isPending) {
+                setRefundTarget(null)
+                setRefundReason('')
+              }
+            }}
+            title="Confirmar estorno PIX"
+            size="md"
+            footer={
+              <div className="flex justify-end gap-2">
+                <Button
+                  variant="inkOutline"
+                  type="button"
+                  disabled={refundMutation.isPending}
+                  onClick={() => {
+                    setRefundTarget(null)
+                    setRefundReason('')
+                  }}
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  variant="inkSolid"
+                  type="button"
+                  disabled={refundMutation.isPending || !refundTarget}
+                  onClick={() => {
+                    if (!refundTarget) {
+                      return
+                    }
+                    const r = refundReason.trim()
+                    refundMutation.mutate({
+                      id: refundTarget.id,
+                      reason: r.length > 0 ? r : undefined,
+                    })
+                  }}
+                >
+                  {refundMutation.isPending ? 'Processando…' : 'Estornar'}
+                </Button>
+              </div>
+            }
+          >
+            {refundTarget ? (
+              <div className="space-y-3 text-sm text-gray-700">
+                <p>
+                  Confirma o estorno de{' '}
+                  <span className="font-semibold">
+                    {formatCurrencyBRL(refundTarget.valor_total)}
+                  </span>{' '}
+                  (transação{' '}
+                  <span className="font-mono text-xs">{refundTarget.transacao_id}</span>
+                  )?
+                </p>
+                <div>
+                  <label
+                    htmlFor="refund-reason"
+                    className="block text-xs font-medium text-gray-600 mb-1"
+                  >
+                    Motivo (opcional)
+                  </label>
+                  <Input
+                    id="refund-reason"
+                    value={refundReason}
+                    onChange={(e) => setRefundReason(e.target.value)}
+                    placeholder="Ex.: solicitação do cliente"
+                    disabled={refundMutation.isPending}
+                  />
+                </div>
+              </div>
+            ) : null}
+          </Dialog>
 
           <div className="mt-4 flex flex-col items-center gap-3 xl:flex-row xl:items-center xl:justify-between">
             <p className="text-sm text-gray-600 text-center xl:text-left">

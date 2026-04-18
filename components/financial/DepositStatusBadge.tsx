@@ -15,6 +15,8 @@ const STATUS_MAP: Record<string, StatusConfig> = {
   WAITING_FOR_APPROVAL: { label: 'Pendente', variant: 'warning' },
   REJECTED: { label: 'Rejeitado', variant: 'error' },
   CANCELLED: { label: 'Cancelado', variant: 'error' },
+  REFUNDED: { label: 'Estornado', variant: 'default' },
+  PARTIALLY_REFUNDED: { label: 'Estorno parcial', variant: 'default' },
 }
 
 interface DepositStatusBadgeProps {

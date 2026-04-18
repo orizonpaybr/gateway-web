@@ -1416,6 +1416,9 @@ export interface Deposit {
   status_legivel: string
   data: string
   created_at: string
+  adquirente_ref?: string | null
+  executor_ordem?: string | null
+  pode_estornar?: boolean
 }
 
 export interface DepositStats {
@@ -1640,6 +1643,25 @@ export const financialAPI = {
     return apiRequest(`/admin/financial/deposits/${depositoId}/status`, {
       method: 'PUT',
       body: JSON.stringify({ status }),
+    })
+  },
+
+  /**
+   * Estorno de depósito PIX (Simpay) — admin
+   */
+  refundDeposit: async (
+    depositoId: number,
+    reason?: string,
+  ): Promise<{
+    success: boolean
+    data: {
+      deposit: Deposit
+      message: string
+    }
+  }> => {
+    return apiRequest(`/admin/financial/deposits/${depositoId}/refund`, {
+      method: 'POST',
+      body: JSON.stringify(reason ? { reason } : {}),
     })
   },
 
