@@ -118,10 +118,10 @@ export function useRecentTransactions(limit: number = 7) {
     queryFn: () =>
       transactionsAPI.list({ limit, page: 1, only_processed: true }),
     enabled: authReady,
-    staleTime: 20 * 1000,
+    staleTime: 8 * 1000,
     gcTime: 2 * 60 * 1000,
     refetchOnWindowFocus: true,
-    refetchInterval: 30 * 1000,
+    refetchInterval: 12 * 1000,
     refetchIntervalInBackground: false,
   })
 }

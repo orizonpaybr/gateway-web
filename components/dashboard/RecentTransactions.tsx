@@ -2,7 +2,12 @@
 
 import { memo, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowUpRight, ArrowDownLeft, FileText } from 'lucide-react'
+import {
+  ArrowUpRight,
+  ArrowDownLeft,
+  FileText,
+  RotateCcw,
+} from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Skeleton } from '@/components/ui/Skeleton'
@@ -107,21 +112,36 @@ export const RecentTransactions = memo(
                         </td>
                       </tr>
                     ))
-                  : transactions.map((transaction) => (
+                  : transactions.map((transaction) => {
+                      const isPixEstorno =
+                        transaction.tipo === 'deposito' &&
+                        (transaction.status === 'REFUNDED' ||
+                          transaction.status === 'PARTIALLY_REFUNDED')
+                      const valorSaida =
+                        transaction.tipo === 'saque' || isPixEstorno
+
+                      return (
                       <tr
-                        key={transaction.id}
+                        key={`${transaction.tipo}-${transaction.id}`}
                         className="hover:bg-gray-50 transition-colors"
                       >
                         <td className="px-4 py-3 whitespace-nowrap">
                           <div className="flex items-center gap-2">
                             <div
                               className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
-                                transaction.tipo === 'deposito'
-                                  ? 'bg-green-100 text-green-700'
-                                  : 'bg-red-100 text-red-700'
+                                isPixEstorno
+                                  ? 'bg-amber-100 text-amber-800'
+                                  : transaction.tipo === 'deposito'
+                                    ? 'bg-green-100 text-green-700'
+                                    : 'bg-red-100 text-red-700'
                               }`}
                             >
-                              {transaction.tipo === 'deposito' ? (
+                              {isPixEstorno ? (
+                                <>
+                                  <RotateCcw size={14} />
+                                  <span>Pix estorno</span>
+                                </>
+                              ) : transaction.tipo === 'deposito' ? (
                                 <>
                                   <ArrowDownLeft size={14} />
                                   <span>Pix Recebido</span>
@@ -138,17 +158,23 @@ export const RecentTransactions = memo(
                         <td className="px-4 py-3 whitespace-nowrap">
                           <span
                             className={`text-sm font-semibold ${
-                              transaction.tipo === 'deposito'
-                                ? 'text-green-600'
-                                : 'text-red-600'
+                              valorSaida ? 'text-red-600' : 'text-green-600'
                             }`}
                           >
-                            {formatCurrency(transaction.amount)}
+                            {formatCurrency(
+                              valorSaida
+                                ? -Math.abs(transaction.amount)
+                                : transaction.amount,
+                            )}
                           </span>
                         </td>
                         <td className="px-4 py-3">
                           <span className="text-sm text-gray-900">
-                            {formatarDescricao(transaction.descricao, transaction.tipo)}
+                            {formatarDescricao(
+                              transaction.descricao,
+                              transaction.tipo,
+                              transaction.status,
+                            )}
                           </span>
                         </td>
                         <td className="px-4 py-3 whitespace-nowrap">
@@ -171,7 +197,9 @@ export const RecentTransactions = memo(
                           />
                         </td>
                       </tr>
-                    ))}
+                    )
+                  })
+                }
               </tbody>
             </table>
           </div>
