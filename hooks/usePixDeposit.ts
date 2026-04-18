@@ -54,6 +54,8 @@ export function usePixDeposit(options: UsePixDepositOptions = {}) {
     onSuccess: (data) => {
       const transactionId =
         data.data.idTransaction || data.data.transaction_id || null
+      const hasPixCode = !!(data.data.qrcode || data.data.qr_code)
+
       if (transactionId) {
         setCurrentTransaction(transactionId)
         if (enablePolling) {
@@ -63,10 +65,14 @@ export function usePixDeposit(options: UsePixDepositOptions = {}) {
           description:
             'Escaneie o QR Code ou copie o código PIX para realizar o pagamento.',
         })
-      } else {
-        toast.error('Erro ao obter ID da transação', {
+      } else if (hasPixCode) {
+        toast.success('QR Code gerado com sucesso!', {
           description:
-            'O QR Code foi gerado mas não foi possível iniciar o acompanhamento.',
+            'Escaneie o QR Code ou copie o código PIX para realizar o pagamento.',
+        })
+      } else {
+        toast.error('Não foi possível gerar o depósito PIX', {
+          description: 'Tente novamente em instantes.',
         })
       }
       onSuccess?.(data)

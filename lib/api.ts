@@ -545,10 +545,19 @@ interface DepositPaymentResponse {
   status: 'success' | 'error'
   message: string
   transaction_id?: string
+  idTransaction?: string
   amount?: number
   qr_code?: string
+  qrcode?: string
   qr_code_image_url?: string
   expires_at?: string | null
+  data?: {
+    idTransaction?: string
+    transaction_id?: string
+    qr_code?: string
+    qrcode?: string
+    qr_code_image_url?: string
+  }
 }
 export interface PixDepositResponse {
   success: boolean
@@ -586,13 +595,33 @@ export const pixAPI = {
       },
     )
 
+    const nested = response.data
+    const transactionId =
+      response.transaction_id ??
+      response.idTransaction ??
+      nested?.idTransaction ??
+      nested?.transaction_id ??
+      null
+
+    const qrCode =
+      response.qr_code ??
+      response.qrcode ??
+      nested?.qr_code ??
+      nested?.qrcode
+
+    const qrImage =
+      response.qr_code_image_url ?? nested?.qr_code_image_url
+
     return {
       success: response.status === 'success',
       data: {
-        transaction_id: response.transaction_id,
-        qr_code: response.qr_code,
-        qr_code_image_url: response.qr_code_image_url,
-        amount: response.amount || data.amount,
+        idTransaction: transactionId ?? undefined,
+        transaction_id: transactionId ?? undefined,
+        qrcode: qrCode,
+        qr_code: qrCode,
+        qr_code_image_url: qrImage,
+        qrCodeImage: qrImage,
+        amount: response.amount ?? data.amount,
         status: response.status,
       },
     }
