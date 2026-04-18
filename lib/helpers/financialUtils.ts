@@ -87,7 +87,21 @@ export function formatTransactionType(tipo: string): string {
 export function formatarDescricao(
   descricao: string,
   tipo?: 'deposito' | 'saque',
+  status?: string,
 ): string {
+  const st = status?.toUpperCase()
+  if (st === 'REFUNDED' && tipo === 'deposito') {
+    return 'Estorno PIX'
+  }
+  if (st === 'PARTIALLY_REFUNDED' && tipo === 'deposito') {
+    return 'Estorno PIX (parcial)'
+  }
+  if (st === 'REFUNDED' && tipo === 'saque') {
+    return 'Estorno de saque'
+  }
+  if (st === 'PARTIALLY_REFUNDED' && tipo === 'saque') {
+    return 'Estorno de saque (parcial)'
+  }
   if (!descricao?.trim()) {
     return tipo === 'deposito' ? 'Pagamento recebido' : 'Saque realizado'
   }
