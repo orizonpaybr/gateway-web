@@ -33,6 +33,40 @@ import {
 } from '@/lib/helpers/financialUtils'
 import { financialAPI, type Deposit } from '@/lib/api'
 
+const DISMISS_REFUND_STORAGE_PREFIX = 'admin_financeiro_entradas_dismiss_refund'
+
+function loadDismissedRefundIdsFromStorage(storageKey: string): Set<number> {
+  if (typeof window === 'undefined') {
+    return new Set()
+  }
+  try {
+    const raw = localStorage.getItem(storageKey)
+    if (!raw) {
+      return new Set()
+    }
+    const parsed = JSON.parse(raw) as unknown
+    if (!Array.isArray(parsed)) {
+      return new Set()
+    }
+    return new Set(
+      parsed.filter((n): n is number => typeof n === 'number' && Number.isFinite(n)),
+    )
+  } catch {
+    return new Set()
+  }
+}
+
+function persistDismissedRefundIds(storageKey: string, ids: Set<number>) {
+  if (typeof window === 'undefined') {
+    return
+  }
+  try {
+    localStorage.setItem(storageKey, JSON.stringify([...ids]))
+  } catch {
+    // quota / modo privado
+  }
+}
+
 const EntradasPage = memo(() => {
   const { user } = useAuth()
   const [search, setSearch] = useState('')
@@ -48,9 +82,24 @@ const EntradasPage = memo(() => {
   const perPage = 20
 
   const queryClient = useQueryClient()
+
+  const dismissedRefundStorageKey = useMemo(() => {
+    const u = user?.username?.trim()
+    return u ? `${DISMISS_REFUND_STORAGE_PREFIX}:${u}` : null
+  }, [user?.username])
+
   const [dismissedRefundIds, setDismissedRefundIds] = useState<Set<number>>(
     () => new Set(),
   )
+
+  useEffect(() => {
+    if (!dismissedRefundStorageKey) {
+      return
+    }
+    setDismissedRefundIds(
+      loadDismissedRefundIdsFromStorage(dismissedRefundStorageKey),
+    )
+  }, [dismissedRefundStorageKey])
   const [refundingDepositIds, setRefundingDepositIds] = useState<Set<number>>(
     () => new Set(),
   )
@@ -85,9 +134,18 @@ const EntradasPage = memo(() => {
     },
   })
 
-  const dismissRefundRow = useCallback((id: number) => {
-    setDismissedRefundIds((prev) => new Set(prev).add(id))
-  }, [])
+  const dismissRefundRow = useCallback(
+    (id: number) => {
+      setDismissedRefundIds((prev) => {
+        const next = new Set(prev).add(id)
+        if (dismissedRefundStorageKey) {
+          persistDismissedRefundIds(dismissedRefundStorageKey, next)
+        }
+        return next
+      })
+    },
+    [dismissedRefundStorageKey],
+  )
 
   const isAdmin = useMemo(() => {
     return !!user && Number(user.permission) === USER_PERMISSION.ADMIN
