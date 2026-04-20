@@ -10,16 +10,11 @@ import {
   Search,
   Bell,
   AlertCircle,
-  ExternalLink,
   ListChecks,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
-import { WhatsAppIcon } from '@/components/icons/WhatsAppIcon'
-
-const SUPPORT_WHATSAPP_URL = 'https://wa.me/5549988906647'
-
 const getApiBaseUrl = () => {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || ''
   if (!apiUrl) {
@@ -1103,19 +1098,6 @@ export default function ApiDocsPage() {
                     Sim
                   </td>
                 </tr>
-                <tr>
-                  <td className="px-4 py-2.5">
-                    <code className="bg-orange-50 text-orange-700 px-1.5 py-0.5 rounded text-xs font-mono">
-                      REFUNDED
-                    </code>
-                  </td>
-                  <td className="px-4 py-2.5 text-gray-600">
-                    Saque estornado (valor devolvido ao saldo)
-                  </td>
-                  <td className="px-4 py-2.5 text-green-600 text-xs font-medium">
-                    Sim
-                  </td>
-                </tr>
               </tbody>
             </table>
           </div>
@@ -1142,8 +1124,7 @@ export default function ApiDocsPage() {
               {' → '}
               <code className="bg-blue-100 px-1 rounded">COMPLETED</code> (ou{' '}
               <code className="bg-blue-100 px-1 rounded">CANCELLED</code> /{' '}
-              <code className="bg-blue-100 px-1 rounded">FAILED</code> /{' '}
-              <code className="bg-blue-100 px-1 rounded">REFUNDED</code> conforme o
+              <code className="bg-blue-100 px-1 rounded">FAILED</code> conforme o
               caso)
             </p>
             <p>
@@ -1151,14 +1132,6 @@ export default function ApiDocsPage() {
               <code className="bg-blue-100 px-1 rounded">PAID_OUT</code>
               {' → '}
               <code className="bg-blue-100 px-1 rounded">REFUNDED</code>
-            </p>
-            <p>
-              <strong>Estorno (saque / Cash Out):</strong> a partir de um saque
-              já concluído (ex.:{' '}
-              <code className="bg-blue-100 px-1 rounded">COMPLETED</code>
-              ), pode ir para{' '}
-              <code className="bg-blue-100 px-1 rounded">REFUNDED</code> conforme
-              o caso.
             </p>
           </div>
         </div>
@@ -1192,6 +1165,7 @@ export default function ApiDocsPage() {
         </div>
       </Card>
 
+      {/* Sem número de WhatsApp no momento — reative o bloco quando houver:
       <Card>
         <div className="bg-primary/5 border border-primary/20 rounded-lg p-4">
           <p className="text-sm font-medium text-gray-800 mb-3">
@@ -1217,6 +1191,7 @@ export default function ApiDocsPage() {
           </a>
         </div>
       </Card>
+      */}
     </div>
   )
 }

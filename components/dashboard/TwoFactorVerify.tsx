@@ -298,6 +298,7 @@ export function TwoFactorVerify() {
             </Button>
           </div>
 
+          {/* Sem número de WhatsApp no momento — reative quando houver:
           <div className="mt-6 pt-6 border-t border-gray-200">
             <p className="text-xs text-gray-500 text-center">
               Esqueceu seu PIN?{' '}
@@ -311,6 +312,7 @@ export function TwoFactorVerify() {
               </a>
             </p>
           </div>
+          */}
         </div>
       </div>
     </>

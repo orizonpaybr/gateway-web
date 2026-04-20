@@ -13,6 +13,8 @@ const STATUS_MAP: Record<string, StatusConfig> = {
   APPROVED: { label: 'Aprovado', variant: 'success' },
   PENDING: { label: 'Pendente', variant: 'warning' },
   WAITING_FOR_APPROVAL: { label: 'Pendente', variant: 'warning' },
+  NEW: { label: 'Pendente', variant: 'warning' },
+  CREATED: { label: 'Pendente', variant: 'warning' },
   REJECTED: { label: 'Rejeitado', variant: 'error' },
   CANCELLED: { label: 'Cancelado', variant: 'error' },
   REFUNDED: { label: 'Estornado', variant: 'default' },

@@ -5,7 +5,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { ArrowRight, ArrowLeft, HelpCircle, User } from 'lucide-react'
+import { ArrowRight, ArrowLeft, User } from 'lucide-react'
 import { useForm, Controller } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
@@ -571,6 +571,7 @@ function CadastroContent() {
           </Link>
         </div>
 
+        {/* Sem número de WhatsApp no momento — reative quando houver:
         <div className="mt-6">
           <Button
             variant="inkOutline"
@@ -587,6 +588,7 @@ function CadastroContent() {
             Precisa de ajuda?
           </Button>
         </div>
+        */}
 
         <p className="mt-6 text-center text-xs text-gray-500">
           Ao criar uma conta, você concorda com os nossos{' '}
