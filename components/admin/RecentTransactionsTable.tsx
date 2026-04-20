@@ -34,6 +34,8 @@ export function RecentTransactionsTable({
       PROCESSING: { label: 'Processando', variant: 'default' },
       IN_REVIEW: { label: 'Em análise', variant: 'warning' },
       WAITING_FOR_APPROVAL: { label: 'Pendente', variant: 'warning' },
+      NEW: { label: 'Pendente', variant: 'warning' },
+      CREATED: { label: 'Pendente', variant: 'warning' },
       REJECTED: { label: 'Rejeitado', variant: 'error' },
       CANCELLED: { label: 'Cancelado', variant: 'error' },
       FAILED: { label: 'Falhou', variant: 'error' },

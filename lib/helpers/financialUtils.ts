@@ -16,6 +16,7 @@ export function getFinancialStatusBadgeClasses(status: string): string {
       return 'bg-green-100 text-green-700'
     case 'PENDING':
     case 'WAITING_FOR_APPROVAL':
+    case 'NEW':
     case 'PENDENTE':
     case 'AGUARDANDO':
       return 'bg-yellow-100 text-yellow-700'

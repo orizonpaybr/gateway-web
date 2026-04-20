@@ -5,7 +5,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { ArrowRight, HelpCircle } from 'lucide-react'
+import { ArrowRight } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
@@ -118,6 +118,7 @@ export default function LoginPage() {
           </Link>
         </div>
 
+        {/* Sem número de WhatsApp no momento — reative quando houver:
         <div className="mt-6">
           <Button
             variant="inkOutline"
@@ -128,6 +129,7 @@ export default function LoginPage() {
             Precisa de ajuda?
           </Button>
         </div>
+        */}
 
         <p className="mt-6 text-center text-xs text-gray-500">
           Ao acessar a conta, você concorda com os nossos{' '}

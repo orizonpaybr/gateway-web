@@ -5,11 +5,8 @@ import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import { useAffiliateLink } from '@/hooks/useAffiliateQuery'
-import { Copy, Check, Share2, ExternalLink } from 'lucide-react'
-import { WhatsAppIcon } from '@/components/icons/WhatsAppIcon'
+import { Copy, Check, Share2 } from 'lucide-react'
 import { toast } from 'sonner'
-
-const SUPPORT_WHATSAPP_URL = 'https://wa.me/5549988906647'
 
 export function AffiliateLink() {
   const { data: response, isLoading, error } = useAffiliateLink()
@@ -123,6 +120,7 @@ export function AffiliateLink() {
                 <li>As comissões são creditadas automaticamente.</li>
                 <li>Você pode sacar pelo PIX normalmente.</li>
               </ul>
+              {/* Sem número de WhatsApp no momento — reative quando houver:
               <p className="font-medium mt-3 mb-2 text-blue-800">
                 Em caso de dúvidas, entre em contato:
               </p>
@@ -141,6 +139,7 @@ export function AffiliateLink() {
                 </div>
                 <ExternalLink className="w-4 h-4 text-gray-400 shrink-0" />
               </a>
+              */}
             </div>
           </div>
         </div>

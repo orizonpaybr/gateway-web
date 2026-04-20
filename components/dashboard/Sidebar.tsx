@@ -24,7 +24,6 @@ import {
 } from 'lucide-react'
 import { DocumentIcon } from '@/components/icons/DocumentIcon'
 import { PixIcon } from '@/components/icons/PixIcon'
-import { WhatsAppIcon } from '@/components/icons/WhatsAppIcon'
 import { AnimatedAvatar } from '@/components/ui/AnimatedAvatar'
 import { Button } from '@/components/ui/Button'
 import { useAuth } from '@/contexts/AuthContext'
@@ -88,6 +87,7 @@ const mainMenuItems: MenuItem[] = [
 ]
 
 const supportAndDocsItems: MenuItem[] = [
+  /* Sem número de WhatsApp no momento — reative quando houver:
   {
     icon: WhatsAppIcon,
     label: 'Suporte',
@@ -95,6 +95,7 @@ const supportAndDocsItems: MenuItem[] = [
     secondaryText: 'Fale conosco no WhatsApp',
     isExternal: true,
   },
+  */
   {
     icon: DocumentIcon,
     label: 'API Docs',
