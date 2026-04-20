@@ -26,14 +26,57 @@ interface DepositStatusBadgeProps {
   statusLegivel?: string
 }
 
+function resolvePendenteVariant(
+  statusUpper: string,
+  label: string,
+  base: StatusConfig['variant'],
+): StatusConfig['variant'] {
+  if (base !== 'default') {
+    return base
+  }
+  if (label.trim().toLowerCase() === 'pendente') {
+    return 'warning'
+  }
+  // Status não mapeado que ainda assim costuma ser pendente no fluxo de depósito
+  const pendentes = new Set([
+    'WAITING_FOR_APPROVAL',
+    'PENDING',
+    'NEW',
+    'CREATED',
+  ])
+  if (pendentes.has(statusUpper)) {
+    return 'warning'
+  }
+  return base
+}
+
 export const DepositStatusBadge = memo(
   ({ status, statusLegivel }: DepositStatusBadgeProps) => {
-    const statusUpper = status.toUpperCase()
+    const statusUpper = String(status ?? '')
+      .trim()
+      .toUpperCase()
     const config = STATUS_MAP[statusUpper] || {
       label: statusLegivel || statusUpper.replace(/_/g, ' '),
       variant: 'default' as const,
     }
 
-    return <Badge variant={config.variant}>{config.label}</Badge>
+    const variant = resolvePendenteVariant(
+      statusUpper,
+      config.label,
+      config.variant,
+    )
+
+    return (
+      <Badge
+        variant={variant}
+        className={
+          variant === 'warning'
+            ? '!bg-amber-100 !text-amber-900 ring-1 ring-inset ring-amber-300/70'
+            : undefined
+        }
+      >
+        {config.label}
+      </Badge>
+    )
   },
 )
