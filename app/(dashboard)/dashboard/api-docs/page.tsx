@@ -66,7 +66,6 @@ const cashInBody = `{
   "token": "{{CLIENT_KEY}}",
   "secret": "{{CLIENT_SECRET}}",
   "amount": 1,
-  "description": "Depósito via PIX",
   "debtor_name": "Nome do pagador",
   "email": "email@exemplo.com",
   "debtor_document_number": "00000000000",
@@ -80,8 +79,8 @@ const cashInResponse = `{
   "transaction_id": "e2a3f1c8d94b...",
   "amount": 1,
   "qr_code": "00020126580014br.gov.bcb.pix...",
-  "qr_code_image_url": "data:image/png;base64,...",
-  "expires_at": "2025-01-15T16:30:00Z"
+  "qr_code_image_url": "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=...",
+  "expires_at": null
 }`
 
 const cashOutBody = `{
@@ -95,14 +94,23 @@ const cashOutBody = `{
 
 const cashOutResponse = `{
   "status": "success",
-  "message": "Saque solicitado com sucesso",
-  "id": "PAYOUT_API_xxx...",
-  "amount": 1,
-  "pixKey": "chave-pix@exemplo.com",
-  "pixKeyType": "email",
-  "withdrawStatusId": "Processing",
-  "createdAt": "2026-03-10T10:22:34.000Z",
-  "updatedAt": "2026-03-10T10:22:34.000Z"
+  "message": "Saque PIX processado.",
+  "data": {
+    "transaction_id": "abc123...",
+    "amount": 1,
+    "pixKeyType": "email",
+    "pixKey": "chave-pix@exemplo.com",
+    "description": "Saque via API PIX",
+    "status": "PROCESSING",
+    "tipo_processamento": "Automático",
+    "created_at": "2026-03-10T10:22:34.000000Z",
+    "adquirente": "simpay",
+    "taxa_cash_out": 0.5,
+    "taxa_adquirente": 0.02,
+    "taxa_aplicacao": 0.48,
+    "valor_liquido": 0.5,
+    "valor_total_descontado": 1.5
+  }
 }`
 
 const statusBody = `{
@@ -128,8 +136,8 @@ const webhookPayloadCashIn = `{
   "receiver": {
     "user_id": "seu_user_id_coratri"
   },
-  "message": "Depósito PIX recebido com sucesso.",
-  "endToEndId": "E1234567820260310143000abc"
+  "endToEndId": "E1234567820260310143000abc",
+  "message": "Depósito PIX recebido com sucesso."
 }`
 
 const webhookPayloadCashOut = `{
@@ -146,8 +154,8 @@ const webhookPayloadCashOut = `{
   "sender": {
     "user_id": "seu_user_id_coratri"
   },
-  "message": "Saque PIX liquidado com sucesso.",
-  "endToEndId": "E1234567820260310143200xyz"
+  "endToEndId": "E1234567820260310143200xyz",
+  "message": "Saque PIX liquidado com sucesso."
 }`
 
 export default function ApiDocsPage() {
@@ -370,6 +378,19 @@ export default function ApiDocsPage() {
           <code className="bg-gray-100 px-1 rounded text-xs">postback</code>.
         </p>
 
+        <p className="text-sm text-gray-600 mb-4">
+          <strong>Autenticação:</strong>{' '}
+          <code className="bg-gray-100 px-1 rounded text-xs">token</code> e{' '}
+          <code className="bg-gray-100 px-1 rounded text-xs">secret</code> são
+          obrigatórios em cada chamada. Além do corpo JSON (como no exemplo),
+          você pode enviá-los na query string ou nos cabeçalhos HTTP{' '}
+          <code className="bg-gray-100 px-1 rounded text-xs">api_token</code> e{' '}
+          <code className="bg-gray-100 px-1 rounded text-xs">api_secret</code>{' '}
+          (também aceitos como{' '}
+          <code className="bg-gray-100 px-1 rounded text-xs">api-token</code> e{' '}
+          <code className="bg-gray-100 px-1 rounded text-xs">api-secret</code>).
+        </p>
+
         <div className="space-y-6">
           <div>
             <div className="flex items-center justify-between mb-2">
@@ -390,18 +411,28 @@ export default function ApiDocsPage() {
                 <code>{cashInBody}</code>
               </pre>
             </div>
-            <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1 text-xs text-gray-600">
+            <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 text-xs text-gray-600">
+              <div className="space-y-2">
+                <p>
+                  <span className="text-red-500 font-bold">*</span>{' '}
+                  <strong>token</strong> e <strong>secret</strong> — obrigatórios
+                  (veja «Autenticação» acima: JSON, query ou headers).
+                </p>
+                <p>
+                  <span className="text-gray-400">○</span>{' '}
+                  <strong>debtor_document_number</strong> — opcional na API; CPF
+                  (11 dígitos) ou CNPJ (14 dígitos) do pagador (fortemente
+                  recomendado para a cobrança PIX conforme regras vigentes)
+                </p>
+              </div>
               <p>
                 <span className="text-red-500 font-bold">*</span>{' '}
-                <strong>token</strong>, <strong>secret</strong>,{' '}
-                <strong>amount</strong> (mín. R$ 1,00),{' '}
-                <strong>debtor_name</strong>, <strong>email</strong> —
-                obrigatórios
-              </p>
-              <p>
-                <span className="text-red-500 font-bold">*</span>{' '}
-                <strong>debtor_document_number</strong> — CPF (11 dígitos) ou
-                CNPJ (14 dígitos) do pagador — obrigatório para PIX
+                <strong>amount</strong>, <strong>debtor_name</strong>,{' '}
+                <strong>email</strong> — obrigatórios.{' '}
+                <strong>amount</strong> é o valor em reais (positivo); recomendamos
+                no mínimo R$ 1,00 por conta das taxas e do uso prático do PIX — a
+                API não rejeita valores menores por um número mínimo fixo neste
+                endpoint.
               </p>
               <p>
                 <span className="text-gray-400">○</span> <strong>phone</strong>{' '}
@@ -412,11 +443,6 @@ export default function ApiDocsPage() {
                 <strong>postback</strong> — URL para receber o webhook quando o
                 depósito for pago (recomendado). Veja a seção
                 &quot;Webhook&quot; abaixo.
-              </p>
-              <p className="sm:col-span-2">
-                <span className="text-gray-400">○</span>{' '}
-                <strong>split_email</strong> + <strong>split_percentage</strong>{' '}
-                — split de pagamento (opcional)
               </p>
             </div>
           </div>
@@ -441,20 +467,37 @@ export default function ApiDocsPage() {
             </div>
             <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1 text-xs text-gray-600">
               <p>
-                <strong>transaction_id</strong> — ID único. Guarde para
-                consultar o status.
-              </p>
-              <p>
-                <strong>qr_code</strong> — código PIX Copia e Cola.{' '}
-                <strong>qr_code_image_url</strong> — imagem do QR Code (base64).
-              </p>
-              <p>
                 <strong>status</strong> —{' '}
-                <code className="bg-gray-100 px-1 rounded">success</code> na
-                criação. O pagamento é confirmado via webhook.
+                <code className="bg-gray-100 px-1 rounded">success</code> quando
+                a cobrança PIX foi criada (não indica pagamento recebido). O
+                pagamento é confirmado via webhook.
               </p>
               <p>
-                <strong>expires_at</strong> — QR Code expira em 1 hora.
+                <strong>message</strong> — mensagem fixa de sucesso na criação
+                (&quot;QR Code gerado com sucesso&quot;).
+              </p>
+              <p>
+                <strong>transaction_id</strong> — ID único da transação.
+                Guarde para consultar o status.
+              </p>
+              <p>
+                <strong>amount</strong> — valor em reais solicitado no corpo da
+                requisição (espelha o pedido).
+              </p>
+              <p>
+                <strong>qr_code</strong> — código PIX Copia e Cola (BR Code).
+              </p>
+              <p>
+                <strong>qr_code_image_url</strong> — URL para exibir o QR:
+                pode vir do provedor PIX (incluindo data URL), ou ser gerada
+                automaticamente pela API (serviço externo de QR) quando não houver
+                imagem no retorno do provedor.
+              </p>
+              <p className="sm:col-span-2">
+                <strong>expires_at</strong> — na resposta atual da API este campo
+                é sempre <code className="bg-gray-100 px-1 rounded">null</code>;
+                a validade prática da cobrança segue o ciclo de vida do PIX
+                gerado.
               </p>
             </div>
           </div>
@@ -477,7 +520,20 @@ export default function ApiDocsPage() {
         </div>
 
         <p className="text-sm text-gray-600 mb-4">
-          Envia um PIX para qualquer chave PIX.
+          Envia um PIX para a chave informada. Tetos de valor e políticas da
+          conta são definidos pela Coratri.
+        </p>
+
+        <p className="text-sm text-gray-600 mb-4">
+          <strong>Autenticação:</strong> o middleware aceita credenciais no
+          JSON, na query ou nos cabeçalhos{' '}
+          <code className="bg-gray-100 px-1 rounded text-xs">api_token</code> /{' '}
+          <code className="bg-gray-100 px-1 rounded text-xs">api_secret</code>.
+          Nesta rota, porém, a validação exige{' '}
+          <code className="bg-gray-100 px-1 rounded text-xs">token</code> e{' '}
+          <code className="bg-gray-100 px-1 rounded text-xs">secret</code> no{' '}
+          <strong>corpo JSON ou na query</strong> — caso contrário a API
+          responde <strong>422</strong> (apenas headers não bastam).
         </p>
 
         <div className="space-y-6">
@@ -500,28 +556,34 @@ export default function ApiDocsPage() {
                 <code>{cashOutBody}</code>
               </pre>
             </div>
-            <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1 text-xs text-gray-600">
+            <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 text-xs text-gray-600">
               <p>
                 <span className="text-red-500 font-bold">*</span>{' '}
                 <strong>token</strong>, <strong>secret</strong>,{' '}
-                <strong>amount</strong> (mín. R$ 1,00), <strong>pixKey</strong>,{' '}
+                <strong>amount</strong>, <strong>pixKey</strong>,{' '}
                 <strong>pixKeyType</strong>, <strong>baasPostbackUrl</strong> —
-                obrigatórios.
+                obrigatórios. <strong>amount</strong> em reais (positivo);
+                recomendamos no mínimo R$ 1,00 — a rota não exige mínimo fixo na
+                validação, mas há limite máximo por saque (configurável no
+                servidor).
               </p>
               <p>
-                <strong>pixKeyType</strong> aceita:{' '}
-                <code className="bg-gray-100 px-1 rounded">cpf</code>{' '}
-                <code className="bg-gray-100 px-1 rounded">cnpj</code>{' '}
-                <code className="bg-gray-100 px-1 rounded">email</code>{' '}
-                <code className="bg-gray-100 px-1 rounded">telefone</code>{' '}
-                <code className="bg-gray-100 px-1 rounded">aleatoria</code>
+                <strong>pixKeyType</strong> aceita exatamente (minúsculas):{' '}
+                <code className="bg-gray-100 px-1 rounded">cpf</code>,{' '}
+                <code className="bg-gray-100 px-1 rounded">cnpj</code>,{' '}
+                <code className="bg-gray-100 px-1 rounded">email</code>,{' '}
+                <code className="bg-gray-100 px-1 rounded">telefone</code>,{' '}
+                <code className="bg-gray-100 px-1 rounded">phone</code> (tratado
+                como telefone), <code className="bg-gray-100 px-1 rounded">aleatoria</code>,{' '}
+                <code className="bg-gray-100 px-1 rounded">random</code>,{' '}
+                <code className="bg-gray-100 px-1 rounded">crypto</code>.
               </p>
               <p className="sm:col-span-2">
                 <strong>baasPostbackUrl</strong> — URL do seu servidor para
                 receber o webhook quando o saque for processado (pago, cancelado
                 ou estornado). Use{' '}
                 <code className="bg-gray-100 px-1 rounded">web</code> se for
-                apenas pela interface.
+                apenas pela interface (não dispara webhook externo).
               </p>
             </div>
           </div>
@@ -544,18 +606,29 @@ export default function ApiDocsPage() {
                 <code>{cashOutResponse}</code>
               </pre>
             </div>
-            <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1 text-xs text-gray-600">
+            <div className="mt-3 space-y-2 text-xs text-gray-600">
               <p>
-                <strong>withdrawStatusId: Processing</strong> — saque automático
-                em andamento (valor será enviado em instantes).
+                <strong>status</strong> — <code className="bg-gray-100 px-1 rounded">success</code>{' '}
+                quando a solicitação foi aceita. <strong>message</strong> — em
+                sucesso, <code className="bg-gray-100 px-1 rounded">Saque PIX processado.</code>
               </p>
               <p>
-                <strong>withdrawStatusId: PendingProcessing</strong> —
-                aguardando aprovação manual.
+                <strong>data</strong> — detalhes do saque. Use{' '}
+                <strong>data.transaction_id</strong> no{' '}
+                <code className="bg-gray-100 px-1 rounded">POST /api/status</code>{' '}
+                e nos webhooks. Os campos de taxa (
+                <code className="bg-gray-100 px-1 rounded">taxa_cash_out</code>,{' '}
+                <code className="bg-gray-100 px-1 rounded">valor_liquido</code>,{' '}
+                <code className="bg-gray-100 px-1 rounded">valor_total_descontado</code>, …)
+                refletem o cálculo no momento da criação.
               </p>
-              <p className="sm:col-span-2">
-                Use o <strong>id</strong> retornado para consultar status via
-                POST /api/status ou pelo webhook.
+              <p>
+                <strong>data.status</strong> — andamento do PIX (ex.:{' '}
+                <code className="bg-gray-100 px-1 rounded">PROCESSING</code>,{' '}
+                <code className="bg-gray-100 px-1 rounded">COMPLETED</code>,{' '}
+                <code className="bg-gray-100 px-1 rounded">CANCELLED</code>
+                , …). <strong>data.adquirente</strong> — referência do processamento
+                PIX.
               </p>
             </div>
           </div>
@@ -579,11 +652,14 @@ export default function ApiDocsPage() {
 
         <p className="text-sm text-gray-600 mb-4">
           Consulte o status atual de qualquer transação (cash in ou cash out)
-          pelo seu{' '}
+          pelo{' '}
           <code className="bg-gray-100 px-1 rounded text-xs">
             idTransaction
-          </code>
-          . Não requer autenticação.
+          </code>{' '}
+          retornado na criação. Não requer autenticação. Quando já houver
+          tentativa de envio do webhook ao seu postback, a resposta pode incluir
+          o objeto <code className="bg-gray-100 px-1 rounded text-xs">webhook</code>{' '}
+          (entrega, HTTP status e corpo enviado).
         </p>
 
         <div className="grid md:grid-cols-2 gap-4">
@@ -655,7 +731,8 @@ export default function ApiDocsPage() {
 
         <p className="text-sm text-gray-600 mb-4">
           Quando uma transação é confirmada (depósito pago ou saque processado),
-          a Coratri envia um <strong>POST</strong> para a URL que você informou:
+          a Coratri envia um <strong>POST</strong> em JSON para a URL que você
+          informou:
         </p>
 
         <ul className="list-disc list-inside text-sm text-gray-600 mb-4 space-y-1">
@@ -675,11 +752,24 @@ export default function ApiDocsPage() {
 
         <p className="text-sm text-gray-600 mb-4">
           Você pode usar a <strong>mesma URL</strong> para os dois tipos. O
-          payload inclui{' '}
+          corpo enviado inclui sempre <code className="bg-gray-100 px-1 rounded">idTransaction</code>,{' '}
+          <code className="bg-gray-100 px-1 rounded">status</code>,{' '}
+          <code className="bg-gray-100 px-1 rounded">amount</code>,{' '}
+          <code className="bg-gray-100 px-1 rounded">paidAt</code>,{' '}
           <code className="bg-gray-100 px-1 rounded">typeTransaction</code> (
-          <code>PIX_IN</code> ou <code>PIX_OUT</code>) para você identificar o
-          tipo e os dados do <strong>pagador</strong> (depósito) ou do{' '}
-          <strong>beneficiário</strong> (saque).
+          <code>PIX_IN</code> ou <code>PIX_OUT</code>) e{' '}
+          <code className="bg-gray-100 px-1 rounded">message</code>. Além disso,
+          a Coratri envia dados estruturados{' '}
+          <strong>a partir dos dados da transação na sua conta</strong>:{' '}
+          <code className="bg-gray-100 px-1 rounded">payer</code> e{' '}
+          <code className="bg-gray-100 px-1 rounded">receiver</code> (depósito),{' '}
+          <code className="bg-gray-100 px-1 rounded">beneficiary</code> e{' '}
+          <code className="bg-gray-100 px-1 rounded">sender</code> (saque), e{' '}
+          <code className="bg-gray-100 px-1 rounded">endToEndId</code> quando
+          já houver identificador fim-a-fim registrado. Campos vazios são
+          omitidos. Para auditar o JSON exato de cada entrega, use{' '}
+          <code className="bg-gray-100 px-1 rounded text-xs">POST /api/status</code> e o{' '}
+          <code className="bg-gray-100 px-1 rounded">webhook.request_body</code>.
         </p>
 
         <div className="min-w-0 overflow-hidden rounded-lg border border-yellow-200 bg-yellow-50 p-3 mb-4 text-xs text-yellow-800">
@@ -714,20 +804,15 @@ export default function ApiDocsPage() {
             <div className="mt-2 text-xs text-gray-600 space-y-1">
               <p>
                 <strong>amount</strong> — valor em reais.{' '}
-                <strong>paidAt</strong> — data/hora ISO 8601.
+                <strong>paidAt</strong> — data/hora ISO 8601.{' '}
+                <strong>message</strong> — texto amigável conforme o status (ex.:
+                depósito recebido, estornado).
               </p>
               <p>
-                <strong>payer</strong> — dados de quem pagou o PIX (nome,
-                documento, email, telefone), quando informados na criação do
-                depósito.
-              </p>
-              <p>
+                <strong>payer</strong> — dados informados na criação da cobrança.{' '}
                 <strong>receiver.user_id</strong> — identificador da conta
-                Coratri que recebeu o valor.
-              </p>
-              <p>
-                <strong>message</strong> — opcional; texto amigável do status.{' '}
-                <strong>endToEndId</strong> — opcional; ID fim-a-fim do PIX.
+                Coratri que recebe. <strong>endToEndId</strong> — quando já
+                liquidado e registrado.
               </p>
             </div>
           </div>
@@ -756,20 +841,15 @@ export default function ApiDocsPage() {
             </div>
             <div className="mt-2 text-xs text-gray-600 space-y-1">
               <p>
-                <strong>beneficiary</strong> — dados de quem recebeu o PIX.
-                <strong>beneficiary.pixKey</strong> está sempre presente;{' '}
-                <strong>beneficiary.name</strong> e{' '}
-                <strong>beneficiary.document</strong> são opcionais e podem vir
-                omitidos quando o processador não os retorna.
+                <strong>beneficiary</strong> — chave e dados do recebedor
+                informados no saque. <strong>sender.user_id</strong> — conta
+                Coratri que solicitou. <strong>endToEndId</strong> — quando já
+                registrado após liquidação.
               </p>
               <p>
-                <strong>sender.user_id</strong> — identificador da conta Coratri
-                que solicitou o saque.
-              </p>
-              <p>
-                <strong>message</strong> — opcional. <strong>endToEndId</strong>{' '}
-                — opcional. Em caso de falha, o payload pode incluir{' '}
-                <strong>error</strong> com o motivo.
+                Em falhas ou cancelamentos, <strong>message</strong> pode
+                descrever o motivo; detalhes adicionais podem constar na
+                consulta <code className="bg-gray-100 px-1 rounded">POST /api/status</code>.
               </p>
             </div>
           </div>
@@ -801,23 +881,19 @@ export default function ApiDocsPage() {
                 .
               </li>
               <li className="pl-0.5">
-                No seu backend, leia{' '}
+                No seu backend, use{' '}
                 <code className="break-words bg-gray-200 px-1 rounded">
                   typeTransaction
                 </code>{' '}
-                para saber se é PIX_IN ou PIX_OUT; use{' '}
+                (<code>PIX_IN</code> ou <code>PIX_OUT</code>) e{' '}
                 <code className="break-words bg-gray-200 px-1 rounded">
                   idTransaction
                 </code>{' '}
-                para conciliar com sua base e{' '}
+                para conciliar com sua base; confira valores com{' '}
                 <code className="break-words bg-gray-200 px-1 rounded">
-                  payer
+                  amount
                 </code>{' '}
-                /{' '}
-                <code className="break-words bg-gray-200 px-1 rounded">
-                  beneficiary
-                </code>{' '}
-                para exibir ou registrar dados do cliente.
+                e <code className="break-words bg-gray-200 px-1 rounded">status</code>.
               </li>
             </ol>
           </div>
@@ -840,9 +916,13 @@ export default function ApiDocsPage() {
         </div>
 
         <p className="text-sm text-gray-600 mb-4">
-          Abaixo estão todos os status que uma transação pode assumir. Use o
-          campo <code className="bg-gray-100 px-1 rounded text-xs">status</code>{' '}
-          retornado na consulta ou no webhook para identificar o estado atual.
+          Abaixo estão os status que uma transação pode assumir. Use o campo{' '}
+          <code className="bg-gray-100 px-1 rounded text-xs">status</code> na
+          consulta ou no webhook. Na coluna <strong>Webhook</strong>,{' '}
+          <strong>Sim</strong> indica que a Coratri pode enviar POST ao seu URL
+          de postback quando a transação passar a esse estado;{' '}
+          <strong>—</strong> indica que não há notificação nesse passo (o status
+          pode ainda assim aparecer na API).
         </p>
 
         <div className="mb-5">
@@ -922,9 +1002,7 @@ export default function ApiDocsPage() {
                   <td className="px-4 py-2.5 text-gray-600">
                     Pagamento não realizado
                   </td>
-                  <td className="px-4 py-2.5 text-green-600 text-xs font-medium">
-                    Sim
-                  </td>
+                  <td className="px-4 py-2.5 text-gray-400 text-xs">—</td>
                 </tr>
                 <tr>
                   <td className="px-4 py-2.5">
@@ -934,19 +1012,6 @@ export default function ApiDocsPage() {
                   </td>
                   <td className="px-4 py-2.5 text-gray-600">
                     Depósito estornado (valor total debitado)
-                  </td>
-                  <td className="px-4 py-2.5 text-green-600 text-xs font-medium">
-                    Sim
-                  </td>
-                </tr>
-                <tr>
-                  <td className="px-4 py-2.5">
-                    <code className="bg-orange-50 text-orange-700 px-1.5 py-0.5 rounded text-xs font-mono">
-                      PARTIALLY_REFUNDED
-                    </code>
-                  </td>
-                  <td className="px-4 py-2.5 text-gray-600">
-                    Depósito estornado parcialmente
                   </td>
                   <td className="px-4 py-2.5 text-green-600 text-xs font-medium">
                     Sim
@@ -997,22 +1062,7 @@ export default function ApiDocsPage() {
                   <td className="px-4 py-2.5 text-gray-600">
                     PIX enviado, aguardando liquidação
                   </td>
-                  <td className="px-4 py-2.5 text-green-600 text-xs font-medium">
-                    Sim
-                  </td>
-                </tr>
-                <tr>
-                  <td className="px-4 py-2.5">
-                    <code className="bg-green-50 text-green-700 px-1.5 py-0.5 rounded text-xs font-mono">
-                      PAID_OUT
-                    </code>
-                  </td>
-                  <td className="px-4 py-2.5 text-gray-600">
-                    Saque liquidado com sucesso
-                  </td>
-                  <td className="px-4 py-2.5 text-green-600 text-xs font-medium">
-                    Sim
-                  </td>
+                  <td className="px-4 py-2.5 text-gray-400 text-xs">—</td>
                 </tr>
                 <tr>
                   <td className="px-4 py-2.5">
@@ -1021,7 +1071,7 @@ export default function ApiDocsPage() {
                     </code>
                   </td>
                   <td className="px-4 py-2.5 text-gray-600">
-                    Equivalente a PAID_OUT (saque concluído)
+                    Saque liquidado com sucesso (status usado na confirmação PIX)
                   </td>
                   <td className="px-4 py-2.5 text-green-600 text-xs font-medium">
                     Sim
@@ -1066,19 +1116,6 @@ export default function ApiDocsPage() {
                     Sim
                   </td>
                 </tr>
-                <tr>
-                  <td className="px-4 py-2.5">
-                    <code className="bg-orange-50 text-orange-700 px-1.5 py-0.5 rounded text-xs font-mono">
-                      PARTIALLY_REFUNDED
-                    </code>
-                  </td>
-                  <td className="px-4 py-2.5 text-gray-600">
-                    Saque estornado parcialmente
-                  </td>
-                  <td className="px-4 py-2.5 text-green-600 text-xs font-medium">
-                    Sim
-                  </td>
-                </tr>
               </tbody>
             </table>
           </div>
@@ -1100,29 +1137,28 @@ export default function ApiDocsPage() {
               expirar)
             </p>
             <p>
-              <strong>Saque automático:</strong>{' '}
+              <strong>Saque:</strong>{' '}
               <code className="bg-blue-100 px-1 rounded">PROCESSING</code>
               {' → '}
-              <code className="bg-blue-100 px-1 rounded">
-                PAID_OUT
-              </code> (ou{' '}
+              <code className="bg-blue-100 px-1 rounded">COMPLETED</code> (ou{' '}
               <code className="bg-blue-100 px-1 rounded">CANCELLED</code> /{' '}
-              <code className="bg-blue-100 px-1 rounded">FAILED</code> se houver
-              erro)
+              <code className="bg-blue-100 px-1 rounded">FAILED</code> /{' '}
+              <code className="bg-blue-100 px-1 rounded">REFUNDED</code> conforme o
+              caso)
             </p>
             <p>
-              <strong>Saque manual:</strong>{' '}
-              <code className="bg-blue-100 px-1 rounded">PENDING</code>
-              {' → '}
-              <code className="bg-blue-100 px-1 rounded">PROCESSING</code>
-              {' → '}
-              <code className="bg-blue-100 px-1 rounded">PAID_OUT</code>
-            </p>
-            <p>
-              <strong>Estorno:</strong>{' '}
+              <strong>Estorno (depósito / Cash In):</strong>{' '}
               <code className="bg-blue-100 px-1 rounded">PAID_OUT</code>
               {' → '}
               <code className="bg-blue-100 px-1 rounded">REFUNDED</code>
+            </p>
+            <p>
+              <strong>Estorno (saque / Cash Out):</strong> a partir de um saque
+              já concluído (ex.:{' '}
+              <code className="bg-blue-100 px-1 rounded">COMPLETED</code>
+              ), pode ir para{' '}
+              <code className="bg-blue-100 px-1 rounded">REFUNDED</code> conforme
+              o caso.
             </p>
           </div>
         </div>
