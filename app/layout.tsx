@@ -10,9 +10,9 @@ export const metadata: Metadata = {
   title: 'Coratri - Finance',
   description: 'Sistema de pagamentos e gestão financeira',
   icons: {
-    icon: encodeURI('/Logo Coratri Finance.png'),
-    shortcut: encodeURI('/Logo Coratri Finance.png'),
-    apple: encodeURI('/Logo Coratri Finance.png'),
+    icon: encodeURI('/Favicon - Preto.png'),
+    shortcut: encodeURI('/Favicon - Preto.png'),
+    apple: encodeURI('/Favicon - Preto.png'),
   },
 }
 
