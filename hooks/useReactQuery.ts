@@ -182,6 +182,7 @@ export function useInteractiveMovement(period: string = '7d') {
 }
 
 // ===== PIX INFRAÇÕES HOOKS =====
+// listInfracoes em lib/api.ts está em modo stub (sem HTTP) enquanto as rotas pix/infracoes estiverem desativadas na API.
 export function usePixInfracoes(filters: Record<string, unknown> = {}) {
   const { authReady } = useAuth()
 
