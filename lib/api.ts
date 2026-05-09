@@ -743,10 +743,11 @@ export const pixAPI = {
     })
   },
 
-  // ===== INFRAÇÕES PIX =====
+  // ===== INFRAÇÕES PIX (desativado — rotas comentadas em gateway-api/routes/api.php) =====
+  // Antes: montava URLSearchParams a partir de filters e chamava apiRequest(`/pix/infracoes?...`).
+  // getInfracao: apiRequest(`/pix/infracoes/${id}`).
 
-  // Listar infrações do Pix
-  listInfracoes: async (filters?: {
+  listInfracoes: async (_filters?: {
     page?: number
     limit?: number
     status?: string
@@ -776,32 +777,22 @@ export const pixAPI = {
       to: number
     }
   }> => {
-    const params = new URLSearchParams()
-    if (filters?.page) {
-      params.append('page', filters.page.toString())
+    return {
+      success: true,
+      data: {
+        data: [],
+        current_page: 1,
+        last_page: 1,
+        per_page: _filters?.limit ?? 20,
+        total: 0,
+        from: 0,
+        to: 0,
+      },
     }
-    if (filters?.limit) {
-      params.append('limit', filters.limit.toString())
-    }
-    if (filters?.status) {
-      params.append('status', filters.status)
-    }
-    if (filters?.busca) {
-      params.append('busca', filters.busca)
-    }
-    if (filters?.data_inicio) {
-      params.append('data_inicio', filters.data_inicio)
-    }
-    if (filters?.data_fim) {
-      params.append('data_fim', filters.data_fim)
-    }
-
-    return apiRequest(`/pix/infracoes?${params.toString()}`)
   },
 
-  // Buscar detalhes de uma infração específica
   getInfracao: async (
-    id: string,
+    _id: string,
   ): Promise<{
     success: boolean
     data: {
@@ -824,7 +815,9 @@ export const pixAPI = {
       updated_at: string
     }
   }> => {
-    return apiRequest(`/pix/infracoes/${id}`)
+    return Promise.reject(
+      new Error('Detalhe de infração PIX indisponível no momento.'),
+    )
   },
 }
 

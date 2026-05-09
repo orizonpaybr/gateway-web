@@ -67,7 +67,7 @@ const mainMenuItems: MenuItem[] = [
     submenu: [
       { label: 'Depositar', href: '/dashboard/pix/depositar' },
       { label: 'Enviar Pix', href: '/dashboard/pix/chave' },
-      { label: 'Infrações', href: '/dashboard/pix/infracoes' },
+      // { label: 'Infrações', href: '/dashboard/pix/infracoes' }, // desativado temporariamente
     ],
   },
   {
