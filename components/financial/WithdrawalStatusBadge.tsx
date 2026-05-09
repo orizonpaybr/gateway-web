@@ -6,8 +6,21 @@ interface WithdrawalStatusBadgeProps {
   statusLegivel: string
 }
 
+function normalizeWithdrawalStatusLabel(
+  rawStatus: string,
+  legivel: string,
+): string {
+  const key = String(rawStatus).trim().toUpperCase()
+  if (key === 'FAILED' || String(legivel).trim().toUpperCase() === 'FAILED') {
+    return 'Falhou'
+  }
+  return legivel
+}
+
 export const WithdrawalStatusBadge = memo(
   ({ status, statusLegivel }: WithdrawalStatusBadgeProps) => {
+    const displayLabel = normalizeWithdrawalStatusLabel(status, statusLegivel)
+
     const getStatusStyles = (status: string): string => {
       const statusLower = status.toLowerCase()
       if (statusLower.includes('paid') || statusLower.includes('complete')) {
@@ -31,7 +44,7 @@ export const WithdrawalStatusBadge = memo(
           status,
         )}`}
       >
-        {statusLegivel}
+        {displayLabel}
       </span>
     )
   },
