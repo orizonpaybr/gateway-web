@@ -93,7 +93,7 @@ export default function DashboardPage() {
         color: 'bg-red-100 text-red-600',
       },
       {
-        title: 'Splits do Mês',
+        title: 'Fluxo líquido do mês',
         value: formatCurrency(stats.data.splits_mes),
         icon: TrendingUp,
         color: 'bg-purple-100 text-purple-600',
