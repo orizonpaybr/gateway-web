@@ -119,32 +119,34 @@ export const UserEditModal = memo(
       }
     }, [globalAcquirer, acquirerValue])
 
-    const saldoAtual = useMemo(
-      () => (user ? Number(user.saldo) || 0 : 0),
-      [user],
-    )
-
     const handleSave = useCallback(async () => {
       if (!user?.id) {
         return
       }
 
-      const newSaldo = parseCurrencyInput(saldoInput) / 100
-      if (newSaldo < 0) {
+      // Comparar sempre em centavos (inteiro): evita diferença espiúria de float
+      // entre API (saldo DECIMAL) e o valor do CurrencyInput ao mudar só adquirente/outros campos.
+      const oldCents = Math.round((Number(user.saldo) || 0) * 100)
+      const newCents = parseCurrencyInput(saldoInput)
+      if (newCents < 0) {
         return
       }
 
-      if (newSaldo !== saldoAtual) {
-        try {
-          await adjustBalanceMutation.mutateAsync({
-            userId: user.id,
-            data: {
-              amount: Math.abs(newSaldo - saldoAtual),
-              type: newSaldo > saldoAtual ? 'add' : 'subtract',
-            },
-          })
-        } catch {
-          return
+      if (newCents !== oldCents) {
+        const deltaCents = Math.abs(newCents - oldCents)
+        const amountReais = deltaCents / 100
+        if (amountReais >= 0.01) {
+          try {
+            await adjustBalanceMutation.mutateAsync({
+              userId: user.id,
+              data: {
+                amount: amountReais,
+                type: newCents > oldCents ? 'add' : 'subtract',
+              },
+            })
+          } catch {
+            return
+          }
         }
       }
 
@@ -164,7 +166,6 @@ export const UserEditModal = memo(
       form,
       onSubmit,
       saldoInput,
-      saldoAtual,
       adjustBalanceMutation,
       acquirerValue,
     ])
