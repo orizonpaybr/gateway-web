@@ -5,7 +5,7 @@ import { Dialog } from '@/components/ui/Dialog'
 import { Input } from '@/components/ui/Input'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import { Select } from '@/components/ui/Select'
-import { useAdjustBalance } from '@/hooks/useAdminUsers'
+import { useAdjustBalance, usePixAcquirers } from '@/hooks/useAdminUsers'
 import type { AdminUser, UpdateUserData } from '@/lib/api'
 import { USER_PERMISSION_OPTIONS } from '@/lib/constants'
 import {
@@ -13,6 +13,9 @@ import {
   formatPhoneBR,
   parseCurrencyInput,
 } from '@/lib/format'
+
+const DEFAULT_ACQUIRER_VALUE = '__default__'
+
 interface UserEditModalProps {
   open: boolean
   onClose: () => void
@@ -25,8 +28,13 @@ export const UserEditModal = memo(
     const [form, setForm] = useState<UpdateUserData>({})
     const [saldoInput, setSaldoInput] = useState('')
     const [adjustReason, setAdjustReason] = useState('')
+    const [acquirerValue, setAcquirerValue] = useState<string>(
+      DEFAULT_ACQUIRER_VALUE,
+    )
     const isReady = !!user
     const adjustBalanceMutation = useAdjustBalance()
+    const { data: pixAcquirers, isLoading: isLoadingAcquirers } =
+      usePixAcquirers(open)
 
     useEffect(() => {
       if (!user) {
@@ -41,6 +49,14 @@ export const UserEditModal = memo(
       })
       const saldo = Number(user.saldo) || 0
       setSaldoInput(String(Math.round(saldo * 100)))
+
+      const hasOverride =
+        !!user.adquirente_override && !!user.preferred_adquirente
+      setAcquirerValue(
+        hasOverride
+          ? String(user.preferred_adquirente)
+          : DEFAULT_ACQUIRER_VALUE,
+      )
     }, [user])
 
     useEffect(() => {
@@ -81,6 +97,17 @@ export const UserEditModal = memo(
       [],
     )
 
+    const acquirerOptions = useMemo(
+      () => [
+        { value: DEFAULT_ACQUIRER_VALUE, label: 'Padrão Global' },
+        ...(pixAcquirers ?? []).map((a) => ({
+          value: a.referencia,
+          label: a.name,
+        })),
+      ],
+      [pixAcquirers],
+    )
+
     const saldoAtual = useMemo(
       () => (user ? Number(user.saldo) || 0 : 0),
       [user],
@@ -111,12 +138,15 @@ export const UserEditModal = memo(
         }
       }
 
+      const isDefaultAcquirer = acquirerValue === DEFAULT_ACQUIRER_VALUE
       const dataToSend: UpdateUserData = {
         ...form,
         telefone:
           form.telefone && form.telefone.trim() !== '' ? form.telefone : null,
         cpf_cnpj:
           form.cpf_cnpj && form.cpf_cnpj.trim() !== '' ? form.cpf_cnpj : null,
+        preferred_adquirente: isDefaultAcquirer ? '' : acquirerValue,
+        adquirente_override: !isDefaultAcquirer,
       }
       await onSubmit(user.id, dataToSend)
     }, [
@@ -127,6 +157,7 @@ export const UserEditModal = memo(
       saldoAtual,
       adjustReason,
       adjustBalanceMutation,
+      acquirerValue,
     ])
 
     return (
@@ -192,6 +223,18 @@ export const UserEditModal = memo(
                   }
                 }}
                 options={permissionOptions}
+              />
+              <Select
+                label="Adquirente PIX:"
+                value={acquirerValue}
+                onChange={setAcquirerValue}
+                options={acquirerOptions}
+                disabled={isLoadingAcquirers}
+                placeholder={
+                  isLoadingAcquirers
+                    ? 'Carregando adquirentes...'
+                    : 'Padrão Global'
+                }
               />
             </div>
 
