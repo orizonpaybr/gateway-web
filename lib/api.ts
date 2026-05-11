@@ -1980,7 +1980,6 @@ export interface UpdateUserData {
 export interface AdjustBalanceData {
   amount: number
   type: 'add' | 'subtract'
-  reason?: string
 }
 
 export interface AdminTransaction {
@@ -2261,7 +2260,7 @@ export const adminUsersAPI = {
    * Ajustar saldo do usuário
    *
    * @param userId - ID do usuário
-   * @param data - Dados do ajuste (amount, type, reason)
+   * @param data - Dados do ajuste (amount, type)
    */
   async adjustBalance(
     userId: number,
@@ -2295,7 +2294,9 @@ export const adminUsersAPI = {
    */
   async getPixAcquirers(): Promise<{
     success: boolean
-    data: { acquirers: { name: string; referencia: string }[] }
+    data: {
+      acquirers: { name: string; referencia: string; is_default: number }[]
+    }
   }> {
     return apiRequest('/admin/pix-acquirers')
   },
@@ -2528,16 +2529,16 @@ export const adminUsersAPI = {
   },
 
   /**
-   * Alternar status do adquirente (ativar/desativar)
+   * Definir adquirente como a Global (is_default PIX) do sistema
    */
-  async toggleAcquirerStatus(acquirerId: number): Promise<{
+  async setDefaultAcquirer(acquirerId: number): Promise<{
     success: boolean
     data: {
       message: string
       acquirer: Acquirer
     }
   }> {
-    return apiRequest(`/admin/acquirers/${acquirerId}/toggle-status`, {
+    return apiRequest(`/admin/acquirers/${acquirerId}/set-default`, {
       method: 'POST',
     })
   },

@@ -27,7 +27,6 @@ export const UserEditModal = memo(
   ({ open, onClose, user, onSubmit }: UserEditModalProps) => {
     const [form, setForm] = useState<UpdateUserData>({})
     const [saldoInput, setSaldoInput] = useState('')
-    const [adjustReason, setAdjustReason] = useState('')
     const [acquirerValue, setAcquirerValue] = useState<string>(
       DEFAULT_ACQUIRER_VALUE,
     )
@@ -58,12 +57,6 @@ export const UserEditModal = memo(
           : DEFAULT_ACQUIRER_VALUE,
       )
     }, [user])
-
-    useEffect(() => {
-      if (!open) {
-        setAdjustReason('')
-      }
-    }, [open])
 
     const handleChange = useCallback(
       (key: keyof UpdateUserData, value: unknown) => {
@@ -97,16 +90,34 @@ export const UserEditModal = memo(
       [],
     )
 
-    const acquirerOptions = useMemo(
-      () => [
-        { value: DEFAULT_ACQUIRER_VALUE, label: 'Padrão Global' },
-        ...(pixAcquirers ?? []).map((a) => ({
-          value: a.referencia,
-          label: a.name,
-        })),
-      ],
+    const globalAcquirer = useMemo(
+      () => (pixAcquirers ?? []).find((a) => Number(a.is_default) === 1),
       [pixAcquirers],
     )
+
+    const acquirerOptions = useMemo(() => {
+      const globalLabel = globalAcquirer
+        ? `Padrão Global (${globalAcquirer.name})`
+        : 'Padrão Global'
+
+      const nonGlobal = (pixAcquirers ?? []).filter(
+        (a) => Number(a.is_default) !== 1,
+      )
+
+      return [
+        { value: DEFAULT_ACQUIRER_VALUE, label: globalLabel },
+        ...nonGlobal.map((a) => ({ value: a.referencia, label: a.name })),
+      ]
+    }, [pixAcquirers, globalAcquirer])
+
+    useEffect(() => {
+      if (!globalAcquirer) {
+        return
+      }
+      if (acquirerValue === globalAcquirer.referencia) {
+        setAcquirerValue(DEFAULT_ACQUIRER_VALUE)
+      }
+    }, [globalAcquirer, acquirerValue])
 
     const saldoAtual = useMemo(
       () => (user ? Number(user.saldo) || 0 : 0),
@@ -130,7 +141,6 @@ export const UserEditModal = memo(
             data: {
               amount: Math.abs(newSaldo - saldoAtual),
               type: newSaldo > saldoAtual ? 'add' : 'subtract',
-              reason: adjustReason.trim() || undefined,
             },
           })
         } catch {
@@ -155,7 +165,6 @@ export const UserEditModal = memo(
       onSubmit,
       saldoInput,
       saldoAtual,
-      adjustReason,
       adjustBalanceMutation,
       acquirerValue,
     ])
@@ -238,8 +247,8 @@ export const UserEditModal = memo(
               />
             </div>
 
-            <div className="border-t border-gray-200 pt-5 mt-5 grid grid-cols-1 sm:grid-cols-2 gap-4 items-start">
-              <div className="flex flex-col gap-2 w-full min-h-[4.5rem]">
+            <div className="border-t border-gray-200 pt-5 mt-5">
+              <div className="flex flex-col gap-2 w-full max-w-md min-h-[4.5rem]">
                 <label
                   htmlFor="saldo"
                   className="text-xs font-semibold text-gray-900 uppercase tracking-wider min-h-[1.25rem] flex items-center"
@@ -251,19 +260,6 @@ export const UserEditModal = memo(
                   value={saldoInput}
                   onChange={setSaldoInput}
                   placeholder="0,00"
-                />
-              </div>
-              <div className="flex flex-col gap-2 w-full min-h-[4.5rem]">
-                <label
-                  htmlFor="adjustReason"
-                  className="text-xs font-semibold text-gray-900 uppercase tracking-wider min-h-[1.25rem] flex items-center"
-                >
-                  Motivo (opcional)
-                </label>
-                <Input
-                  value={adjustReason}
-                  onChange={(e) => setAdjustReason(e.target.value)}
-                  placeholder="Ex.: Ajuste manual, estorno..."
                 />
               </div>
             </div>

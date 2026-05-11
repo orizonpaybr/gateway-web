@@ -28,26 +28,27 @@ export function useAcquirersList(
 }
 
 /**
- * Hook para alternar status do adquirente (ativar/desativar)
+ * Hook para definir uma adquirente como a Global (is_default PIX)
  */
-export function useToggleAcquirerStatus() {
+export function useSetDefaultAcquirer() {
   const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: async (acquirerId: number) => {
-      return await adminUsersAPI.toggleAcquirerStatus(acquirerId)
+      return await adminUsersAPI.setDefaultAcquirer(acquirerId)
     },
     onSuccess: (response) => {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEY] })
-      toast.success(response.data.message || 'Status alterado com sucesso!')
+      queryClient.invalidateQueries({ queryKey: ['admin-pix-acquirers'] })
+      toast.success(response.data.message || 'Adquirente Global atualizada!')
     },
     onError: (error: unknown) => {
       const message =
         error instanceof Error
           ? error.message
-          : 'Erro ao alterar status. Tente novamente.'
+          : 'Erro ao atualizar adquirente Global. Tente novamente.'
       toast.error(message)
-      console.error('Erro ao alternar status do adquirente:', error)
+      console.error('Erro ao definir adquirente Global:', error)
     },
   })
 }
