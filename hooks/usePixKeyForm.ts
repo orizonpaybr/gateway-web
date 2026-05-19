@@ -4,7 +4,7 @@ import { useState, useCallback, useMemo } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { pixAPI, accountAPI, type PixKeyType, type PixKey } from '@/lib/api'
 import { validatePixKey } from '@/components/ui/PixKeyInput'
-import { centsToBRL } from '@/lib/format'
+import { centsToBRL, sanitizePixKeyValueForApi } from '@/lib/format'
 import { toast } from 'sonner'
 import { useAuth } from '@/contexts/AuthContext'
 
@@ -163,7 +163,7 @@ export function usePixKeyForm(options: UsePixKeyFormOptions = {}) {
 
     withdrawMutation.mutate({
       key_type: selectedKeyType,
-      key_value: keyValue.replace(/\D/g, ''),
+      key_value: sanitizePixKeyValueForApi(selectedKeyType, keyValue),
       amount: numericAmount,
     })
     return true
