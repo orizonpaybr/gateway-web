@@ -110,6 +110,31 @@ export function formatNumber(
   return Number(value).toFixed(decimals)
 }
 
+import type { PixKeyType } from '@/lib/api'
+
+/**
+ * Valor enviado à API de saque conforme o tipo de chave PIX.
+ * CPF/CNPJ/telefone: só dígitos. E-mail e aleatória: preservam formato.
+ */
+export function sanitizePixKeyValueForApi(
+  keyType: PixKeyType,
+  value: string,
+): string {
+  const trimmed = value.trim()
+  switch (keyType) {
+    case 'cpf':
+    case 'cnpj':
+    case 'telefone':
+      return trimmed.replace(/\D/g, '')
+    case 'email':
+      return trimmed.toLowerCase()
+    case 'aleatoria':
+      return trimmed.toLowerCase()
+    default:
+      return trimmed
+  }
+}
+
 /**
  * Formata telefone brasileiro (11) 99999-9999 ou (11) 9999-9999
  */
