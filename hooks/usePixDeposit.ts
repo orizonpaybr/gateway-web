@@ -4,6 +4,21 @@ import { pixAPI, type PixDepositData, type PixDepositResponse } from '@/lib/api'
 import { toast } from 'sonner'
 import { useAuth } from '@/contexts/AuthContext'
 
+function normalizeDocument(value: string | undefined): string {
+  return (value ?? '').replace(/\D/g, '')
+}
+
+function resolveDebtorDocument(
+  fromRequest: string | undefined,
+  fromProfile: string | undefined,
+): string {
+  const requestDoc = normalizeDocument(fromRequest)
+  if (requestDoc.length >= 11) {
+    return requestDoc
+  }
+  return normalizeDocument(fromProfile)
+}
+
 interface UsePixDepositOptions {
   onSuccess?: (data: PixDepositResponse) => void
   onError?: (error: Error) => void
@@ -44,8 +59,10 @@ export function usePixDeposit(options: UsePixDepositOptions = {}) {
       const fullData: PixDepositData = {
         ...data,
         debtor_name: data.debtor_name || userData.debtor_name,
-        debtor_document_number:
-          data.debtor_document_number || userData.debtor_document_number,
+        debtor_document_number: resolveDebtorDocument(
+          data.debtor_document_number,
+          userData.debtor_document_number,
+        ),
         email: data.email || userData.email,
         phone: data.phone || userData.phone,
       }
