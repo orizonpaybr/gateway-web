@@ -5,7 +5,10 @@ import { Button } from '@/components/ui/Button'
 import { Dialog } from '@/components/ui/Dialog'
 import { Input } from '@/components/ui/Input'
 import { Label } from '@/components/ui/Label'
-import { isValidIPv4, maskIPInput } from '@/lib/helpers/ip-utils'
+import {
+  isValidAllowedIP,
+  sanitizeAllowedIPInput,
+} from '@/lib/helpers/ip-utils'
 
 interface SecurityIPsSectionProps {
   globalIps: string[]
@@ -23,8 +26,7 @@ export function SecurityIPsSection({
   const [isConfirmOpen, setIsConfirmOpen] = useState(false)
 
   const handleInputChange = (value: string) => {
-    const masked = maskIPInput(value)
-    setIpInput(masked)
+    setIpInput(sanitizeAllowedIPInput(value))
   }
 
   const handleAddIP = () => {
@@ -34,10 +36,10 @@ export function SecurityIPsSection({
       return
     }
 
-    if (!isValidIPv4(trimmedIp)) {
+    if (!isValidAllowedIP(trimmedIp)) {
       toast.error('IP inválido', {
         description:
-          'Por favor, insira um endereço IP válido (ex: 192.168.1.1)',
+          'Informe um IPv4 válido ou range CIDR (ex: 192.168.1.1 ou 74.220.48.0/24)',
       })
       return
     }
@@ -81,14 +83,14 @@ export function SecurityIPsSection({
         IPs que são autorizados para TODOS os usuários
       </p>
       <p className="text-sm text-gray-500 mb-4">
-        • Separe múltiplos IPs com vírgula
+        • Aceita IP fixo ou CIDR (ex: 74.220.48.0/24)
         <br />• Estes IPs funcionam para saques via interface web
       </p>
 
       <div className="flex gap-2">
         <Input
           id="ip-input"
-          placeholder="192.168.1.1"
+          placeholder="192.168.1.1 ou 74.220.48.0/24"
           value={ipInput}
           onChange={(e) => handleInputChange(e.target.value)}
           onKeyDown={handleKeyDown}
