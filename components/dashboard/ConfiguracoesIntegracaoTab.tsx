@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/Input'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import { useAuth } from '@/contexts/AuthContext'
 import { integrationAPI, twoFactorAPI } from '@/lib/api'
+import { isValidAllowedIP } from '@/lib/helpers/ip-utils'
 
 export const ConfiguracoesIntegracaoTab = memo(() => {
   const { authReady } = useAuth()
@@ -121,25 +122,26 @@ export const ConfiguracoesIntegracaoTab = memo(() => {
       return
     }
 
-    // Validação básica de IP
-    const ipRegex = /^(\d{1,3}\.){3}\d{1,3}$/
-    if (!ipRegex.test(novoIP)) {
-      toast.error('Por favor, digite um IP válido (ex: 192.168.1.1)')
+    const trimmedIP = novoIP.trim()
+    if (!isValidAllowedIP(trimmedIP)) {
+      toast.error('Informe um IPv4 válido ou range CIDR', {
+        description: 'Ex: 203.0.113.50 ou 74.220.48.0/24',
+      })
       return
     }
 
     // Verificar se já existe
-    if (ipsData?.data.ips.includes(novoIP)) {
+    if (ipsData?.data.ips.includes(trimmedIP)) {
       toast.error('Este IP já está autorizado')
       return
     }
 
     // Se 2FA estiver ativo, pedir PIN
     if (twoFAStatus?.enabled) {
-      setPendingAddIP(novoIP)
+      setPendingAddIP(trimmedIP)
       setShow2FAModal(true)
     } else {
-      addIPMutation.mutate({ ip: novoIP })
+      addIPMutation.mutate({ ip: trimmedIP })
     }
   }, [novoIP, ipsData, twoFAStatus?.enabled, addIPMutation])
 
@@ -395,7 +397,7 @@ export const ConfiguracoesIntegracaoTab = memo(() => {
                 <div className="flex flex-col sm:flex-row gap-2">
                   <Input
                     type="text"
-                    placeholder="Ex: 192.168.1.1"
+                    placeholder="Ex: 203.0.113.50 ou 74.220.48.0/24"
                     value={novoIP}
                     onChange={(e) => setNovoIP(e.target.value)}
                     className="flex-1"
@@ -466,8 +468,9 @@ export const ConfiguracoesIntegracaoTab = memo(() => {
                     sua aplicação.
                   </li>
                   <li>
-                    A lista de IPs autorizados garante que apenas servidores
-                    específicos possam acessar a API.
+                    A lista de IPs autorizados restringe saques (PIX OUT) aos
+                    endereços ou redes cadastrados — aceita IP fixo ou CIDR (ex.{' '}
+                    74.220.48.0/24).
                   </li>
                   <li>
                     Em caso de vazamento, regenere imediatamente o Client
