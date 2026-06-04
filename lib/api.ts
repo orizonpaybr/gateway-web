@@ -1770,9 +1770,9 @@ export const integrationAPI = {
       ips: string[]
     }
   }> => {
-    return apiRequest(`/integration/allowed-ips/${encodeURIComponent(ip)}`, {
+    return apiRequest('/integration/allowed-ips', {
       method: 'DELETE',
-      body: pin ? JSON.stringify({ pin }) : undefined,
+      body: JSON.stringify(pin ? { ip, pin } : { ip }),
     })
   },
 }
