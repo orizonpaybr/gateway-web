@@ -3,10 +3,7 @@
 import { memo, useState } from 'react'
 import { Calendar, RotateCcw } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
-import {
-  DateRangeFilterPanel,
-  dateRangePopoverContainerClassName,
-} from '@/components/ui/DateRangeFilterPanel'
+import { DateRangeFilterPopover } from '@/components/ui/DateRangeFilterPanel'
 import { Input } from '@/components/ui/Input'
 import { createResetDatesHandler } from '@/lib/dateUtils'
 export interface FinancialFiltersProps {
@@ -250,24 +247,21 @@ export const FinancialFilters = memo(
               onClick={resetDates}
             />
 
-            {showDatePicker && (
-            <div className={dateRangePopoverContainerClassName}>
-              <DateRangeFilterPanel
-                startDate={startDate}
-                endDate={endDate}
-                onStartDateChange={onStartDateChange}
-                onEndDateChange={onEndDateChange}
-                onApply={(s, e) => {
-                  onStartDateChange(s)
-                  onEndDateChange(e)
-                  onPeriodChange('custom')
-                  onPageReset()
-                  setShowDatePicker(false)
-                }}
-                onCancel={() => setShowDatePicker(false)}
-              />
-            </div>
-            )}
+            <DateRangeFilterPopover
+              open={showDatePicker}
+              startDate={startDate}
+              endDate={endDate}
+              onStartDateChange={onStartDateChange}
+              onEndDateChange={onEndDateChange}
+              onApply={(s, e) => {
+                onStartDateChange(s)
+                onEndDateChange(e)
+                onPeriodChange('custom')
+                onPageReset()
+                setShowDatePicker(false)
+              }}
+              onCancel={() => setShowDatePicker(false)}
+            />
           </div>
         </div>
       </div>

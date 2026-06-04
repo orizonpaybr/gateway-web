@@ -23,8 +23,7 @@ import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { CurrencyInput } from '@/components/ui/CurrencyInput'
 import {
-  DateRangeFilterPanel,
-  dateRangePopoverContainerClassName,
+  DateRangeFilterPopover,
 } from '@/components/ui/DateRangeFilterPanel'
 import { Dialog } from '@/components/ui/Dialog'
 import { Input } from '@/components/ui/Input'
@@ -480,24 +479,21 @@ const AprovarSaquesPage = memo(() => {
               onClick={resetDates}
             />
 
-            {showDatePicker && (
-              <div className={dateRangePopoverContainerClassName}>
-                <DateRangeFilterPanel
-                  startDate={startDate}
-                  endDate={endDate}
-                  onStartDateChange={setStartDate}
-                  onEndDateChange={setEndDate}
-                  onApply={(s, e) => {
-                    setStartDate(s)
-                    setEndDate(e)
-                    setPeriod('custom')
-                    setPage(1)
-                    setShowDatePicker(false)
-                  }}
-                  onCancel={() => setShowDatePicker(false)}
-                />
-              </div>
-            )}
+            <DateRangeFilterPopover
+              open={showDatePicker}
+              startDate={startDate}
+              endDate={endDate}
+              onStartDateChange={setStartDate}
+              onEndDateChange={setEndDate}
+              onApply={(s, e) => {
+                setStartDate(s)
+                setEndDate(e)
+                setPeriod('custom')
+                setPage(1)
+                setShowDatePicker(false)
+              }}
+              onCancel={() => setShowDatePicker(false)}
+            />
           </div>
 
           {showConfig && (

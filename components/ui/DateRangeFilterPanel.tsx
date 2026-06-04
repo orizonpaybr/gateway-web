@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState, type CSSProperties } from 'react'
 import { type DateRange, DayPicker } from 'react-day-picker'
 import { format, parse, isValid } from 'date-fns'
 import { ptBR } from 'date-fns/locale/pt-BR'
+import { Calendar, X } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import 'react-day-picker/style.css'
 
@@ -29,22 +30,8 @@ function formatDisplayDate(ymd: string): string {
   return format(d, 'dd/MM/yyyy', { locale: ptBR })
 }
 
-function useTwoMonthCalendar(): boolean {
-  const [twoMonths, setTwoMonths] = useState(false)
-
-  useEffect(() => {
-    const mq = window.matchMedia('(min-width: 640px)')
-    const update = () => setTwoMonths(mq.matches)
-    update()
-    mq.addEventListener('change', update)
-    return () => mq.removeEventListener('change', update)
-  }, [])
-
-  return twoMonths
-}
-
 export const dateRangePopoverContainerClassName =
-  'absolute z-20 top-11 -left-3 -right-3 min-w-0 w-auto max-w-none box-border sm:left-auto sm:right-0 sm:w-[min(44rem,calc(100vw-1rem))] sm:max-w-[min(44rem,calc(100vw-1rem))] bg-white border border-gray-200 rounded-xl shadow-lg px-2 py-3 sm:px-4 sm:py-4'
+  'absolute z-20 top-full mt-2 left-0 w-[18.25rem] max-w-[calc(100vw-1.25rem)] sm:left-auto sm:right-0'
 
 export type DateRangeFilterPanelProps = {
   startDate: string
@@ -64,7 +51,6 @@ export function DateRangeFilterPanel({
   onApply,
   onCancel,
 }: DateRangeFilterPanelProps) {
-  const twoMonths = useTwoMonthCalendar()
   const today = useMemo(() => new Date(), [])
   const endMonth = useMemo(
     () => new Date(today.getFullYear() + 1, 11, 1),
@@ -128,40 +114,84 @@ export function DateRangeFilterPanel({
     onApply(s, e)
   }
 
-  const rangeSummary = useMemo(() => {
-    const s = startDate.trim()
-    const e = endDate.trim()
-    if (!s) {
-      return 'Selecione a data inicial e a final no calendário'
-    }
-    if (!e || e === s) {
-      return formatDisplayDate(s)
-    }
-    return `${formatDisplayDate(s)} — ${formatDisplayDate(e)}`
-  }, [startDate, endDate])
-
   const dayPickerStyle = {
     ['--rdp-accent-color' as string]: '#101010',
     ['--rdp-accent-background-color' as string]: '#f3f4f6',
-    ['--rdp-range_middle-background-color' as string]: '#f9fafb',
+    ['--rdp-range_middle-background-color' as string]: '#f3f4f6',
     ['--rdp-range_start-background' as string]:
-      'linear-gradient(90deg, transparent 50%, #f9fafb 50%)',
+      'linear-gradient(90deg, transparent 50%, #f3f4f6 50%)',
     ['--rdp-range_end-background' as string]:
-      'linear-gradient(270deg, transparent 50%, #f9fafb 50%)',
+      'linear-gradient(270deg, transparent 50%, #f3f4f6 50%)',
   } as CSSProperties
 
-  return (
-    <div className="date-range-filter-panel w-full max-w-full min-w-0">
-      <p className="mb-2 text-center text-xs text-gray-600 px-1">{rangeSummary}</p>
+  const startLabel = formatDisplayDate(startDate) || 'dd/mm/aaaa'
+  const endLabel = formatDisplayDate(endDate) || 'dd/mm/aaaa'
+  const selectingEnd = Boolean(startDate.trim() && !endDate.trim())
 
-      <div className="flex w-full min-w-0 justify-center overflow-x-auto">
+  return (
+    <div className="date-range-filter-panel flex w-full flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-[0_12px_40px_-12px_rgba(0,0,0,0.25)] ring-1 ring-black/5">
+      <div className="flex items-center justify-between gap-2 border-b border-gray-100 px-3 py-2.5">
+        <div className="flex min-w-0 items-center gap-2">
+          <Calendar className="h-4 w-4 shrink-0 text-gray-500" aria-hidden />
+          <p className="truncate text-sm font-medium text-gray-900">
+            Período personalizado
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={onCancel}
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900"
+          aria-label="Fechar calendário"
+        >
+          <X className="h-4 w-4" />
+        </button>
+      </div>
+
+      <div className="grid grid-cols-2 gap-2 border-b border-gray-100 px-3 py-2.5">
+        <div
+          className={`rounded-lg border px-2.5 py-2 ${
+            !startDate.trim()
+              ? 'border-gray-900 bg-gray-50 ring-1 ring-gray-900/10'
+              : 'border-gray-200 bg-white'
+          }`}
+        >
+          <span className="block text-[10px] font-medium uppercase tracking-wide text-gray-500">
+            Início
+          </span>
+          <span className="mt-0.5 block truncate text-sm font-medium text-gray-900">
+            {startLabel}
+          </span>
+        </div>
+        <div
+          className={`rounded-lg border px-2.5 py-2 ${
+            selectingEnd
+              ? 'border-gray-900 bg-gray-50 ring-1 ring-gray-900/10'
+              : 'border-gray-200 bg-white'
+          }`}
+        >
+          <span className="block text-[10px] font-medium uppercase tracking-wide text-gray-500">
+            Fim
+          </span>
+          <span className="mt-0.5 block truncate text-sm font-medium text-gray-900">
+            {endLabel}
+          </span>
+        </div>
+      </div>
+
+      <p className="px-3 pt-2 text-center text-[11px] text-gray-500">
+        {selectingEnd
+          ? 'Selecione a data final'
+          : startDate.trim()
+            ? 'Ajuste as datas no calendário ou navegue pelos meses'
+            : 'Selecione a data inicial no calendário'}
+      </p>
+
+      <div className="flex justify-center px-2 pb-1 pt-1">
         <DayPicker
           mode="range"
           locale={ptBR}
-          captionLayout="dropdown-years"
-          navLayout="around"
-          numberOfMonths={twoMonths ? 2 : 1}
-          pagedNavigation={twoMonths}
+          captionLayout="dropdown"
+          numberOfMonths={1}
           startMonth={minAppDate}
           endMonth={endMonth}
           fromYear={APP_DATA_START_YEAR}
@@ -174,35 +204,35 @@ export function DateRangeFilterPanel({
           showOutsideDays
           fixedWeeks
           disabled={{ before: minAppDate, after: today }}
-          className="text-sm rdp-coratri"
+          className="text-sm rdp-coratri rdp-coratri-popup"
           style={dayPickerStyle}
         />
       </div>
 
-      <div className="flex items-center justify-between gap-2 mt-2 pt-2 border-t border-gray-100">
+      <div className="flex items-center justify-between gap-2 border-t border-gray-100 px-3 py-2">
         <button
           type="button"
-          className="min-h-9 touch-manipulation px-1 py-1.5 text-xs font-medium text-gray-600 hover:text-gray-900 underline-offset-2 hover:underline sm:min-h-0"
+          className="min-h-9 touch-manipulation px-1 py-1 text-xs font-medium text-gray-600 hover:text-gray-900 underline-offset-2 hover:underline"
           onClick={handleLimpar}
         >
           Limpar
         </button>
         <button
           type="button"
-          className="min-h-9 touch-manipulation px-1 py-1.5 text-xs font-medium text-gray-600 hover:text-gray-900 underline-offset-2 hover:underline sm:min-h-0"
+          className="min-h-9 touch-manipulation px-1 py-1 text-xs font-medium text-gray-600 hover:text-gray-900 underline-offset-2 hover:underline"
           onClick={handleHoje}
         >
           Hoje
         </button>
       </div>
 
-      <div className="flex w-full gap-1.5 pt-2 max-sm:gap-2 sm:justify-end sm:gap-2 sm:pt-3">
+      <div className="flex gap-2 border-t border-gray-100 px-3 py-2.5">
         <Button
           variant="inkOutline"
           size="sm"
           type="button"
           onClick={onCancel}
-          className="max-sm:min-h-9 max-sm:flex-1 max-sm:!px-3 max-sm:!py-2 max-sm:!text-xs min-h-10 flex-1 touch-manipulation sm:min-h-0 sm:flex-initial sm:!px-4 sm:!py-2 sm:!text-sm sm:min-w-[5.5rem]"
+          className="min-h-10 flex-1 touch-manipulation !px-3 !py-2 !text-xs sm:!text-sm"
         >
           Cancelar
         </Button>
@@ -212,11 +242,39 @@ export function DateRangeFilterPanel({
           type="button"
           onClick={handleAplicar}
           disabled={!startDate.trim()}
-          className="max-sm:min-h-9 max-sm:flex-1 max-sm:!px-3 max-sm:!py-2 max-sm:!text-xs min-h-10 flex-1 touch-manipulation sm:min-h-0 sm:flex-initial sm:!px-4 sm:!py-2 sm:!text-sm sm:min-w-[5.5rem]"
+          className="min-h-10 flex-1 touch-manipulation !px-3 !py-2 !text-xs sm:!text-sm"
         >
           Aplicar
         </Button>
       </div>
     </div>
+  )
+}
+
+type DateRangeFilterPopoverProps = DateRangeFilterPanelProps & {
+  open: boolean
+}
+
+/** Pop-up flutuante (fecha ao clicar fora). */
+export function DateRangeFilterPopover({
+  open,
+  onCancel,
+  ...panelProps
+}: DateRangeFilterPopoverProps) {
+  if (!open) {
+    return null
+  }
+
+  return (
+    <>
+      <div
+        className="fixed inset-0 z-[15]"
+        aria-hidden
+        onClick={onCancel}
+      />
+      <div className={dateRangePopoverContainerClassName}>
+        <DateRangeFilterPanel onCancel={onCancel} {...panelProps} />
+      </div>
+    </>
   )
 }
