@@ -130,6 +130,12 @@ const TransacoesFinanceirasPage = memo(() => {
     ]
   }, [stats?.data])
 
+  const handleTipoFilterChange = useCallback((value: string) => {
+    setTipoFilter(value)
+    setStatusFilter('all')
+    setPage(1)
+  }, [])
+
   const tableColumns = useMemo(
     () => [
       { key: 'cliente_id', label: 'Cliente ID' },
@@ -179,7 +185,7 @@ const TransacoesFinanceirasPage = memo(() => {
             statusFilter={statusFilter}
             onStatusFilterChange={setStatusFilter}
             tipoFilter={tipoFilter}
-            onTipoFilterChange={setTipoFilter}
+            onTipoFilterChange={handleTipoFilterChange}
             period={period}
             onPeriodChange={setPeriod}
             startDate={startDate}
@@ -188,6 +194,7 @@ const TransacoesFinanceirasPage = memo(() => {
             onEndDateChange={setEndDate}
             onPageReset={() => setPage(1)}
             showTipoFilter
+            dynamicStatusByTipo
           />
         </div>
 
