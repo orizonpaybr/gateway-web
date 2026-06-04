@@ -1,34 +1,50 @@
 'use client'
 
-import { useMemo, useState, type CSSProperties } from 'react'
+import { useEffect, useMemo, useState, type CSSProperties } from 'react'
 import { type DateRange, DayPicker } from 'react-day-picker'
-import { format } from 'date-fns'
+import { format, parse, isValid } from 'date-fns'
 import { ptBR } from 'date-fns/locale/pt-BR'
 import { Button } from '@/components/ui/Button'
 import 'react-day-picker/style.css'
 
-const currentYear = () => new Date().getFullYear()
+/** Primeiro ano com dados na plataforma */
+export const APP_DATA_START_YEAR = 2026
+
+const minAppDate = new Date(APP_DATA_START_YEAR, 0, 1)
 
 function parseYmd(s: string): Date | undefined {
   const t = s?.trim()
   if (!t) {
     return undefined
   }
-  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(t)
-  if (!m) {
-    return undefined
+  const parsed = parse(t, 'yyyy-MM-dd', new Date())
+  return isValid(parsed) ? parsed : undefined
+}
+
+function formatDisplayDate(ymd: string): string {
+  const d = parseYmd(ymd)
+  if (!d) {
+    return ''
   }
-  const y = Number(m[1])
-  const mo = Number(m[2])
-  const d = Number(m[3])
-  if (!y || mo < 1 || mo > 12 || d < 1 || d > 31) {
-    return undefined
-  }
-  return new Date(y, mo - 1, d)
+  return format(d, 'dd/MM/yyyy', { locale: ptBR })
+}
+
+function useTwoMonthCalendar(): boolean {
+  const [twoMonths, setTwoMonths] = useState(false)
+
+  useEffect(() => {
+    const mq = window.matchMedia('(min-width: 640px)')
+    const update = () => setTwoMonths(mq.matches)
+    update()
+    mq.addEventListener('change', update)
+    return () => mq.removeEventListener('change', update)
+  }, [])
+
+  return twoMonths
 }
 
 export const dateRangePopoverContainerClassName =
-  'absolute z-20 top-11 -left-3 -right-3 min-w-0 w-auto max-w-none box-border sm:left-auto sm:right-0 sm:w-[min(22.5rem,calc(100vw-1.5rem))] sm:max-w-[min(22.5rem,calc(100vw-1.5rem))] bg-white border border-gray-200 rounded-lg shadow-md px-1.5 py-2 sm:p-3 sm:shadow-lg'
+  'absolute z-20 top-11 -left-3 -right-3 min-w-0 w-auto max-w-none box-border sm:left-auto sm:right-0 sm:w-[min(44rem,calc(100vw-1rem))] sm:max-w-[min(44rem,calc(100vw-1rem))] bg-white border border-gray-200 rounded-xl shadow-lg px-2 py-3 sm:px-4 sm:py-4'
 
 export type DateRangeFilterPanelProps = {
   startDate: string
@@ -48,16 +64,37 @@ export function DateRangeFilterPanel({
   onApply,
   onCancel,
 }: DateRangeFilterPanelProps) {
+  const twoMonths = useTwoMonthCalendar()
+  const today = useMemo(() => new Date(), [])
+  const endMonth = useMemo(
+    () => new Date(today.getFullYear() + 1, 11, 1),
+    [today],
+  )
+
   const selected: DateRange | undefined = useMemo(() => {
     const from = parseYmd(startDate)
     if (!from) {
       return undefined
     }
     const to = parseYmd(endDate) ?? from
-    return { from, to }
+    return { from, to: to < from ? from : to }
   }, [startDate, endDate])
 
-  const [month, setMonth] = useState<Date>(() => selected?.from ?? new Date())
+  const [month, setMonth] = useState<Date>(() => {
+    const from = parseYmd(startDate)
+    if (from && from >= minAppDate) {
+      return from
+    }
+    const now = new Date()
+    return now < minAppDate ? minAppDate : now
+  })
+
+  useEffect(() => {
+    const from = parseYmd(startDate)
+    if (from && from >= minAppDate) {
+      setMonth(from)
+    }
+  }, [startDate])
 
   const handleSelect = (range: DateRange | undefined) => {
     if (!range?.from) {
@@ -79,7 +116,7 @@ export function DateRangeFilterPanel({
     const s = format(t, 'yyyy-MM-dd')
     onStartDateChange(s)
     onEndDateChange(s)
-    setMonth(t)
+    setMonth(t < minAppDate ? minAppDate : t)
   }
 
   const handleAplicar = () => {
@@ -91,49 +128,58 @@ export function DateRangeFilterPanel({
     onApply(s, e)
   }
 
-  const { fromYear, toYear } = useMemo(
-    () => ({
-      fromYear: currentYear() - 20,
-      toYear: currentYear() + 3,
-    }),
-    [],
-  )
+  const rangeSummary = useMemo(() => {
+    const s = startDate.trim()
+    const e = endDate.trim()
+    if (!s) {
+      return 'Selecione a data inicial e a final no calendário'
+    }
+    if (!e || e === s) {
+      return formatDisplayDate(s)
+    }
+    return `${formatDisplayDate(s)} — ${formatDisplayDate(e)}`
+  }, [startDate, endDate])
 
-  const rangeMinimalVars = {
-    ['--rdp-accent-background-color' as string]: 'transparent',
-    ['--rdp-range_middle-background-color' as string]: 'transparent',
-    ['--rdp-range_start-background' as string]: 'none',
-    ['--rdp-range_end-background' as string]: 'none',
+  const dayPickerStyle = {
+    ['--rdp-accent-color' as string]: '#101010',
+    ['--rdp-accent-background-color' as string]: '#f3f4f6',
+    ['--rdp-range_middle-background-color' as string]: '#f9fafb',
+    ['--rdp-range_start-background' as string]:
+      'linear-gradient(90deg, transparent 50%, #f9fafb 50%)',
+    ['--rdp-range_end-background' as string]:
+      'linear-gradient(270deg, transparent 50%, #f9fafb 50%)',
   } as CSSProperties
 
   return (
     <div className="date-range-filter-panel w-full max-w-full min-w-0">
-      <div className="flex w-full min-w-0 justify-center">
+      <p className="mb-2 text-center text-xs text-gray-600 px-1">{rangeSummary}</p>
+
+      <div className="flex w-full min-w-0 justify-center overflow-x-auto">
         <DayPicker
           mode="range"
           locale={ptBR}
-          captionLayout="dropdown"
-          hideNavigation
+          captionLayout="dropdown-years"
+          navLayout="around"
+          numberOfMonths={twoMonths ? 2 : 1}
+          pagedNavigation={twoMonths}
+          startMonth={minAppDate}
+          endMonth={endMonth}
+          fromYear={APP_DATA_START_YEAR}
+          toYear={today.getFullYear() + 1}
           reverseYears
-          fromYear={fromYear}
-          toYear={toYear}
           month={month}
           onMonthChange={setMonth}
           selected={selected}
           onSelect={handleSelect}
-          numberOfMonths={1}
           showOutsideDays
+          fixedWeeks
+          disabled={{ before: minAppDate, after: today }}
           className="text-sm rdp-coratri"
-          style={
-            {
-              ['--rdp-accent-color' as string]: '#101010',
-              ...rangeMinimalVars,
-            } as CSSProperties
-          }
+          style={dayPickerStyle}
         />
       </div>
 
-      <div className="flex items-center justify-between gap-2 mt-1 pt-2 border-t border-gray-100">
+      <div className="flex items-center justify-between gap-2 mt-2 pt-2 border-t border-gray-100">
         <button
           type="button"
           className="min-h-9 touch-manipulation px-1 py-1.5 text-xs font-medium text-gray-600 hover:text-gray-900 underline-offset-2 hover:underline sm:min-h-0"
