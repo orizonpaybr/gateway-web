@@ -40,12 +40,12 @@ export function useFinancialTransactions(
     queryKey: ['financial-transactions', filters],
     queryFn: () => financialAPI.getAllTransactions(filters),
     enabled,
-    staleTime: 10 * 1000,
+    staleTime: 30 * 1000,
     gcTime: 2 * 60 * 1000,
     refetchOnWindowFocus: true,
-    refetchInterval: 15 * 1000,
+    refetchInterval: 30 * 1000,
     refetchIntervalInBackground: false,
-    retry: 2,
+    retry: 1,
   })
 }
 

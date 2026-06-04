@@ -274,11 +274,18 @@ const SaidasPage = memo(() => {
                   Pago
                 </Button>
                 <Button
-                  variant={statusFilter === 'PENDING' ? 'inkSolid' : 'inkOutline'}
+                  variant={statusFilter === 'FAILED' ? 'inkSolid' : 'inkOutline'}
                   size="sm"
-                  onClick={() => handleStatusFilterChange('PENDING')}
+                  onClick={() => handleStatusFilterChange('FAILED')}
                 >
-                  Pendente
+                  Falhou
+                </Button>
+                <Button
+                  variant={statusFilter === 'CANCELLED' ? 'inkSolid' : 'inkOutline'}
+                  size="sm"
+                  onClick={() => handleStatusFilterChange('CANCELLED')}
+                >
+                  Cancelado
                 </Button>
                 <Button
                   variant={statusFilter === 'all' ? 'inkSolid' : 'inkOutline'}
