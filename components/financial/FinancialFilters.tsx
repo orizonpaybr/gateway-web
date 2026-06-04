@@ -24,6 +24,7 @@ export interface FinancialFiltersProps {
   onEndDateChange: (value: string) => void
   onPageReset: () => void
   showTipoFilter?: boolean
+  dynamicStatusByTipo?: boolean
 }
 
 export const FinancialFilters = memo(
@@ -42,8 +43,14 @@ export const FinancialFilters = memo(
     onEndDateChange,
     onPageReset,
     showTipoFilter = false,
+    dynamicStatusByTipo = false,
   }: FinancialFiltersProps) => {
     const [showDatePicker, setShowDatePicker] = useState(false)
+
+    const showStatusFilter =
+      !dynamicStatusByTipo ||
+      tipoFilter === 'deposito' ||
+      tipoFilter === 'saque'
 
     const resetDates = createResetDatesHandler(
       onStartDateChange,
@@ -88,37 +95,73 @@ export const FinancialFilters = memo(
           />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <span className="text-xs font-semibold text-gray-600">Status</span>
-            <div className="flex items-center gap-2 flex-wrap">
-              <Button
-                variant={statusFilter === 'PAID_OUT' ? 'inkSolid' : 'inkOutline'}
-                size="sm"
-                onClick={() => handleStatusChange('PAID_OUT')}
-              >
-                Pago
-              </Button>
-              <Button
-                variant={
-                  statusFilter === 'WAITING_FOR_APPROVAL'
-                    ? 'inkSolid'
-                    : 'inkOutline'
-                }
-                size="sm"
-                onClick={() => handleStatusChange('WAITING_FOR_APPROVAL')}
-              >
-                Pendente
-              </Button>
-              <Button
-                variant={statusFilter === 'all' ? 'inkSolid' : 'inkOutline'}
-                size="sm"
-                onClick={() => handleStatusChange('all')}
-              >
-                Todos
-              </Button>
+        <div
+          className={`grid grid-cols-1 gap-4 ${
+            showStatusFilter && showTipoFilter ? 'md:grid-cols-2' : ''
+          }`}
+        >
+          {showStatusFilter && (
+            <div className="space-y-2">
+              <span className="text-xs font-semibold text-gray-600">Status</span>
+              <div className="flex items-center gap-2 flex-wrap">
+                <Button
+                  variant={
+                    statusFilter === 'PAID_OUT' ? 'inkSolid' : 'inkOutline'
+                  }
+                  size="sm"
+                  onClick={() => handleStatusChange('PAID_OUT')}
+                >
+                  Pago
+                </Button>
+                {(!dynamicStatusByTipo || tipoFilter === 'deposito') && (
+                  <Button
+                    variant={
+                      statusFilter === 'WAITING_FOR_APPROVAL'
+                        ? 'inkSolid'
+                        : 'inkOutline'
+                    }
+                    size="sm"
+                    onClick={() =>
+                      handleStatusChange('WAITING_FOR_APPROVAL')
+                    }
+                  >
+                    Pendente
+                  </Button>
+                )}
+                {dynamicStatusByTipo && tipoFilter === 'saque' && (
+                  <>
+                    <Button
+                      variant={
+                        statusFilter === 'FAILED' ? 'inkSolid' : 'inkOutline'
+                      }
+                      size="sm"
+                      onClick={() => handleStatusChange('FAILED')}
+                    >
+                      Falhou
+                    </Button>
+                    <Button
+                      variant={
+                        statusFilter === 'CANCELLED'
+                          ? 'inkSolid'
+                          : 'inkOutline'
+                      }
+                      size="sm"
+                      onClick={() => handleStatusChange('CANCELLED')}
+                    >
+                      Cancelado
+                    </Button>
+                  </>
+                )}
+                <Button
+                  variant={statusFilter === 'all' ? 'inkSolid' : 'inkOutline'}
+                  size="sm"
+                  onClick={() => handleStatusChange('all')}
+                >
+                  Todos
+                </Button>
+              </div>
             </div>
-          </div>
+          )}
 
           {showTipoFilter && (
             <div className="space-y-2">
