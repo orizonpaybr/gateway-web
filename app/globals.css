@@ -118,21 +118,9 @@ input[type='password'] {
   }
 }
 
-/* DateRangeFilterPanel: só marca início e fim; dias intermediários como dias normais */
-.date-range-filter-panel .rdp-range_middle {
-  background-color: transparent !important;
-}
-
-.date-range-filter-panel .rdp-range_middle .rdp-day_button {
-  border-radius: var(--rdp-day_button-border-radius, 100%);
-  border: 2px solid transparent;
-  background-color: transparent !important;
-  color: inherit !important;
-}
-
-/* Cabeçalho: só selects mês/ano (space-between) — sem setas */
+/* DateRangeFilterPanel: intervalo com destaque suave entre início e fim */
 .date-range-filter-panel .rdp-root.rdp-coratri {
-  --rdp-nav-height: 2.75rem;
+  --rdp-nav-height: 2.5rem;
   width: 100%;
   max-width: 100%;
   min-width: 0;
@@ -140,6 +128,10 @@ input[type='password'] {
 }
 
 .date-range-filter-panel .rdp-months {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem 1.25rem;
   max-width: 100%;
   min-width: 0;
 }
@@ -149,6 +141,47 @@ input[type='password'] {
   max-width: 100%;
   min-width: 0;
   box-sizing: border-box;
+}
+
+@media (min-width: 640px) {
+  .date-range-filter-panel .rdp-month {
+    flex: 1 1 16rem;
+    max-width: 20rem;
+  }
+}
+
+.date-range-filter-panel .rdp-button_previous,
+.date-range-filter-panel .rdp-button_next {
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  background: #fff;
+  color: #111827;
+  width: 2rem;
+  height: 2rem;
+}
+
+.date-range-filter-panel .rdp-button_previous:hover:not(:disabled),
+.date-range-filter-panel .rdp-button_next:hover:not(:disabled) {
+  background: #f9fafb;
+  border-color: #d1d5db;
+}
+
+.date-range-filter-panel .rdp-button_previous:disabled,
+.date-range-filter-panel .rdp-button_next:disabled {
+  opacity: 0.35;
+}
+
+.date-range-filter-panel .rdp-range_start .rdp-day_button,
+.date-range-filter-panel .rdp-range_end .rdp-day_button {
+  background-color: #101010 !important;
+  color: #fff !important;
+  border-color: #101010 !important;
+}
+
+.date-range-filter-panel .rdp-range_middle .rdp-day_button {
+  border-radius: 0;
+  background-color: #f3f4f6 !important;
+  color: #111827 !important;
 }
 
 /*
@@ -176,8 +209,8 @@ input[type='password'] {
   width: 100%;
   max-width: 100%;
   align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
+  justify-content: center;
+  gap: 0.5rem;
   padding-inline: 0.125rem;
   box-sizing: border-box;
 }
