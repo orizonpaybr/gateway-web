@@ -7,8 +7,7 @@ import { Filter, RotateCcw, Calendar, QrCode } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import {
-  DateRangeFilterPanel,
-  dateRangePopoverContainerClassName,
+  DateRangeFilterPopover,
 } from '@/components/ui/DateRangeFilterPanel'
 import { Input } from '@/components/ui/Input'
 import { Skeleton } from '@/components/ui/Skeleton'
@@ -210,24 +209,21 @@ const QRCodeListagemPage = memo(() => {
               onClick={resetDates}
             />
 
-            {showDatePicker && (
-              <div className={dateRangePopoverContainerClassName}>
-                <DateRangeFilterPanel
-                  startDate={startDate}
-                  endDate={endDate}
-                  onStartDateChange={setStartDate}
-                  onEndDateChange={setEndDate}
-                  onApply={(s, e) => {
-                    setStartDate(s)
-                    setEndDate(e)
-                    setPeriod('custom')
-                    setPage(1)
-                    setShowDatePicker(false)
-                  }}
-                  onCancel={() => setShowDatePicker(false)}
-                />
-              </div>
-            )}
+            <DateRangeFilterPopover
+              open={showDatePicker}
+              startDate={startDate}
+              endDate={endDate}
+              onStartDateChange={setStartDate}
+              onEndDateChange={setEndDate}
+              onApply={(s, e) => {
+                setStartDate(s)
+                setEndDate(e)
+                setPeriod('custom')
+                setPage(1)
+                setShowDatePicker(false)
+              }}
+              onCancel={() => setShowDatePicker(false)}
+            />
           </div>
         </div>
 

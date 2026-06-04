@@ -13,8 +13,7 @@ import { WithdrawalStatusBadge } from '@/components/financial/WithdrawalStatusBa
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import {
-  DateRangeFilterPanel,
-  dateRangePopoverContainerClassName,
+  DateRangeFilterPopover,
 } from '@/components/ui/DateRangeFilterPanel'
 import { Input } from '@/components/ui/Input'
 import { Skeleton } from '@/components/ui/Skeleton'
@@ -363,28 +362,25 @@ const SaidasPage = memo(() => {
                   }}
                 />
 
-                {showDatePicker && (
-                  <div className={dateRangePopoverContainerClassName}>
-                    <DateRangeFilterPanel
-                      startDate={tempStartDate}
-                      endDate={tempEndDate}
-                      onStartDateChange={setTempStartDate}
-                      onEndDateChange={setTempEndDate}
-                      onApply={(s, e) => {
-                        setStartDate(s)
-                        setEndDate(e)
-                        setPeriodFilter('custom')
-                        setPage(1)
-                        setShowDatePicker(false)
-                      }}
-                      onCancel={() => {
-                        setTempStartDate(startDate)
-                        setTempEndDate(endDate)
-                        setShowDatePicker(false)
-                      }}
-                    />
-                  </div>
-                )}
+                <DateRangeFilterPopover
+                  open={showDatePicker}
+                  startDate={tempStartDate}
+                  endDate={tempEndDate}
+                  onStartDateChange={setTempStartDate}
+                  onEndDateChange={setTempEndDate}
+                  onApply={(s, e) => {
+                    setStartDate(s)
+                    setEndDate(e)
+                    setPeriodFilter('custom')
+                    setPage(1)
+                    setShowDatePicker(false)
+                  }}
+                  onCancel={() => {
+                    setTempStartDate(startDate)
+                    setTempEndDate(endDate)
+                    setShowDatePicker(false)
+                  }}
+                />
               </div>
             </div>
           </div>
