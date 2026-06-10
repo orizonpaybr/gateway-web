@@ -678,7 +678,7 @@ export default function ApiDocsPage() {
           <strong>Autenticação:</strong> envie{' '}
           <code className="bg-gray-100 px-1 rounded text-xs">api-token</code> e{' '}
           <code className="bg-gray-100 px-1 rounded text-xs">api-secret</code> nos{' '}
-          <strong>headers HTTP</strong>. 
+          <strong>headers HTTP</strong>.
           Também aceitamos <code className="bg-gray-100 px-1 rounded text-xs">token</code> e{' '}
           <code className="bg-gray-100 px-1 rounded text-xs">secret</code> na query string,
           apenas para testes rápidos.
