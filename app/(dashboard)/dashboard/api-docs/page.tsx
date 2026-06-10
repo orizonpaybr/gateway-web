@@ -112,8 +112,8 @@ const cashOutResponse = `{
 const balanceCurlExample = `curl --request GET \\
   --url 'https://seu-dominio.com/api/wallet/balance' \\
   --header 'accept: application/json' \\
-  --header 'api_token: {{CLIENT_KEY}}' \\
-  --header 'api_secret: {{CLIENT_SECRET}}'`
+  --header 'api-token: {{CLIENT_KEY}}' \\
+  --header 'api-secret: {{CLIENT_SECRET}}'`
 
 const balanceResponse = `{
   "status": "success",
@@ -280,18 +280,18 @@ export default function ApiDocsPage() {
           <div className="space-y-3">
             <div>
               <div className="text-xs font-semibold text-gray-500 uppercase mb-1">
-                Header: api_token
+                Header: api-token
               </div>
               <div className="bg-gray-900 text-green-400 p-3 rounded-lg font-mono text-sm">
-                &quot;api_token&quot;: &quot;SeuClientKey&quot;
+                api-token: SeuClientKey
               </div>
             </div>
             <div>
               <div className="text-xs font-semibold text-gray-500 uppercase mb-1">
-                Header: api_secret
+                Header: api-secret
               </div>
               <div className="bg-gray-900 text-green-400 p-3 rounded-lg font-mono text-sm">
-                &quot;api_secret&quot;: &quot;SeuClientSecret&quot;
+                api-secret: SeuClientSecret
               </div>
             </div>
           </div>
@@ -676,9 +676,9 @@ export default function ApiDocsPage() {
 
         <p className="text-sm text-gray-600 mb-4">
           <strong>Autenticação:</strong> envie{' '}
-          <code className="bg-gray-100 px-1 rounded text-xs">api_token</code> e{' '}
-          <code className="bg-gray-100 px-1 rounded text-xs">api_secret</code> nos{' '}
-          <strong>headers HTTP</strong> (recomendado — não exponha credenciais na URL).
+          <code className="bg-gray-100 px-1 rounded text-xs">api-token</code> e{' '}
+          <code className="bg-gray-100 px-1 rounded text-xs">api-secret</code> nos{' '}
+          <strong>headers HTTP</strong>. 
           Também aceitamos <code className="bg-gray-100 px-1 rounded text-xs">token</code> e{' '}
           <code className="bg-gray-100 px-1 rounded text-xs">secret</code> na query string,
           apenas para testes rápidos.
@@ -707,7 +707,7 @@ export default function ApiDocsPage() {
             <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 text-xs text-gray-600">
               <p>
                 <span className="text-red-500 font-bold">*</span>{' '}
-                <strong>api_token</strong> e <strong>api_secret</strong> — headers
+                <strong>api-token</strong> e <strong>api-secret</strong> — headers
                 obrigatórios (Client Key / Client Secret).
               </p>
               <p>
