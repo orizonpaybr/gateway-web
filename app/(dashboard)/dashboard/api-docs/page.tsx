@@ -11,6 +11,7 @@ import {
   Bell,
   AlertCircle,
   ListChecks,
+  Wallet,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/Button'
@@ -108,6 +109,25 @@ const cashOutResponse = `{
   }
 }`
 
+const balanceQueryExample =
+  'https://seu-dominio.com/api/wallet/balance?token={{CLIENT_KEY}}&secret={{CLIENT_SECRET}}'
+
+const balanceResponse = `{
+  "status": "success",
+  "data": {
+    "moeda": "BRL",
+    "saldo_disponivel": 299.47,
+    "entradas_mes": 2.00,
+    "saidas_mes": 1.00,
+    "fluxo_liquido_mes": 1.00,
+    "periodo": {
+      "inicio": "2026-06-01",
+      "fim": "2026-06-30"
+    },
+    "atualizado_em": "2026-06-10T13:06:00-03:00"
+  }
+}`
+
 const statusBody = `{
   "idTransaction": "e2a3f1c8d94b..."
 }`
@@ -166,7 +186,7 @@ export default function ApiDocsPage() {
           Documentação da API
         </h1>
         <p className="text-gray-600 text-sm mt-1">
-          Integre PIX Cash In e Cash Out ao seu negócio
+          Integre PIX Cash In, Cash Out e consulta de saldo ao seu negócio
         </p>
       </div>
 
@@ -221,7 +241,8 @@ export default function ApiDocsPage() {
                 Configurações → Integração
               </a>
               . Não existe rota separada para &quot;gerar token&quot; — envie as
-              credenciais em cada chamada (Cash In e Cash Out).
+              credenciais em cada chamada (Cash In, Cash Out e consulta de
+              saldo).
             </p>
           </div>
 
@@ -624,6 +645,115 @@ export default function ApiDocsPage() {
                 <code className="bg-gray-100 px-1 rounded">CANCELLED</code>
                 , …). <strong>data.adquirente</strong> — referência do processamento
                 PIX.
+              </p>
+            </div>
+          </div>
+        </div>
+      </Card>
+
+      <Card>
+        <div className="flex items-center gap-3 mb-4">
+          <div className="p-3 rounded-lg bg-emerald-100 text-emerald-600">
+            <Wallet size={24} />
+          </div>
+          <div>
+            <h2 className="text-lg font-semibold text-gray-900">
+              Consultar Saldo
+            </h2>
+            <p className="text-xs text-gray-500 font-mono mt-0.5">
+              GET /api/wallet/balance
+            </p>
+          </div>
+        </div>
+
+        <p className="text-sm text-gray-600 mb-4">
+          Retorna o saldo disponível da sua conta e a movimentação do mês
+          corrente (entradas, saídas e fluxo líquido).
+        </p>
+
+        <p className="text-sm text-gray-600 mb-4">
+          <strong>Autenticação:</strong> envie{' '}
+          <code className="bg-gray-100 px-1 rounded text-xs">token</code> e{' '}
+          <code className="bg-gray-100 px-1 rounded text-xs">secret</code> na{' '}
+          <strong>query string</strong> (recomendado para GET) ou nos cabeçalhos{' '}
+          <code className="bg-gray-100 px-1 rounded text-xs">api_token</code> e{' '}
+          <code className="bg-gray-100 px-1 rounded text-xs">api_secret</code>.
+        </p>
+
+        <div className="space-y-6">
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-xs font-semibold text-gray-500 uppercase">
+                Exemplo de requisição (GET)
+              </p>
+              <Button
+                variant="ghost"
+                size="sm"
+                icon={<Copy size={14} />}
+                onClick={() => handleCopy(balanceQueryExample)}
+              >
+                Copiar
+              </Button>
+            </div>
+            <div className="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto">
+              <pre className="text-xs leading-relaxed whitespace-pre-wrap break-all">
+                <code>{balanceQueryExample}</code>
+              </pre>
+            </div>
+            <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 text-xs text-gray-600">
+              <p>
+                <span className="text-red-500 font-bold">*</span>{' '}
+                <strong>token</strong> e <strong>secret</strong> — obrigatórios
+                (query string ou headers).
+              </p>
+              <p>
+                <span className="text-gray-400">○</span> Não há corpo JSON nesta
+                rota — use GET puro.
+              </p>
+            </div>
+          </div>
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-xs font-semibold text-gray-500 uppercase">
+                Response 200
+              </p>
+              <Button
+                variant="ghost"
+                size="sm"
+                icon={<Copy size={14} />}
+                onClick={() => handleCopy(balanceResponse)}
+              >
+                Copiar
+              </Button>
+            </div>
+            <div className="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto">
+              <pre className="text-xs leading-relaxed">
+                <code>{balanceResponse}</code>
+              </pre>
+            </div>
+            <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 text-xs text-gray-600">
+              <p>
+                <strong>saldo_disponivel</strong> — saldo principal + saldo de
+                afiliados, disponível para saque (atualizado a cada cache de 10 s).
+              </p>
+              <p>
+                <strong>entradas_mes</strong> / <strong>saidas_mes</strong> —
+                totais de depósitos e saques pagos no mês (status{' '}
+                <code className="bg-gray-100 px-1 rounded">PAID_OUT</code> ou{' '}
+                <code className="bg-gray-100 px-1 rounded">COMPLETED</code>).
+              </p>
+              <p>
+                <strong>fluxo_liquido_mes</strong> — entradas menos saídas no
+                mês corrente.
+              </p>
+              <p>
+                <strong>periodo</strong> — intervalo do mês corrente (
+                <code className="bg-gray-100 px-1 rounded">inicio</code> /{' '}
+                <code className="bg-gray-100 px-1 rounded">fim</code>).
+              </p>
+              <p className="sm:col-span-2">
+                <strong>atualizado_em</strong> — timestamp ISO 8601 da consulta.
+                A resposta inteira usa cache de 10 segundos por conta.
               </p>
             </div>
           </div>
