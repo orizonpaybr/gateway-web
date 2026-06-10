@@ -109,8 +109,11 @@ const cashOutResponse = `{
   }
 }`
 
-const balanceQueryExample =
-  'https://seu-dominio.com/api/wallet/balance?token={{CLIENT_KEY}}&secret={{CLIENT_SECRET}}'
+const balanceCurlExample = `curl --request GET \\
+  --url 'https://seu-dominio.com/api/wallet/balance' \\
+  --header 'accept: application/json' \\
+  --header 'api_token: {{CLIENT_KEY}}' \\
+  --header 'api_secret: {{CLIENT_SECRET}}'`
 
 const balanceResponse = `{
   "status": "success",
@@ -673,42 +676,44 @@ export default function ApiDocsPage() {
 
         <p className="text-sm text-gray-600 mb-4">
           <strong>Autenticação:</strong> envie{' '}
-          <code className="bg-gray-100 px-1 rounded text-xs">token</code> e{' '}
-          <code className="bg-gray-100 px-1 rounded text-xs">secret</code> na{' '}
-          <strong>query string</strong> (recomendado para GET) ou nos cabeçalhos{' '}
           <code className="bg-gray-100 px-1 rounded text-xs">api_token</code> e{' '}
-          <code className="bg-gray-100 px-1 rounded text-xs">api_secret</code>.
+          <code className="bg-gray-100 px-1 rounded text-xs">api_secret</code> nos{' '}
+          <strong>headers HTTP</strong> (recomendado — não exponha credenciais na URL).
+          Também aceitamos <code className="bg-gray-100 px-1 rounded text-xs">token</code> e{' '}
+          <code className="bg-gray-100 px-1 rounded text-xs">secret</code> na query string,
+          apenas para testes rápidos.
         </p>
 
         <div className="space-y-6">
           <div>
             <div className="flex items-center justify-between mb-2">
               <p className="text-xs font-semibold text-gray-500 uppercase">
-                Exemplo de requisição (GET)
+                Exemplo cURL
               </p>
               <Button
                 variant="ghost"
                 size="sm"
                 icon={<Copy size={14} />}
-                onClick={() => handleCopy(balanceQueryExample)}
+                onClick={() => handleCopy(balanceCurlExample)}
               >
                 Copiar
               </Button>
             </div>
             <div className="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto">
-              <pre className="text-xs leading-relaxed whitespace-pre-wrap break-all">
-                <code>{balanceQueryExample}</code>
+              <pre className="text-xs leading-relaxed whitespace-pre">
+                <code>{balanceCurlExample}</code>
               </pre>
             </div>
             <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 text-xs text-gray-600">
               <p>
                 <span className="text-red-500 font-bold">*</span>{' '}
-                <strong>token</strong> e <strong>secret</strong> — obrigatórios
-                (query string ou headers).
+                <strong>api_token</strong> e <strong>api_secret</strong> — headers
+                obrigatórios (Client Key / Client Secret).
               </p>
               <p>
-                <span className="text-gray-400">○</span> Não há corpo JSON nesta
-                rota — use GET puro.
+                <span className="text-gray-400">○</span> Substitua{' '}
+                <code className="bg-gray-100 px-1 rounded">seu-dominio.com</code>{' '}
+                pela Base URL indicada no topo desta página.
               </p>
             </div>
           </div>
