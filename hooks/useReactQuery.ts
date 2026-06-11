@@ -134,10 +134,10 @@ export function useDashboardStats() {
     queryKey: ['dashboard', 'stats'],
     queryFn: () => dashboardAPI.getStats(),
     enabled: authReady,
-    staleTime: 0,
+    staleTime: 12 * 1000,
     gcTime: 2 * 60 * 1000,
     refetchOnWindowFocus: true,
-    refetchInterval: 5 * 1000,
+    refetchInterval: 15 * 1000,
     refetchIntervalInBackground: false,
   })
 }
