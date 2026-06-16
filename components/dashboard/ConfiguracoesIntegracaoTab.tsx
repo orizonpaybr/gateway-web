@@ -124,8 +124,8 @@ export const ConfiguracoesIntegracaoTab = memo(() => {
 
     const trimmedIP = novoIP.trim()
     if (!isValidAllowedIP(trimmedIP)) {
-      toast.error('Informe um IPv4 válido ou range CIDR', {
-        description: 'Ex: 203.0.113.50 ou 74.220.48.0/24',
+      toast.error('Informe um IP válido (IPv4 ou IPv6) ou range CIDR', {
+        description: 'Ex: 203.0.113.50, 2804:219c::/64 ou 74.220.48.0/24',
       })
       return
     }
