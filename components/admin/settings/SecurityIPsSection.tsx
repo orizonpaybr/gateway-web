@@ -39,7 +39,7 @@ export function SecurityIPsSection({
     if (!isValidAllowedIP(trimmedIp)) {
       toast.error('IP inválido', {
         description:
-          'Informe um IPv4 válido ou range CIDR (ex: 192.168.1.1 ou 74.220.48.0/24)',
+          'Informe um IP válido (IPv4 ou IPv6) ou range CIDR (ex: 192.168.1.1, 2804:219c::/64 ou 74.220.48.0/24)',
       })
       return
     }

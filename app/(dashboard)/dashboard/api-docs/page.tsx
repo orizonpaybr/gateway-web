@@ -322,38 +322,49 @@ export default function ApiDocsPage() {
                 1
               </span>
               <div className="min-w-0 flex-1 space-y-3">
-                <p className="font-medium">Descubra o IPv4 do seu servidor</p>
+                <p className="font-medium">Descubra o IP público do seu servidor</p>
                 <p className="text-gray-600 text-sm">
-                  A API aceita apenas <strong>IPv4</strong>. Rode no terminal o
-                  comando do seu sistema; a resposta será só o número do IP
-                  (ex.: 45.233.86.159). Use esse valor ao adicionar o IP.
+                  A API aceita <strong>IPv4 e IPv6</strong> (incluindo ranges
+                  CIDR como <code className="text-xs">2804:219c::/64</code>).
+                  Cadastre <strong>ambos</strong> se a sua rede usar os dois —
+                  muitos PCs e servidores saem pela internet com IPv6 mesmo
+                  quando o IPv4 também existe.
                 </p>
                 <div className="grid gap-3">
                   <div className="min-w-0 rounded-lg border border-gray-200 bg-white p-3">
                     <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-gray-500">
-                      Linux e Mac
-                    </p>
-                    <p className="mb-1.5 text-xs text-gray-600">
-                      No Terminal, cole e execute. O resultado é o seu IPv4.
+                      IPv4 — Linux e Mac
                     </p>
                     <div className="min-w-0 overflow-hidden rounded bg-gray-900">
                       <pre className="overflow-x-auto px-3 py-2 text-sm font-mono text-green-400 whitespace-pre">
-                        curl https://api.ipify.org
+                        curl -4 https://api.ipify.org
                       </pre>
                     </div>
                   </div>
                   <div className="min-w-0 rounded-lg border border-gray-200 bg-white p-3">
                     <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-gray-500">
-                      Windows (PowerShell)
-                    </p>
-                    <p className="mb-1.5 text-xs text-gray-600">
-                      No PowerShell, cole e execute. O resultado é o seu IPv4.
+                      IPv4 — Windows (PowerShell)
                     </p>
                     <div className="min-w-0 overflow-hidden rounded bg-gray-900">
                       <pre className="max-w-full overflow-x-auto break-all whitespace-pre-wrap px-3 py-2 text-xs font-mono text-green-400">
                         (Invoke-WebRequest -Uri
                         &quot;https://api.ipify.org&quot;
                         -UseBasicParsing).Content.Trim()
+                      </pre>
+                    </div>
+                  </div>
+                  <div className="min-w-0 rounded-lg border border-gray-200 bg-white p-3">
+                    <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-gray-500">
+                      IPv6 — Linux, Mac ou PowerShell
+                    </p>
+                    <p className="mb-1.5 text-xs text-gray-600">
+                      Recomendado cadastrar a faixa <strong>/64</strong> (ex.{' '}
+                      <code className="text-xs">2804:219c:21c:3500::/64</code>
+                      ) em vez do endereço completo — o sufixo pode mudar.
+                    </p>
+                    <div className="min-w-0 overflow-hidden rounded bg-gray-900">
+                      <pre className="overflow-x-auto px-3 py-2 text-sm font-mono text-green-400 whitespace-pre">
+                        curl -6 https://api64.ipify.org
                       </pre>
                     </div>
                   </div>
