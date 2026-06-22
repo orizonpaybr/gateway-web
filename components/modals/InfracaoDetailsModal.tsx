@@ -1,12 +1,20 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { AlertCircle, Calendar, DollarSign, Hash, FileText } from 'lucide-react'
+import {
+  AlertCircle,
+  Calendar,
+  DollarSign,
+  Hash,
+  FileText,
+  ShieldCheck,
+} from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/Button'
 import { Dialog } from '@/components/ui/Dialog'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { pixAPI } from '@/lib/api'
+import { useInvalidateQueries } from '@/hooks/useReactQuery'
 import { formatCurrencyBRL, formatDateTimeBR } from '@/lib/format'
 interface InfracaoDetailsModalProps {
   isOpen: boolean
@@ -40,6 +48,10 @@ export function InfracaoDetailsModal({
 }: InfracaoDetailsModalProps) {
   const [infracao, setInfracao] = useState<InfracaoDetails | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [defenseText, setDefenseText] = useState('')
+  const [defenseFiles, setDefenseFiles] = useState<File[]>([])
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const { invalidatePixInfracoes } = useInvalidateQueries()
 
   const fetchInfracaoDetails = useCallback(async () => {
     if (!infracaoId) {
@@ -68,7 +80,42 @@ export function InfracaoDetailsModal({
     if (isOpen && infracaoId) {
       fetchInfracaoDetails()
     }
+    if (!isOpen) {
+      setDefenseText('')
+      setDefenseFiles([])
+    }
   }, [isOpen, infracaoId, fetchInfracaoDetails])
+
+  const canDefend = (() => {
+    const s = (infracao?.status || '').toLowerCase()
+    return ['pendente', 'em análise', 'em analise', 'mediação', 'mediacao'].includes(s)
+  })()
+
+  const handleSubmitDefense = useCallback(async () => {
+    if (!infracaoId) {
+      return
+    }
+    if (defenseText.trim().length < 3) {
+      toast.error('Descreva a defesa com pelo menos 3 caracteres.')
+      return
+    }
+
+    setIsSubmitting(true)
+    try {
+      await pixAPI.defenderInfracao(infracaoId, defenseText.trim(), defenseFiles)
+      toast.success('Defesa enviada com sucesso.')
+      setDefenseText('')
+      setDefenseFiles([])
+      invalidatePixInfracoes()
+      await fetchInfracaoDetails()
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : 'Falha ao enviar defesa.',
+      )
+    } finally {
+      setIsSubmitting(false)
+    }
+  }, [infracaoId, defenseText, defenseFiles, invalidatePixInfracoes, fetchInfracaoDetails])
 
   const formatCurrency = formatCurrencyBRL
   const formatDate = formatDateTimeBR
@@ -255,6 +302,51 @@ export function InfracaoDetailsModal({
                     {formatDate(infracao.transacao_relacionada.data)}
                   </span>
                 </div>
+              </div>
+            </div>
+          )}
+
+          {canDefend && (
+            <div className="border border-gray-200 rounded-lg p-4">
+              <div className="flex items-center gap-2 mb-3">
+                <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                <span className="text-sm font-medium text-gray-700">
+                  Apresentar defesa
+                </span>
+              </div>
+              <p className="text-xs text-gray-500 mb-3">
+                Descreva por que a transação é legítima. Anexe comprovantes se
+                necessário (até 10 arquivos, 10MB cada).
+              </p>
+              <textarea
+                value={defenseText}
+                onChange={(e) => setDefenseText(e.target.value)}
+                rows={4}
+                maxLength={5000}
+                placeholder="Ex.: Cliente reconhece a compra; segue comprovante de entrega..."
+                className="w-full rounded-lg border border-gray-300 p-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              />
+              <input
+                type="file"
+                multiple
+                onChange={(e) =>
+                  setDefenseFiles(Array.from(e.target.files ?? []))
+                }
+                className="mt-3 block w-full text-sm text-gray-600 file:mr-3 file:rounded-md file:border-0 file:bg-gray-100 file:px-3 file:py-2 file:text-sm file:font-medium hover:file:bg-gray-200"
+              />
+              {defenseFiles.length > 0 && (
+                <p className="mt-2 text-xs text-gray-500">
+                  {defenseFiles.length} arquivo(s) selecionado(s)
+                </p>
+              )}
+              <div className="mt-3 flex justify-end">
+                <Button
+                  variant="primary"
+                  onClick={handleSubmitDefense}
+                  disabled={isSubmitting || defenseText.trim().length < 3}
+                >
+                  {isSubmitting ? 'Enviando...' : 'Enviar defesa'}
+                </Button>
               </div>
             </div>
           )}

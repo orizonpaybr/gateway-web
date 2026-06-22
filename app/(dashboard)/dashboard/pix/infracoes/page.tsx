@@ -1,48 +1,11 @@
 'use client'
 
-/**
- * Lista de Infrações (Pix) — funcionalidade desativada temporariamente.
- * Reative: item no Sidebar, rotas em gateway-api/routes/api.php e os métodos
- * reais em lib/api.ts (pixAPI.listInfracoes / getInfracao). O código da UI
- * anterior está comentado no final deste arquivo.
- */
-import { FileText } from 'lucide-react'
-import { Card } from '@/components/ui/Card'
-
-export default function PixInfracoesPage() {
-  return (
-    <div className="p-4 md:p-6 space-y-4">
-      <div>
-        <h1 className="text-xl font-semibold text-gray-900">
-          Lista de Infrações
-        </h1>
-        <p className="text-sm text-gray-600">
-          Esta área está temporariamente indisponível.
-        </p>
-      </div>
-      <Card className="p-8 flex flex-col items-center justify-center text-center gap-3">
-        <div className="p-4 bg-gray-100 rounded-full">
-          <FileText size={32} className="text-gray-400" />
-        </div>
-        <p className="text-gray-600 text-sm max-w-md">
-          O recurso de listagem de infrações PIX não está em uso no momento.
-        </p>
-      </Card>
-    </div>
-  )
-}
-
-/* ——— Implementação anterior (reativar ao restaurar API e menu) ———
-'use client'
-
 import { useState, useMemo, useCallback, memo } from 'react'
 import { Filter, Eye, RotateCcw, Calendar, FileText } from 'lucide-react'
 import { InfracaoDetailsModal } from '@/components/modals/InfracaoDetailsModal'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
-import {
-  DateRangeFilterPopover,
-} from '@/components/ui/DateRangeFilterPanel'
+import { DateRangeFilterPopover } from '@/components/ui/DateRangeFilterPanel'
 import { Input } from '@/components/ui/Input'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { useDebounce } from '@/hooks/useDebounce'
@@ -167,7 +130,7 @@ const PixInfracoesPage = memo(() => {
             Lista de Infrações
           </h1>
           <p className="text-sm text-gray-600">
-            Listagem das Infrações abertas ou recebidas pela conta
+            Listagem das Infrações (MED) abertas ou recebidas pela conta
           </p>
         </div>
       </div>
@@ -424,5 +387,6 @@ const PixInfracoesPage = memo(() => {
   )
 })
 
+PixInfracoesPage.displayName = 'PixInfracoesPage'
+
 export default PixInfracoesPage
-——— fim implementação anterior ——— */
