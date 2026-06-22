@@ -176,6 +176,23 @@ const webhookPayloadCashOut = `{
   "message": "Saque PIX liquidado com sucesso."
 }`
 
+const webhookPayloadInfraction = `{
+  "idTransaction": "e2a3f1c8d94b-xxx",
+  "status": "INFRACTION_OPEN",
+  "amount": 1.00,
+  "paidAt": "2026-03-12T09:15:00.000-03:00",
+  "typeTransaction": "PIX_IN",
+  "payer": {
+    "name": "Nome do pagador",
+    "document": "00000000000"
+  },
+  "receiver": {
+    "user_id": "seu_user_id_coratri"
+  },
+  "endToEndId": "E1234567820260310143000abc",
+  "message": "Infração (MED) aberta para esta transação. Valor retido em mediação."
+}`
+
 export default function ApiDocsPage() {
   const handleCopy = (text: string) => {
     navigator.clipboard.writeText(text)
@@ -991,6 +1008,124 @@ export default function ApiDocsPage() {
                 Em falhas ou cancelamentos, <strong>message</strong> pode
                 descrever o motivo; detalhes adicionais podem constar na
                 consulta <code className="bg-gray-100 px-1 rounded">POST /api/status</code>.
+              </p>
+            </div>
+          </div>
+
+          <div>
+            <p className="text-sm font-medium text-gray-800 mb-2">
+              Webhook de Infrações (MED — Mecanismo Especial de Devolução)
+            </p>
+            <p className="text-sm text-gray-600 mb-3">
+              Quando um pagador contesta um depósito (fraude ou falha
+              operacional), o banco do pagador abre uma <strong>infração
+              (MED)</strong> no Banco Central. A Coratri recebe essa notificação
+              do provedor e <strong>repassa para a sua URL de webhook</strong>{' '}
+              (a mesma do <code className="bg-gray-100 px-1 rounded text-xs">postback</code> do
+              depósito), usando o mesmo formato de payload, com{' '}
+              <code className="bg-gray-100 px-1 rounded text-xs">typeTransaction: PIX_IN</code> e
+              um <code className="bg-gray-100 px-1 rounded text-xs">status</code> de
+              infração. Enquanto a infração estiver aberta, o valor do depósito
+              fica <strong>retido (em mediação)</strong> e não entra no saldo
+              disponível para saque.
+            </p>
+
+            <div className="min-w-0 overflow-hidden rounded-lg border border-gray-200 mb-3">
+              <table className="w-full text-xs">
+                <thead className="bg-gray-50 text-gray-500 uppercase">
+                  <tr>
+                    <th className="text-left font-semibold px-3 py-2">Status</th>
+                    <th className="text-left font-semibold px-3 py-2">
+                      O que significa
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100 text-gray-700">
+                  <tr>
+                    <td className="px-3 py-2">
+                      <code className="bg-gray-100 px-1 rounded">
+                        INFRACTION_OPEN
+                      </code>
+                    </td>
+                    <td className="px-3 py-2">
+                      Infração aberta. Valor do depósito retido em mediação.
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="px-3 py-2">
+                      <code className="bg-gray-100 px-1 rounded">
+                        INFRACTION_ACKNOWLEDGED
+                      </code>
+                    </td>
+                    <td className="px-3 py-2">
+                      Em análise pelo provedor/Banco Central (defesa em
+                      andamento). Valor segue retido.
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="px-3 py-2">
+                      <code className="bg-gray-100 px-1 rounded">
+                        INFRACTION_CLOSED
+                      </code>
+                    </td>
+                    <td className="px-3 py-2">
+                      Infração encerrada. Se a fraude for confirmada, o valor é
+                      devolvido (depósito <strong>REFUNDED</strong> e saldo
+                      debitado); se a defesa for aceita, o valor é liberado
+                      (volta a <strong>COMPLETED</strong>).
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="px-3 py-2">
+                      <code className="bg-gray-100 px-1 rounded">
+                        INFRACTION_CANCELLED
+                      </code>
+                    </td>
+                    <td className="px-3 py-2">
+                      Infração cancelada. Valor liberado (volta a{' '}
+                      <strong>COMPLETED</strong>).
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-xs font-semibold text-gray-500 uppercase">
+                Estrutura do payload — Infração (MED)
+              </p>
+              <Button
+                variant="ghost"
+                size="sm"
+                icon={<Copy size={14} />}
+                onClick={() => handleCopy(webhookPayloadInfraction)}
+              >
+                Copiar
+              </Button>
+            </div>
+            <div className="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto">
+              <pre className="text-xs leading-relaxed whitespace-pre-wrap">
+                <code>{webhookPayloadInfraction}</code>
+              </pre>
+            </div>
+            <div className="mt-2 text-xs text-gray-600 space-y-1">
+              <p>
+                <strong>idTransaction</strong> e <strong>endToEndId</strong>{' '}
+                identificam o mesmo depósito que originou a infração — use-os
+                para localizar o pedido no seu sistema.{' '}
+                <strong>amount</strong> é o valor sob disputa.
+              </p>
+              <p>
+                Você só recebe o webhook de infração se a transação tiver um{' '}
+                <code className="bg-gray-100 px-1 rounded">postback</code>{' '}
+                cadastrado. Recomendamos tratar{' '}
+                <code className="bg-gray-100 px-1 rounded">
+                  INFRACTION_CLOSED
+                </code>{' '}
+                consultando o status final via{' '}
+                <code className="bg-gray-100 px-1 rounded">POST /api/status</code>{' '}
+                (o depósito ficará <strong>REFUNDED</strong> em caso de
+                devolução).
               </p>
             </div>
           </div>

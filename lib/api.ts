@@ -743,11 +743,9 @@ export const pixAPI = {
     })
   },
 
-  // ===== INFRAÇÕES PIX (desativado — rotas comentadas em gateway-api/routes/api.php) =====
-  // Antes: montava URLSearchParams a partir de filters e chamava apiRequest(`/pix/infracoes?...`).
-  // getInfracao: apiRequest(`/pix/infracoes/${id}`).
+  // ===== INFRAÇÕES PIX (MED — Mecanismo Especial de Devolução) =====
 
-  listInfracoes: async (_filters?: {
+  listInfracoes: async (filters?: {
     page?: number
     limit?: number
     status?: string
@@ -777,22 +775,32 @@ export const pixAPI = {
       to: number
     }
   }> => {
-    return {
-      success: true,
-      data: {
-        data: [],
-        current_page: 1,
-        last_page: 1,
-        per_page: _filters?.limit ?? 20,
-        total: 0,
-        from: 0,
-        to: 0,
-      },
+    const params = new URLSearchParams()
+    if (filters?.page) {
+      params.append('page', filters.page.toString())
     }
+    if (filters?.limit) {
+      params.append('limit', filters.limit.toString())
+    }
+    if (filters?.status) {
+      params.append('status', filters.status)
+    }
+    if (filters?.busca) {
+      params.append('busca', filters.busca)
+    }
+    if (filters?.data_inicio) {
+      params.append('data_inicio', filters.data_inicio)
+    }
+    if (filters?.data_fim) {
+      params.append('data_fim', filters.data_fim)
+    }
+
+    const qs = params.toString()
+    return apiRequest(`/pix/infracoes${qs ? `?${qs}` : ''}`)
   },
 
   getInfracao: async (
-    _id: string,
+    id: string,
   ): Promise<{
     success: boolean
     data: {
@@ -815,9 +823,43 @@ export const pixAPI = {
       updated_at: string
     }
   }> => {
-    return Promise.reject(
-      new Error('Detalhe de infração PIX indisponível no momento.'),
-    )
+    return apiRequest(`/pix/infracoes/${id}`)
+  },
+
+  /**
+   * Envia uma defesa contra a infração (MED) para a adquirente.
+   * Aceita texto e anexos opcionais (multipart/form-data).
+   */
+  defenderInfracao: async (
+    id: string | number,
+    defense: string,
+    files: File[] = [],
+  ): Promise<{ success: boolean; message?: string; data?: unknown }> => {
+    const token =
+      typeof window !== 'undefined' ? localStorage.getItem('token') : null
+
+    const formData = new FormData()
+    formData.append('defense', defense)
+    files.forEach((file) => {
+      formData.append('files[]', file)
+    })
+
+    const response = await fetch(`${BASE_URL}/pix/infracoes/${id}/defense`, {
+      method: 'POST',
+      headers: {
+        ...(token && { Authorization: `Bearer ${token}` }),
+        // Sem Content-Type: o browser define o boundary do multipart.
+      },
+      body: formData,
+    })
+
+    const result = await response.json().catch(() => ({}))
+
+    if (!response.ok || !result?.success) {
+      throw new Error(result?.message || 'Falha ao enviar defesa da infração.')
+    }
+
+    return result
   },
 }
 
