@@ -11,6 +11,7 @@ import { formatDecimalReais, parseDecimalReais } from '@/lib/format'
 
 const TAXA_PADRAO_REAIS = 1
 const COMISSAO_PADRAO_REAIS = 0.5
+const PERCENTUAL_KEYS = ['taxa_percentual_deposito', 'taxa_percentual_pix'] as const
 
 interface UserFeesModalProps {
   open: boolean
@@ -33,10 +34,16 @@ export const UserFeesModal = memo(
       const taxaSaque = user.taxa_fixa_pix ?? TAXA_PADRAO_REAIS
       const comissaoAfiliado =
         user.taxa_comissao_afiliado ?? COMISSAO_PADRAO_REAIS
+      const modoPercentual = user.taxa_modo_percentual ?? false
+      const percentualDeposito = user.taxa_percentual_deposito ?? 0
+      const percentualSaque = user.taxa_percentual_pix ?? 0
 
       setForm({
         taxa_fixa_deposito: taxaDeposito,
         taxa_fixa_pix: taxaSaque,
+        taxa_modo_percentual: modoPercentual,
+        taxa_percentual_deposito: percentualDeposito,
+        taxa_percentual_pix: percentualSaque,
         taxas_personalizadas_ativas: user.taxas_personalizadas_ativas ?? false,
         taxa_comissao_afiliado: comissaoAfiliado,
         comissao_afiliado_personalizada:
@@ -53,6 +60,8 @@ export const UserFeesModal = memo(
         taxa_fixa_deposito: formatDecimalReais(taxaDeposito, 3),
         taxa_fixa_pix: formatDecimalReais(taxaSaque, 3),
         taxa_comissao_afiliado: formatDecimalReais(comissaoAfiliado, 3),
+        taxa_percentual_deposito: formatDecimalReais(percentualDeposito, 2),
+        taxa_percentual_pix: formatDecimalReais(percentualSaque, 2),
       })
     }, [user])
 
@@ -76,8 +85,12 @@ export const UserFeesModal = memo(
     const handleDecimalTaxBlur = useCallback(
       (key: keyof UpdateUserData) => {
         const current = form[key] as number | undefined
-        const defaultValue =
-          key === 'taxa_comissao_afiliado'
+        const isPercentual = (PERCENTUAL_KEYS as readonly string[]).includes(
+          key as string,
+        )
+        const defaultValue = isPercentual
+          ? 0
+          : key === 'taxa_comissao_afiliado'
             ? COMISSAO_PADRAO_REAIS
             : TAXA_PADRAO_REAIS
         if (current === undefined || current < 0) {
@@ -105,8 +118,17 @@ export const UserFeesModal = memo(
       const taxaDeposito =
         (form.taxa_fixa_deposito as number) ?? TAXA_PADRAO_REAIS
       const taxaPix = (form.taxa_fixa_pix as number) ?? TAXA_PADRAO_REAIS
+
+      const modoPercentual = (form.taxa_modo_percentual as boolean) ?? false
+      const percentualDeposito =
+        (form.taxa_percentual_deposito as number) ?? 0
+      const percentualPix = (form.taxa_percentual_pix as number) ?? 0
+
+      // Taxa fixa padrão só vale quando NÃO está no modo percentual
       const ehPadrao =
-        taxaDeposito === TAXA_PADRAO_REAIS && taxaPix === TAXA_PADRAO_REAIS
+        !modoPercentual &&
+        taxaDeposito === TAXA_PADRAO_REAIS &&
+        taxaPix === TAXA_PADRAO_REAIS
 
       const comissaoAfiliado =
         (form.taxa_comissao_afiliado as number) ?? COMISSAO_PADRAO_REAIS
@@ -117,9 +139,13 @@ export const UserFeesModal = memo(
         (form.saque_config_personalizada as boolean) ?? false
 
       const dataToSend: UpdateUserData = {
-        taxa_fixa_deposito: ehPadrao ? null : taxaDeposito,
-        taxa_fixa_pix: ehPadrao ? null : taxaPix,
-        taxas_personalizadas_ativas: !ehPadrao,
+        taxa_modo_percentual: modoPercentual,
+        // No modo percentual, a taxa fixa é ignorada; no modo fixo, o percentual é zerado
+        taxa_fixa_deposito: modoPercentual ? taxaDeposito : ehPadrao ? null : taxaDeposito,
+        taxa_fixa_pix: modoPercentual ? taxaPix : ehPadrao ? null : taxaPix,
+        taxa_percentual_deposito: modoPercentual ? percentualDeposito : null,
+        taxa_percentual_pix: modoPercentual ? percentualPix : null,
+        taxas_personalizadas_ativas: modoPercentual ? true : !ehPadrao,
         taxa_comissao_afiliado: comissaoPersonalizada ? comissaoAfiliado : null,
         comissao_afiliado_personalizada: comissaoPersonalizada,
         saque_config_personalizada: saqueConfigPersonalizada,
@@ -179,40 +205,110 @@ export const UserFeesModal = memo(
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Input
-                label="Taxa de depósito (R$)"
-                type="text"
-                inputMode="decimal"
-                value={
-                  localValues.taxa_fixa_deposito ??
-                  formatDecimalReais(
-                    (form.taxa_fixa_deposito as number) ?? TAXA_PADRAO_REAIS,
-                    3,
-                  )
+            <div className="flex items-center justify-between gap-3 rounded-lg bg-gray-50 px-3 py-2">
+              <div>
+                <p className="text-sm font-medium text-gray-700">
+                  Cobrar por porcentagem
+                </p>
+                <p className="text-xs text-gray-400">
+                  {(form.taxa_modo_percentual as boolean)
+                    ? 'A taxa é um % sobre o valor da transação (substitui a taxa fixa em R$).'
+                    : 'A taxa é um valor fixo em reais por transação.'}
+                </p>
+              </div>
+              <Switch
+                checked={(form.taxa_modo_percentual as boolean) ?? false}
+                onCheckedChange={(checked) =>
+                  handleChange('taxa_modo_percentual', checked)
                 }
-                onChange={(e) =>
-                  handleDecimalTaxChange('taxa_fixa_deposito', e.target.value)
-                }
-                onBlur={() => handleDecimalTaxBlur('taxa_fixa_deposito')}
-              />
-              <Input
-                label="Taxa de saque (R$)"
-                type="text"
-                inputMode="decimal"
-                value={
-                  localValues.taxa_fixa_pix ??
-                  formatDecimalReais(
-                    (form.taxa_fixa_pix as number) ?? TAXA_PADRAO_REAIS,
-                    3,
-                  )
-                }
-                onChange={(e) =>
-                  handleDecimalTaxChange('taxa_fixa_pix', e.target.value)
-                }
-                onBlur={() => handleDecimalTaxBlur('taxa_fixa_pix')}
               />
             </div>
+
+            {(form.taxa_modo_percentual as boolean) ? (
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <Input
+                    label="Taxa de depósito (%)"
+                    type="text"
+                    inputMode="decimal"
+                    value={
+                      localValues.taxa_percentual_deposito ??
+                      formatDecimalReais(
+                        (form.taxa_percentual_deposito as number) ?? 0,
+                        2,
+                      )
+                    }
+                    onChange={(e) =>
+                      handleDecimalTaxChange(
+                        'taxa_percentual_deposito',
+                        e.target.value,
+                      )
+                    }
+                    onBlur={() =>
+                      handleDecimalTaxBlur('taxa_percentual_deposito')
+                    }
+                  />
+                  <Input
+                    label="Taxa de saque (%)"
+                    type="text"
+                    inputMode="decimal"
+                    value={
+                      localValues.taxa_percentual_pix ??
+                      formatDecimalReais(
+                        (form.taxa_percentual_pix as number) ?? 0,
+                        2,
+                      )
+                    }
+                    onChange={(e) =>
+                      handleDecimalTaxChange(
+                        'taxa_percentual_pix',
+                        e.target.value,
+                      )
+                    }
+                    onBlur={() => handleDecimalTaxBlur('taxa_percentual_pix')}
+                  />
+                </div>
+                <p className="text-xs text-gray-400">
+                  Ex.: 2% sobre um depósito de R$ 10,00 = R$ 0,20. O valor cobrado
+                  nunca fica abaixo da taxa padrão da adquirente (piso).
+                </p>
+              </>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Input
+                  label="Taxa de depósito (R$)"
+                  type="text"
+                  inputMode="decimal"
+                  value={
+                    localValues.taxa_fixa_deposito ??
+                    formatDecimalReais(
+                      (form.taxa_fixa_deposito as number) ?? TAXA_PADRAO_REAIS,
+                      3,
+                    )
+                  }
+                  onChange={(e) =>
+                    handleDecimalTaxChange('taxa_fixa_deposito', e.target.value)
+                  }
+                  onBlur={() => handleDecimalTaxBlur('taxa_fixa_deposito')}
+                />
+                <Input
+                  label="Taxa de saque (R$)"
+                  type="text"
+                  inputMode="decimal"
+                  value={
+                    localValues.taxa_fixa_pix ??
+                    formatDecimalReais(
+                      (form.taxa_fixa_pix as number) ?? TAXA_PADRAO_REAIS,
+                      3,
+                    )
+                  }
+                  onChange={(e) =>
+                    handleDecimalTaxChange('taxa_fixa_pix', e.target.value)
+                  }
+                  onBlur={() => handleDecimalTaxBlur('taxa_fixa_pix')}
+                />
+              </div>
+            )}
 
             {user.is_affiliate && (
               <div className="pt-3 border-t border-gray-100">
