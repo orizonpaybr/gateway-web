@@ -1919,6 +1919,10 @@ export interface AdminUser {
   taxas_personalizadas_ativas?: boolean
   taxa_fixa_deposito?: number
   taxa_fixa_pix?: number
+  // Modo percentual (exclusivo da taxa fixa) + percentuais por usuário (em %)
+  taxa_modo_percentual?: boolean
+  taxa_percentual_deposito?: number
+  taxa_percentual_pix?: number
   limite_mensal_pf?: number
   observacoes_taxas?: string | null
   // Afiliados
@@ -2003,6 +2007,10 @@ export interface UpdateUserData {
   taxas_personalizadas_ativas?: boolean
   taxa_fixa_deposito?: number | null
   taxa_fixa_pix?: number | null
+  // Modo percentual (exclusivo da taxa fixa) + percentuais por usuário (em %)
+  taxa_modo_percentual?: boolean
+  taxa_percentual_deposito?: number | null
+  taxa_percentual_pix?: number | null
   limite_mensal_pf?: number
   observacoes_taxas?: string | null
   // Comissão de afiliado personalizada
