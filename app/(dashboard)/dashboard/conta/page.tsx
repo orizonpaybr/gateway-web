@@ -27,7 +27,6 @@ interface TaxItemPercent {
   mode: 'percent'
   percent: number
   is_custom?: boolean
-  floor_cents?: number
 }
 
 type TaxItem = TaxItemFixed | TaxItemPercent
@@ -70,11 +69,6 @@ function DepositTaxDetails({ tax }: { tax?: TaxItem }) {
         <p className="font-medium text-gray-900 mt-1.5">
           Taxa aplicada: {formatPercentual(tax.percent)} sobre o valor
         </p>
-        {tax.floor_cents != null && tax.floor_cents > 0 && (
-          <p className="text-gray-500 text-xs mt-1">
-            Mínimo por transação: {formatTaxa(tax.floor_cents)}
-          </p>
-        )}
       </>
     )
   }
@@ -112,11 +106,6 @@ function WithdrawTaxDetails({ tax }: { tax?: TaxItem }) {
         <p className="font-medium text-gray-900 mt-1.5">
           Taxa aplicada: {formatPercentual(tax.percent)} sobre o valor
         </p>
-        {tax.floor_cents != null && tax.floor_cents > 0 && (
-          <p className="text-gray-500 text-xs mt-1">
-            Mínimo por transação: {formatTaxa(tax.floor_cents)}
-          </p>
-        )}
       </>
     )
   }
