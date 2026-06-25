@@ -25,6 +25,7 @@ export function TaxasSection({
   const taxa =
     Number(settings.taxa_fixa_deposito) || Number(settings.taxa_fixa_pix) || 1
   const comissaoAfiliado = Number(settings.taxa_comissao_afiliado_padrao) || 0.5
+  const custoAdquirente = 1.0 // Treeal: 1% sobre o valor (ex.: R$ 100 → R$ 1,00)
 
   return (
     <div className="mb-6">
@@ -97,9 +98,9 @@ export function TaxasSection({
           Como funcionam cash-in e cash-out
         </p>
         <p className="text-sm text-cyan-700">
-          Exemplo: saque de R$ 100,00, taxa R$ {taxa.toFixed(3)} — R$ 0,025 para
-          o adquirente (Adquirente PIX), R$ {comissaoAfiliado.toFixed(3)} para o afiliado (se houver)
-          e R$ {Math.max(0, taxa - 0.000 - comissaoAfiliado).toFixed(3)} para a
+          Exemplo: saque de R$ 100,00, taxa R$ {taxa.toFixed(3)} — R$ {custoAdquirente.toFixed(3)} para
+          o adquirente (Treeal, 1% do valor), R$ {comissaoAfiliado.toFixed(3)} para o afiliado (se houver)
+          e R$ {Math.max(0, taxa - custoAdquirente - comissaoAfiliado).toFixed(3)} para a
           Coratri.
         </p>
       </div>
