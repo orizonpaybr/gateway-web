@@ -1069,6 +1069,9 @@ export const dashboardAPI = {
     success: boolean
     data: {
       saldo_disponivel: number
+      saldo_bruto: number
+      saldo_em_mediacao: number
+      qtd_em_mediacao: number
       entradas_mes: number
       saidas_mes: number
       splits_mes: number

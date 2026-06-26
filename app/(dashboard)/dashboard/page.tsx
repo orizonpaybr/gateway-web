@@ -10,6 +10,7 @@ import {
   TrendingUp,
   DollarSign,
   Search,
+  AlertTriangle,
 } from 'lucide-react'
 
 import { PixIcon } from '@/components/icons/PixIcon'
@@ -81,6 +82,12 @@ export default function DashboardPage() {
         color: 'bg-green-100 text-green-600',
       },
       {
+        title: 'Em Mediação (MED)',
+        value: formatCurrency(stats.data.saldo_em_mediacao ?? 0),
+        icon: AlertTriangle,
+        color: 'bg-orange-100 text-orange-600',
+      },
+      {
         title: 'Entradas do Mês',
         value: formatCurrency(stats.data.entradas_mes),
         icon: ArrowDownLeft,
@@ -120,7 +127,7 @@ export default function DashboardPage() {
   return (
     <div className="space-y-6">
       <div className="p-4 md:p-6 space-y-6">
-        <div className="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-5 gap-4">
           {statsDisplay.map((stat) => {
             const Icon = stat.icon
             return (
