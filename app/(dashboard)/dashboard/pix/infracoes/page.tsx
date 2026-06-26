@@ -90,11 +90,15 @@ const PixInfracoesPage = memo(() => {
     switch (status.toLowerCase()) {
       case 'resolvida':
         return 'bg-green-100 text-green-700'
+      case 'estorno':
+        return 'bg-orange-100 text-orange-800'
       case 'em análise':
+      case 'em analise':
         return 'bg-yellow-100 text-yellow-700'
       case 'pendente':
         return 'bg-red-100 text-red-700'
       case 'mediação':
+      case 'mediacao':
         return 'bg-yellow-100 text-yellow-700'
       case 'cancelada':
         return 'bg-gray-100 text-gray-700'
@@ -110,11 +114,12 @@ const PixInfracoesPage = memo(() => {
       PENDENTE: 'Pendente',
       EM_ANALISE: 'Em análise',
       RESOLVIDA: 'Resolvida',
+      ESTORNO: 'Estorno',
       CANCELADA: 'Cancelada',
       CHARGEBACK: 'Chargeback',
       MEDIATION: 'Mediação',
     }
-    return map[status] || status
+    return map[status.toUpperCase()] || status
   }
 
   const handleViewDetails = useCallback((infracaoId: number) => {

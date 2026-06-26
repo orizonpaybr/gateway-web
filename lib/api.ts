@@ -806,13 +806,20 @@ export const pixAPI = {
     data: {
       id: number
       status: string
+      desfecho_titulo?: string | null
+      desfecho_mensagem?: string | null
+      favoravel_lojista?: boolean | null
       data_criacao: string
       data_limite: string
       valor: number
       end_to_end: string
       tipo: string
+      tipo_legivel?: string
       descricao: string
       detalhes: string
+      detalhes_adicionais?: Array<{ label: string; value: string }>
+      pode_apresentar_defesa?: boolean
+      defesa_enviada_para?: string
       transacao_relacionada?: {
         id: number
         transaction_id: string
