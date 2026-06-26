@@ -19,12 +19,8 @@ import { Skeleton } from '@/components/ui/Skeleton'
 import { pixAPI } from '@/lib/api'
 import { useInvalidateQueries } from '@/hooks/useReactQuery'
 import { formatCurrencyBRL, formatDateTimeBR } from '@/lib/format'
-import {
-  formatInfracaoTipo,
-  parseDetalhesAdicionais,
-  getDesfechoFromStatus,
-  type DetalheAdicional,
-} from '@/lib/infracaoLabels'
+
+type DetalheAdicional = { label: string; value: string }
 
 interface InfracaoDetailsModalProps {
   isOpen: boolean
@@ -104,39 +100,19 @@ export function InfracaoDetailsModal({
     }
   }, [isOpen, infracaoId, fetchInfracaoDetails])
 
-  const tipoLegivel = useMemo(() => {
-    if (!infracao) {
-      return ''
-    }
-    return infracao.tipo_legivel ?? formatInfracaoTipo(infracao.tipo)
-  }, [infracao])
+  const tipoLegivel = infracao?.tipo_legivel ?? infracao?.tipo ?? ''
 
-  const detalhesAdicionais = useMemo(() => {
-    if (!infracao) {
-      return []
-    }
-    if (infracao.detalhes_adicionais?.length) {
-      return infracao.detalhes_adicionais
-    }
-    return parseDetalhesAdicionais(infracao.detalhes)
-  }, [infracao])
+  const detalhesAdicionais: DetalheAdicional[] =
+    infracao?.detalhes_adicionais ?? []
 
-  const desfecho = useMemo(() => {
-    if (!infracao) {
-      return null
-    }
-    if (infracao.desfecho_titulo && infracao.desfecho_mensagem) {
-      return {
-        titulo: infracao.desfecho_titulo,
-        mensagem: infracao.desfecho_mensagem,
-        favoravel_lojista: infracao.favoravel_lojista ?? null,
-      }
-    }
-    return getDesfechoFromStatus(
-      infracao.status,
-      infracao.favoravel_lojista,
-    )
-  }, [infracao])
+  const desfecho =
+    infracao?.desfecho_titulo && infracao?.desfecho_mensagem
+      ? {
+          titulo: infracao.desfecho_titulo,
+          mensagem: infracao.desfecho_mensagem,
+          favoravel_lojista: infracao.favoravel_lojista ?? null,
+        }
+      : null
 
   const canDefend = useMemo(() => {
     if (infracao?.pode_apresentar_defesa !== undefined) {
@@ -373,7 +349,7 @@ export function InfracaoDetailsModal({
                 </span>
               </div>
               <dl className="space-y-3">
-                {detalhesAdicionais.map((item) => (
+                {detalhesAdicionais.map((item: DetalheAdicional) => (
                   <div key={item.label} className="flex flex-col gap-0.5">
                     <dt className="text-xs font-medium text-gray-500">
                       {item.label}
