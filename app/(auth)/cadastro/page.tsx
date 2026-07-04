@@ -15,8 +15,11 @@ import { FileUpload } from '@/components/ui/FileUpload'
 import { Input } from '@/components/ui/Input'
 import { PhoneInput, validatePhone } from '@/components/ui/PhoneInput'
 import { Select } from '@/components/ui/Select'
+import { TurnstileWidget } from '@/components/auth/TurnstileWidget'
 import { useAuth } from '@/contexts/AuthContext'
 import { authAPI } from '@/lib/api'
+import { getAuthApiError, showAuthErrorToast } from '@/lib/auth-errors'
+import { TURNSTILE_SITE_KEY } from '@/lib/config/auth'
 import { GENDER_OPTIONS } from '@/types/user'
 
 const step1Schema = z.object({
@@ -124,6 +127,8 @@ function CadastroContent() {
   })
   const [step1Data, setStep1Data] = useState<Step1FormData | null>(null)
   const [step2Data, setStep2Data] = useState<Step2FormData | null>(null)
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null)
+  const [turnstileReset, setTurnstileReset] = useState(0)
 
   const { register: registerUser } = useAuth()
   const router = useRouter()
@@ -253,6 +258,11 @@ function CadastroContent() {
       return
     }
 
+    if (TURNSTILE_SITE_KEY && !turnstileToken) {
+      toast.error('Complete a verificação de segurança')
+      return
+    }
+
     setIsLoading(true)
 
     try {
@@ -268,6 +278,7 @@ function CadastroContent() {
         documentoFrente: selectedFiles.documentoFrente || undefined,
         documentoVerso: selectedFiles.documentoVerso || undefined,
         selfieDocumento: selectedFiles.selfieDocumento || undefined,
+        turnstileToken: turnstileToken || undefined,
       }
 
       const response = await registerUser(fullData, documents)
@@ -283,14 +294,20 @@ function CadastroContent() {
       })
 
       router.push('/login')
-    } catch (err: unknown) {
-      const errorMessage =
-        err instanceof Error ? err.message : 'Erro ao criar conta'
-
-      toast.error('Erro no cadastro', {
-        description: errorMessage,
-        duration: 4000,
+    } catch (error: unknown) {
+      showAuthErrorToast(error, {
+        title: 'Erro no cadastro',
+        onRequiresCaptcha: () => {
+          setTurnstileToken(null)
+          setTurnstileReset((key) => key + 1)
+        },
       })
+
+      const err = getAuthApiError(error)
+      if (!err.requiresCaptcha && !err.retryAfter) {
+        setTurnstileToken(null)
+        setTurnstileReset((key) => key + 1)
+      }
     } finally {
       setIsLoading(false)
     }
@@ -534,6 +551,15 @@ function CadastroContent() {
                     }
                   />
                 </div>
+
+                {TURNSTILE_SITE_KEY && (
+                  <TurnstileWidget
+                    siteKey={TURNSTILE_SITE_KEY}
+                    onVerify={setTurnstileToken}
+                    onExpire={() => setTurnstileToken(null)}
+                    resetKey={turnstileReset}
+                  />
+                )}
 
                 <div className="flex gap-3">
                   <Button

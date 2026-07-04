@@ -11,7 +11,10 @@ import { toast } from 'sonner'
 import { z } from 'zod'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
+import { TurnstileWidget } from '@/components/auth/TurnstileWidget'
 import { useAuth } from '@/contexts/AuthContext'
+import { getAuthApiError, showAuthErrorToast } from '@/lib/auth-errors'
+import { TURNSTILE_SITE_KEY } from '@/lib/config/auth'
 
 const loginSchema = z.object({
   username: z.string().min(1, 'Usuário ou email é obrigatório'),
@@ -22,6 +25,9 @@ type LoginFormData = z.infer<typeof loginSchema>
 
 export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false)
+  const [requiresCaptcha, setRequiresCaptcha] = useState(false)
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null)
+  const [turnstileReset, setTurnstileReset] = useState(0)
 
   const { login } = useAuth()
   const router = useRouter()
@@ -35,10 +41,23 @@ export default function LoginPage() {
   })
 
   const onSubmit = async (data: LoginFormData) => {
+    if (requiresCaptcha && TURNSTILE_SITE_KEY && !turnstileToken) {
+      toast.error('Complete a verificação de segurança')
+      return
+    }
+
     setIsLoading(true)
 
     try {
-      await login(data.username, data.password)
+      const result = await login(
+        data.username,
+        data.password,
+        turnstileToken ?? undefined,
+      )
+
+      if (result.requires2FA || result.requires2FASetup) {
+        return
+      }
 
       toast.success('Login realizado com sucesso!', {
         description: 'Bem-vindo!',
@@ -46,20 +65,24 @@ export default function LoginPage() {
       })
 
       router.push('/dashboard')
-    } catch (err: unknown) {
-      const errorMessage =
-        err instanceof Error ? err.message : 'Erro ao fazer login'
-
-      toast.error('Erro no login', {
-        description: errorMessage,
-        duration: 4000,
+    } catch (error: unknown) {
+      showAuthErrorToast(error, {
+        title: 'Erro no login',
+        onRequiresCaptcha: () => setRequiresCaptcha(true),
       })
+
+      const err = getAuthApiError(error)
+      if (!err.retryAfter) {
+        setTurnstileToken(null)
+        setTurnstileReset((k) => k + 1)
+      }
     } finally {
       setIsLoading(false)
     }
   }
 
   const logoSrc = encodeURI('/Logo Coratri Finance.png')
+  const showTurnstile = Boolean(TURNSTILE_SITE_KEY && requiresCaptcha)
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
@@ -96,6 +119,15 @@ export default function LoginPage() {
               showPasswordToggle
             />
 
+            {showTurnstile && (
+              <TurnstileWidget
+                siteKey={TURNSTILE_SITE_KEY}
+                onVerify={setTurnstileToken}
+                onExpire={() => setTurnstileToken(null)}
+                resetKey={turnstileReset}
+              />
+            )}
+
             <Button
               type="submit"
               variant="inkSolid"
@@ -117,19 +149,6 @@ export default function LoginPage() {
             Criar conta
           </Link>
         </div>
-
-        {/* Sem número de WhatsApp no momento — reative quando houver:
-        <div className="mt-6">
-          <Button
-            variant="inkOutline"
-            fullWidth
-            icon={<HelpCircle size={18} />}
-            onClick={() => window.open('https://wa.me/5549988906647', '_blank', 'noopener,noreferrer')}
-          >
-            Precisa de ajuda?
-          </Button>
-        </div>
-        */}
 
         <p className="mt-6 text-center text-xs text-gray-500">
           Ao acessar a conta, você concorda com os nossos{' '}

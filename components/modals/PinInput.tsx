@@ -6,6 +6,7 @@ interface PinInputProps {
   onChange: (value: string) => void
   onKeyPress?: (e: React.KeyboardEvent) => void
   autoFocus?: boolean
+  id?: string
 }
 
 export function PinInput({
@@ -13,6 +14,7 @@ export function PinInput({
   onChange,
   onKeyPress,
   autoFocus,
+  id,
 }: PinInputProps) {
   const inputRefs = useRef<(HTMLInputElement | null)[]>([])
   const [_focusedIndex, setFocusedIndex] = useState(0)
@@ -71,6 +73,7 @@ export function PinInput({
           ref={(el) => {
             inputRefs.current[index] = el
           }}
+          id={index === 0 ? id : undefined}
           type="password"
           inputMode="numeric"
           pattern="[0-9]"

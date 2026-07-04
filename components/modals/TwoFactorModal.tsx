@@ -1,7 +1,7 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
-import { Shield, CheckCircle, AlertCircle } from 'lucide-react'
+import React, { useState, useEffect, useCallback } from 'react'
+import { Shield, AlertCircle } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/Button'
 import { twoFactorAPI } from '@/lib/api'
@@ -12,9 +12,10 @@ type TwoFactorMode = 'initial-setup' | 'enable' | 'disable' | 'change-password'
 interface TwoFactorModalProps {
   isOpen: boolean
   onClose: () => void
-  onSuccess: (pin?: string) => void // Retorna PIN para change-password
+  onSuccess: (pin?: string) => void
   mode: TwoFactorMode
-  isBlocking?: boolean // Para o modo initial-setup obrigatório
+  isBlocking?: boolean
+  authToken?: string | null
 }
 
 export function TwoFactorModal({
@@ -23,26 +24,53 @@ export function TwoFactorModal({
   onSuccess,
   mode,
   isBlocking = false,
+  authToken = null,
 }: TwoFactorModalProps) {
   const [pin, setPin] = useState('')
-  const [confirmPin, setConfirmPin] = useState('')
-  const [step, setStep] = useState<'setup' | 'verify'>('setup')
   const [isLoading, setIsLoading] = useState(false)
-  const [configuredPin, setConfiguredPin] = useState<string>('')
   const [error, setError] = useState<string | null>(null)
+  const [qrSvg, setQrSvg] = useState<string | null>(null)
+  const [loadingQr, setLoadingQr] = useState(false)
 
-  // Reset state quando modal abre/fecha ou mode muda
-  useEffect(() => {
-    if (isOpen) {
-      setPin('')
-      setConfirmPin('')
-      setError(null)
-      setStep('setup')
-      setConfiguredPin('')
+  const shouldLoadQr = mode === 'initial-setup' || mode === 'enable'
+
+  const loadQrCode = useCallback(async () => {
+    if (!shouldLoadQr) {
+      return
     }
-  }, [isOpen, mode])
 
-  // Bloquear scroll do body quando modal está aberto
+    setLoadingQr(true)
+    try {
+      const response = await twoFactorAPI.generateQRCode(authToken ?? undefined)
+      if (response.success && response.data) {
+        setQrSvg(response.data.qr_svg)
+      } else {
+        toast.error('Erro ao gerar QR Code', {
+          description: response.message || 'Tente novamente',
+        })
+      }
+    } catch (loadError) {
+      console.error(loadError)
+      toast.error('Erro ao gerar QR Code')
+    } finally {
+      setLoadingQr(false)
+    }
+  }, [shouldLoadQr, authToken])
+
+  useEffect(() => {
+    if (!isOpen) {
+      return
+    }
+
+    setPin('')
+    setError(null)
+    setQrSvg(null)
+
+    if (shouldLoadQr) {
+      void loadQrCode()
+    }
+  }, [isOpen, mode, shouldLoadQr, loadQrCode])
+
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden'
@@ -57,75 +85,37 @@ export function TwoFactorModal({
     }
   }, [isOpen])
 
-  const handleInitialSetup = async () => {
-    if (pin.length !== 6) {
-      toast.error('PIN inválido', {
-        description: 'O PIN deve ter 6 dígitos',
-      })
-      return
-    }
-
-    if (pin !== confirmPin) {
-      toast.error('PINs não coincidem', {
-        description: 'Os PINs digitados não são iguais',
-      })
-      return
-    }
-
-    setConfiguredPin(pin)
-    setPin('')
-    setStep('verify')
-
-    toast.success('PIN configurado!', {
-      description: 'Agora digite novamente para confirmar',
-    })
-  }
-
-  // Handler para verificar PIN no setup inicial
   const handleVerifySetup = async () => {
     if (pin.length !== 6) {
-      toast.error('PIN inválido', {
-        description: 'O PIN deve ter 6 dígitos',
+      toast.error('Código inválido', {
+        description: 'Digite o código de 6 dígitos do app autenticador',
       })
-      return
-    }
-
-    if (pin !== configuredPin) {
-      toast.error('PIN incorreto', {
-        description: 'O PIN digitado não corresponde ao configurado',
-      })
-      setPin('')
       return
     }
 
     try {
       setIsLoading(true)
-
-      const response = await twoFactorAPI.enable(pin)
+      const response = await twoFactorAPI.enable(pin, authToken ?? undefined)
 
       if (response.success) {
         toast.success('2FA configurado com sucesso!', {
           description: 'Sua conta agora está mais segura',
         })
-        onSuccess()
+        onSuccess(pin)
       } else {
         toast.error('Erro ao ativar 2FA', {
-          description: response.message || 'Tente novamente',
+          description: response.message || 'Verifique o código e tente novamente',
         })
       }
-    } catch (error: unknown) {
-      console.error('Erro ao verificar PIN:', error)
+    } catch (setupError: unknown) {
       const errorMessage =
-        error instanceof Error ? error.message : 'Erro de conexão'
-      toast.error('Erro ao ativar 2FA', {
-        description: errorMessage,
-      })
+        setupError instanceof Error ? setupError.message : 'Erro de conexão'
+      toast.error('Erro ao ativar 2FA', { description: errorMessage })
     } finally {
       setIsLoading(false)
     }
   }
 
-  // Handler para enable/disable simples e change-password
   const handleSimpleAction = async () => {
     setError(null)
 
@@ -137,10 +127,8 @@ export function TwoFactorModal({
     try {
       setIsLoading(true)
 
-      // Se for change-password, retorna o PIN sem chamar API
       if (mode === 'change-password') {
-        setPin('')
-        onSuccess(pin) // Retorna PIN para componente pai
+        onSuccess(pin)
         onClose()
         return
       }
@@ -162,10 +150,12 @@ export function TwoFactorModal({
       } else {
         setError(response.message || 'Erro ao processar 2FA')
       }
-    } catch (err: unknown) {
-      console.error('Erro:', err)
+    } catch (actionError: unknown) {
+      console.error('Erro:', actionError)
       const errorMessage =
-        err instanceof Error ? err.message : 'Erro ao processar solicitação'
+        actionError instanceof Error
+          ? actionError.message
+          : 'Erro ao processar solicitação'
       setError(errorMessage)
     } finally {
       setIsLoading(false)
@@ -173,22 +163,17 @@ export function TwoFactorModal({
   }
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
+    if (e.key === 'Enter' && pin.length === 6) {
       if (mode === 'initial-setup') {
-        if (step === 'setup' && pin.length === 6 && confirmPin.length === 6) {
-          handleInitialSetup()
-        } else if (step === 'verify' && pin.length === 6) {
-          handleVerifySetup()
-        }
-      } else if (pin.length === 6) {
-        handleSimpleAction()
+        void handleVerifySetup()
+      } else {
+        void handleSimpleAction()
       }
     }
   }
 
   const handleClose = () => {
     if (isBlocking && mode === 'initial-setup') {
-      // Não permite fechar se for bloqueante
       return
     }
     setPin('')
@@ -204,35 +189,50 @@ export function TwoFactorModal({
     switch (mode) {
       case 'initial-setup':
         return {
-          title: 'Configure a Autenticação de Dois Fatores',
-          description: 'É obrigatório configurar o 2FA para acessar sua conta',
-          showWarning: true,
+          title: 'Configura a 2fa',
+          description: 'Escaneie o QR Code com seu app autenticador',
+          showWarning: false,
         }
       case 'enable':
         return {
           title: 'Ativar 2FA',
           description:
-            'Digite um PIN de 6 dígitos para ativar a autenticação de dois fatores',
+            'Escaneie o QR Code com Google Authenticator e digite o código gerado',
           showWarning: false,
         }
       case 'disable':
         return {
           title: 'Desativar 2FA',
           description:
-            'Digite seu PIN atual para desativar a autenticação de dois fatores',
+            'Digite o código do app autenticador para desativar o 2FA',
           showWarning: false,
         }
       case 'change-password':
         return {
           title: 'Confirme com 2FA',
-          description:
-            'Digite seu PIN de 6 dígitos para confirmar a mudança de senha',
+          description: 'Digite o código de 6 dígitos do app autenticador',
           showWarning: false,
         }
     }
   }
 
   const headerContent = getHeaderContent()
+
+  const renderQrSection = () => (
+    <>
+      {loadingQr ? (
+        <p className="text-center text-sm text-gray-500">Gerando QR Code...</p>
+      ) : qrSvg ? (
+        <div className="flex flex-col items-center gap-3">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={qrSvg} alt="QR Code 2FA" className="w-48 h-48" />
+          <p className="text-xs text-center text-gray-500">
+            Escaneie com Google Authenticator ou app compatível
+          </p>
+        </div>
+      ) : null}
+    </>
+  )
 
   return (
     <div
@@ -253,85 +253,19 @@ export function TwoFactorModal({
           {headerContent.showWarning && (
             <div className="mt-3 px-4 py-2 bg-yellow-50 border border-yellow-200 rounded-lg">
               <p className="text-xs text-yellow-800">
-                ⚠️ Você não poderá acessar o sistema sem completar esta
-                configuração
+                Recomendamos configurar o 2FA para proteger sua conta
               </p>
             </div>
           )}
         </div>
 
-        {mode === 'initial-setup' && step === 'setup' && (
+        {mode === 'initial-setup' && (
           <div className="space-y-6">
-            <div className="text-center">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                Configurar PIN de Segurança:
-              </h3>
-              <p className="text-sm text-gray-600">
-                Escolha um PIN de 6 dígitos para proteger sua conta
-              </p>
-            </div>
+            {renderQrSection()}
 
             <div>
               <div className="block text-sm font-medium text-gray-700 mb-2">
-                Novo PIN
-              </div>
-              <PinInput
-                value={pin}
-                onChange={setPin}
-                onKeyPress={handleKeyPress}
-              />
-            </div>
-
-            <div>
-              <div className="block text-sm font-medium text-gray-700 mb-2">
-                Confirmar PIN
-              </div>
-              <PinInput
-                value={confirmPin}
-                onChange={setConfirmPin}
-                onKeyPress={handleKeyPress}
-              />
-            </div>
-
-            <Button
-              variant="inkSolid"
-              onClick={handleInitialSetup}
-              className="w-full"
-              disabled={
-                isLoading ||
-                pin.length !== 6 ||
-                confirmPin.length !== 6 ||
-                pin !== confirmPin
-              }
-            >
-              {isLoading ? 'Configurando...' : 'Configurar PIN'}
-            </Button>
-
-            <div className="text-center">
-              <p className="text-xs text-gray-500">
-                Este PIN será solicitado a cada login para sua segurança
-              </p>
-            </div>
-          </div>
-        )}
-
-        {mode === 'initial-setup' && step === 'verify' && (
-          <div className="space-y-3">
-            <div className="text-center">
-              <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <CheckCircle className="w-6 h-6 text-green-600" />
-              </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                Verificar PIN
-              </h3>
-              <p className="text-sm text-gray-600">
-                Digite o PIN de 6 dígitos para confirmar a configuração:
-              </p>
-            </div>
-
-            <div>
-              <div className="block text-sm font-medium text-gray-700 mb-2">
-                PIN de Verificação
+                Código do app:
               </div>
               <PinInput
                 value={pin}
@@ -346,31 +280,38 @@ export function TwoFactorModal({
               className="w-full"
               disabled={isLoading || pin.length !== 6}
             >
-              {isLoading ? 'Verificando...' : 'Ativar 2FA'}
-            </Button>
-
-            <Button
-              variant="inkOutline"
-              onClick={() => {
-                setStep('setup')
-                setPin('')
-                setConfirmPin('')
-              }}
-              className="w-full"
-              disabled={isLoading}
-            >
-              Voltar
+              {isLoading ? 'Ativando...' : 'Ativar 2FA'}
             </Button>
           </div>
         )}
 
-        {(mode === 'enable' ||
-          mode === 'disable' ||
-          mode === 'change-password') && (
+        {mode === 'enable' && (
+          <div className="space-y-6">
+            {renderQrSection()}
+
+            <div>
+              <div className="block text-sm font-medium text-gray-700 mb-2">
+                Código do app:
+              </div>
+              <PinInput value={pin} onChange={setPin} onKeyPress={handleKeyPress} />
+            </div>
+
+            <Button
+              variant="inkSolid"
+              onClick={handleSimpleAction}
+              className="w-full"
+              disabled={isLoading || pin.length !== 6}
+            >
+              {isLoading ? 'Ativando...' : 'Ativar 2FA'}
+            </Button>
+          </div>
+        )}
+
+        {(mode === 'disable' || mode === 'change-password') && (
           <div className="space-y-4 sm:space-y-6">
             <div>
               <div className="block text-sm font-medium text-gray-700 mb-3 sm:mb-4 text-center">
-                PIN de 6 dígitos
+                Código de 6 dígitos
               </div>
               <PinInput
                 value={pin}
@@ -400,10 +341,8 @@ export function TwoFactorModal({
                 {isLoading
                   ? 'Processando...'
                   : mode === 'change-password'
-                  ? 'Confirmar'
-                  : mode === 'enable'
-                  ? 'Ativar 2FA'
-                  : 'Desativar 2FA'}
+                    ? 'Confirmar'
+                    : 'Desativar 2FA'}
               </Button>
               <Button
                 variant="inkOutline"
@@ -413,14 +352,6 @@ export function TwoFactorModal({
               >
                 Cancelar
               </Button>
-            </div>
-
-            <div className="text-center">
-              <p className="text-xs text-gray-500">
-                {mode === 'enable'
-                  ? 'Use apenas números (0-9)'
-                  : 'Digite o PIN que você configurou'}
-              </p>
             </div>
           </div>
         )}

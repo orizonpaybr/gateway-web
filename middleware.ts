@@ -1,44 +1,38 @@
 import { NextResponse, type NextRequest } from 'next/server'
+import {
+  AUTH_2FA_PENDING_COOKIE,
+  AUTH_TOKEN_COOKIE,
+} from '@/lib/config/auth'
 
-// Rotas públicas que não precisam de autenticação
-const _publicRoutes = ['/login', '/cadastro', '/']
-
-// Rotas protegidas que precisam de autenticação
+const publicRoutes = ['/login', '/cadastro', '/termos', '/']
 const protectedRoutes = ['/dashboard']
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
+  const token = request.cookies.get(AUTH_TOKEN_COOKIE)?.value
+  const pending2FA = request.cookies.get(AUTH_2FA_PENDING_COOKIE)?.value
 
-  // Verificar se é uma rota protegida
-  const _isProtectedRoute = protectedRoutes.some((route) =>
+  const isProtectedRoute = protectedRoutes.some((route) =>
     pathname.startsWith(route),
   )
 
-  // TODO: Quando a API estiver integrada, verificar o token aqui
-  // const token = request.cookies.get('token')?.value
+  const canAccessProtected = Boolean(token || pending2FA)
 
-  // Se for uma rota protegida e não houver token, redirecionar para login
-  // if (isProtectedRoute && !token) {
-  //   return NextResponse.redirect(new URL('/login', request.url))
-  // }
+  if (isProtectedRoute && !canAccessProtected) {
+    return NextResponse.redirect(new URL('/login', request.url))
+  }
 
-  // Se estiver autenticado e tentar acessar login/cadastro, redirecionar para dashboard
-  // if (publicRoutes.includes(pathname) && token && pathname !== '/') {
-  //   return NextResponse.redirect(new URL('/dashboard', request.url))
-  // }
+  if (
+    publicRoutes.includes(pathname) &&
+    token &&
+    (pathname === '/login' || pathname === '/cadastro')
+  ) {
+    return NextResponse.redirect(new URL('/dashboard', request.url))
+  }
 
   return NextResponse.next()
 }
 
 export const config = {
-  matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - api (API routes)
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     */
-    '/((?!api|_next/static|_next/image|favicon.ico).*)',
-  ],
+  matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],
 }
