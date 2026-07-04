@@ -1,92 +1,20 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { useRouter } from 'next/navigation'
 import { Shield } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/Button'
+import { TurnstileWidget } from '@/components/auth/TurnstileWidget'
+import { PinInput } from '@/components/modals/PinInput'
+import { TwoFactorModal } from '@/components/modals/TwoFactorModal'
 import { useAuth } from '@/contexts/AuthContext'
-import { twoFactorAPI } from '@/lib/api'
-interface PinInputProps {
-  value: string
-  onChange: (value: string) => void
-  onKeyPress?: (e: React.KeyboardEvent) => void
-  autoFocus?: boolean
-}
-
-function PinInput({ value, onChange, onKeyPress, autoFocus }: PinInputProps) {
-  const inputRefs = useRef<(HTMLInputElement | null)[]>([])
-  const [_focusedIndex, setFocusedIndex] = useState(0)
-
-  useEffect(() => {
-    if (autoFocus && inputRefs.current[0]) {
-      inputRefs.current[0].focus()
-    }
-  }, [autoFocus])
-
-  const handleChange = (index: number, digit: string) => {
-    if (!/^\d$/.test(digit) && digit !== '') {
-      return
-    }
-
-    const newValue = value.split('')
-    newValue[index] = digit
-    const newPin = newValue.join('')
-
-    onChange(newPin)
-
-    if (digit && index < 5) {
-      inputRefs.current[index + 1]?.focus()
-    }
-  }
-
-  const handleKeyDown = (index: number, e: React.KeyboardEvent) => {
-    if (e.key === 'Backspace' && !value[index] && index > 0) {
-      inputRefs.current[index - 1]?.focus()
-    } else if (e.key === 'ArrowLeft' && index > 0) {
-      inputRefs.current[index - 1]?.focus()
-    } else if (e.key === 'ArrowRight' && index < 5) {
-      inputRefs.current[index + 1]?.focus()
-    }
-
-    onKeyPress?.(e)
-  }
-
-  const handlePaste = (e: React.ClipboardEvent) => {
-    e.preventDefault()
-    const pastedData = e.clipboardData
-      .getData('text')
-      .replace(/\D/g, '')
-      .slice(0, 6)
-    onChange(pastedData)
-
-    const nextIndex = Math.min(pastedData.length, 5)
-    inputRefs.current[nextIndex]?.focus()
-  }
-
-  return (
-    <div className="flex gap-2 justify-center">
-      {Array.from({ length: 6 }).map((_, index) => (
-        <input
-          key={index}
-          ref={(el) => {
-            inputRefs.current[index] = el
-          }}
-          type="password"
-          inputMode="numeric"
-          pattern="[0-9]"
-          value={value[index] || ''}
-          onChange={(e) => handleChange(index, e.target.value)}
-          onKeyDown={(e) => handleKeyDown(index, e)}
-          onPaste={handlePaste}
-          onFocus={() => setFocusedIndex(index)}
-          className="w-12 h-14 text-center text-2xl font-bold border-2 border-gray-300 rounded-lg outline-none transition-all bg-white hover:border-gray-400 focus:border-[#101010] focus:ring-2 focus:ring-[#101010]/25"
-          maxLength={1}
-        />
-      ))}
-    </div>
-  )
-}
+import { getAuthApiError, formatRetryAfterWait } from '@/lib/auth-errors'
+import {
+  hasPending2FA,
+  readTempToken,
+  TURNSTILE_SITE_KEY,
+  TWO_FA_VERIFIED_KEY,
+} from '@/lib/config/auth'
 
 const FOCUSABLE_SELECTOR =
   'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
@@ -97,19 +25,35 @@ export function TwoFactorVerify() {
   const [isLoading, setIsLoading] = useState(false)
   const [isVerified, setIsVerified] = useState(false)
   const [shouldRender, setShouldRender] = useState(false)
-  const { user, logout, tempToken, verify2FA } = useAuth()
-  const router = useRouter()
-  const hasChecked = useRef(false)
+  const [requiresCaptcha, setRequiresCaptcha] = useState(false)
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null)
+  const [turnstileReset, setTurnstileReset] = useState(0)
+  const {
+    user,
+    logout,
+    tempToken,
+    verify2FA,
+    isLoading: authLoading,
+    pending2FA,
+    pending2FASetup,
+  } = useAuth()
   const modalRef = useRef<HTMLDivElement>(null)
 
-  const checkIfNeedsVerification = useCallback(async () => {
-    if (tempToken) {
+  const resolvePendingToken = useCallback(
+    () => tempToken ?? readTempToken(),
+    [tempToken],
+  )
+
+  const checkIfNeedsVerification = useCallback(() => {
+    const pendingToken = resolvePendingToken()
+
+    if (pendingToken || pending2FA || hasPending2FA()) {
       setShouldRender(true)
       setShowModal(true)
       return
     }
 
-    const verified = sessionStorage.getItem('2fa_verified')
+    const verified = sessionStorage.getItem(TWO_FA_VERIFIED_KEY)
 
     if (verified === 'true') {
       setIsVerified(true)
@@ -117,19 +61,24 @@ export function TwoFactorVerify() {
       return
     }
 
+    if (!user) {
+      setShouldRender(false)
+      return
+    }
+
     setShouldRender(false)
     setIsVerified(true)
-  }, [tempToken])
+  }, [pending2FA, resolvePendingToken, user])
 
   useEffect(() => {
-    if ((user || tempToken) && !hasChecked.current) {
-      hasChecked.current = true
-      checkIfNeedsVerification()
+    if (authLoading) {
+      return
     }
-  }, [user, tempToken, checkIfNeedsVerification])
+    checkIfNeedsVerification()
+  }, [authLoading, checkIfNeedsVerification, pending2FA, tempToken, user])
 
   useEffect(() => {
-    if (!showModal || !modalRef.current) {
+    if (!showModal || !modalRef.current || pending2FASetup) {
       return
     }
     const el = modalRef.current
@@ -159,55 +108,101 @@ export function TwoFactorVerify() {
     }
     el.addEventListener('keydown', onKeyDown)
     return () => el.removeEventListener('keydown', onKeyDown)
-  }, [showModal])
+  }, [showModal, pending2FASetup])
 
-  if (!shouldRender) {
-    return null
+  const handleSessionTerminated = async (message: string) => {
+    toast.error('Sessão encerrada', { description: message, duration: 6000 })
+    setShowModal(false)
+    await logout()
   }
 
   const handleVerifyCode = async () => {
+    const activeTempToken = resolvePendingToken()
+
     if (code.length !== 6) {
-      toast.error('PIN inválido', {
-        description: 'O PIN deve ter 6 dígitos',
+      toast.error('Código inválido', {
+        description: 'Digite os 6 dígitos do app autenticador',
       })
+      return
+    }
+
+    if (requiresCaptcha && TURNSTILE_SITE_KEY && !turnstileToken) {
+      toast.error('Complete a verificação de segurança')
+      return
+    }
+
+    if (!activeTempToken) {
+      toast.error('Sessão expirada', {
+        description: 'Faça login novamente para continuar.',
+      })
+      await logout()
       return
     }
 
     try {
       setIsLoading(true)
+      await verify2FA(activeTempToken, code, turnstileToken ?? undefined)
 
-      if (tempToken) {
-        await verify2FA(tempToken, code)
+      sessionStorage.setItem(TWO_FA_VERIFIED_KEY, 'true')
+      setIsVerified(true)
+      setShowModal(false)
+    } catch (error: unknown) {
+      const err = getAuthApiError(error)
 
-        sessionStorage.setItem('2fa_verified', 'true')
-        setIsVerified(true)
-        setShowModal(false)
-
+      if (err.sessionTerminated || err.requiresLogin) {
+        await handleSessionTerminated(
+          err.message || 'Faça login novamente para continuar.',
+        )
         return
       }
 
-      const response = await twoFactorAPI.verifyCode(code)
-
-      if (response.success) {
-        sessionStorage.setItem('2fa_verified', 'true')
-        setIsVerified(true)
-        setShowModal(false)
-
-        toast.success('Verificação concluída!', {
-          description: 'Acesso liberado',
+      if (err.retryAfter) {
+        toast.error('Muitas tentativas', {
+          description: `Aguarde ${formatRetryAfterWait(err.retryAfter)} e faça login novamente.`,
+          duration: 8000,
         })
-      } else {
-        toast.error('PIN incorreto', {
-          description: response.message || 'Verifique o PIN e tente novamente',
-        })
-        setCode('')
+        await handleSessionTerminated(err.message)
+        return
       }
-    } catch (error: unknown) {
-      console.error('Erro ao verificar PIN:', error)
-      toast.error('Erro na verificação', {
-        description: 'Erro ao conectar com o servidor',
+
+      if (err.requiresCaptcha) {
+        setRequiresCaptcha(true)
+      }
+
+      toast.error('Código incorreto', {
+        description: err.message || 'Verifique o código do app autenticador',
       })
       setCode('')
+      setTurnstileToken(null)
+      setTurnstileReset((k) => k + 1)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleSetupSuccess = async (setupCode?: string) => {
+    const activeTempToken = resolvePendingToken()
+    const codeToVerify = setupCode ?? ''
+
+    if (!activeTempToken || codeToVerify.length !== 6) {
+      toast.error('Erro ao concluir configuração', {
+        description: 'Faça login novamente.',
+      })
+      await logout()
+      return
+    }
+
+    try {
+      setIsLoading(true)
+      await verify2FA(activeTempToken, codeToVerify)
+      sessionStorage.setItem(TWO_FA_VERIFIED_KEY, 'true')
+      setIsVerified(true)
+      setShowModal(false)
+    } catch (error: unknown) {
+      toast.error('Erro ao concluir login', {
+        description: getAuthApiError(error).message,
+      })
+      await logout()
     } finally {
       setIsLoading(false)
     }
@@ -221,12 +216,33 @@ export function TwoFactorVerify() {
 
   const handleLogout = async () => {
     await logout()
-    router.push('/login')
   }
 
-  if (!showModal || isVerified) {
+  if (!shouldRender || !showModal || isVerified) {
     return null
   }
+
+  if (pending2FASetup) {
+    return (
+      <>
+        <div
+          className="fixed inset-0 bg-black/80 z-40"
+          aria-hidden
+          tabIndex={-1}
+        />
+        <TwoFactorModal
+          isOpen
+          onClose={handleLogout}
+          onSuccess={handleSetupSuccess}
+          mode="initial-setup"
+          isBlocking
+          authToken={resolvePendingToken()}
+        />
+      </>
+    )
+  }
+
+  const showTurnstile = Boolean(TURNSTILE_SITE_KEY && requiresCaptcha)
 
   return (
     <>
@@ -255,13 +271,8 @@ export function TwoFactorVerify() {
               Verificação de Segurança
             </h2>
             <p className="text-gray-600 mt-2">
-              Digite o PIN de 6 dígitos para continuar
+              Digite os 6 dígitos da 2FA exibidos no Google Authenticator
             </p>
-            <div className="mt-3 px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg">
-              <p className="text-xs text-gray-800">
-                🔒 Esta verificação é necessária a cada login
-              </p>
-            </div>
           </div>
 
           <div className="space-y-3">
@@ -270,14 +281,24 @@ export function TwoFactorVerify() {
                 htmlFor="two-factor-pin-input"
                 className="block text-sm font-medium text-gray-700 mb-2"
               >
-                PIN de Segurança
+                Código da 2FA:
               </label>
               <PinInput
+                id="two-factor-pin-input"
                 value={code}
                 onChange={setCode}
                 onKeyPress={handleKeyPress}
               />
             </div>
+
+            {showTurnstile && (
+              <TurnstileWidget
+                siteKey={TURNSTILE_SITE_KEY}
+                onVerify={setTurnstileToken}
+                onExpire={() => setTurnstileToken(null)}
+                resetKey={turnstileReset}
+              />
+            )}
 
             <Button
               variant="inkSolid"
@@ -297,22 +318,6 @@ export function TwoFactorVerify() {
               Sair e fazer login novamente
             </Button>
           </div>
-
-          {/* Sem número de WhatsApp no momento — reative quando houver:
-          <div className="mt-6 pt-6 border-t border-gray-200">
-            <p className="text-xs text-gray-500 text-center">
-              Esqueceu seu PIN?{' '}
-              <a
-                href="https://wa.me/5549988906647"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-[#101010] font-medium hover:underline hover:opacity-80"
-              >
-                Entre em contato com o suporte
-              </a>
-            </p>
-          </div>
-          */}
         </div>
       </div>
     </>

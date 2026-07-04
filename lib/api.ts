@@ -1,4 +1,12 @@
 // Configuração base para chamadas à API
+import type { RegisterData as RegisterDataType } from '@/types/user'
+import { authErrorFromResponse } from '@/lib/auth-errors'
+import {
+  clearTempToken,
+  TWO_FA_VERIFIED_KEY,
+} from '@/lib/config/auth'
+import { clearAuthSession, syncAuthSessionToken } from '@/lib/auth-session-client'
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL
 
 export const BASE_URL = API_URL
@@ -65,7 +73,7 @@ export async function apiRequest<T>(
     // 401: limpar credenciais e emitir evento global para UI reagir (logout/redirect)
     if (response.status === 401) {
       try {
-        clearAuthData()
+        void clearAuthData()
         if (typeof window !== 'undefined') {
           window.dispatchEvent(new Event('auth-unauthorized'))
         }
@@ -118,7 +126,7 @@ export async function apiRequestWithCredentials<T>(
     // 401: limpar credenciais e emitir evento
     if (response.status === 401) {
       try {
-        clearAuthData()
+        void clearAuthData()
         if (typeof window !== 'undefined') {
           window.dispatchEvent(new Event('auth-unauthorized'))
         }
@@ -140,24 +148,58 @@ export async function apiRequestWithCredentials<T>(
   return response.json()
 }
 
-// Interface para resposta de login/registro
+/** Requisição autenticada com Bearer explícito (ex.: temp_token no setup 2FA). */
+export async function apiRequestWithBearer<T>(
+  endpoint: string,
+  bearerToken: string,
+  options: RequestInit = {},
+): Promise<T> {
+  const headers = {
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${bearerToken}`,
+    ...options.headers,
+  }
+
+  const response = await fetch(`${BASE_URL}${endpoint}`, {
+    ...options,
+    headers,
+  })
+
+  if (!response.ok) {
+    const errorPayload = await response.json().catch(() => ({}))
+    const message = errorPayload?.message || 'Erro na requisição'
+    throw new Error(message)
+  }
+
+  return response.json()
+}
 interface AuthResponse {
   success: boolean
   message: string
   data?: AuthData
   requires_2fa?: boolean
+  requires_captcha?: boolean
+  requires_2fa_setup?: boolean
+  requires_totp_migration?: boolean
+  twofa_method?: 'pin' | 'totp'
   temp_token?: string
+  retry_after?: number
+  locked_until?: string
+  session_terminated?: boolean
+  requires_login?: boolean
   errors?: Record<string, string[]>
 }
 
 // Interface para dados de registro - importada de types/user.ts
-import type { RegisterData as RegisterDataType } from '@/types/user'
 export type RegisterData = RegisterDataType
 
 // Helper para armazenar dados de autenticação
-const storeAuthData = (data: AuthData): void => {
+const storeAuthData = async (data: AuthData): Promise<void> => {
   localStorage.setItem('token', data.token)
   localStorage.setItem('user', JSON.stringify(data.user))
+
+  await syncAuthSessionToken(data.token)
+  clearTempToken()
 
   // Armazenar também credenciais do middleware check.token.secret, quando fornecidas
   if (data.api_token) {
@@ -174,10 +216,12 @@ const storeAuthData = (data: AuthData): void => {
 }
 
 // Helper para limpar dados de autenticação
-const clearAuthData = (): void => {
+const clearAuthData = async (): Promise<void> => {
   localStorage.removeItem('token')
   localStorage.removeItem('user')
-  sessionStorage.removeItem('2fa_verified') // Limpar verificação 2FA da sessão
+  sessionStorage.removeItem(TWO_FA_VERIFIED_KEY)
+  await clearAuthSession()
+  clearTempToken()
 }
 
 // Funções de autenticação
@@ -185,28 +229,53 @@ export const authAPI = {
   /**
    * Login de usuário
    */
-  login: async (username: string, password: string): Promise<AuthResponse> => {
+  login: async (
+    username: string,
+    password: string,
+    turnstileToken?: string,
+  ): Promise<AuthResponse> => {
+    const body: Record<string, string> = { username, password }
+    if (turnstileToken) {
+      body.turnstile_token = turnstileToken
+    }
+
     const response = await fetch(`${BASE_URL}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password }),
+      body: JSON.stringify(body),
     })
 
     const data = await response.json()
 
-    // Early return para 2FA - NÃO armazenar token ainda
+    if (response.status === 429) {
+      throw authErrorFromResponse(
+        data,
+        'Muitas tentativas. Tente novamente mais tarde.',
+      )
+    }
+
+    if (response.status === 403 && data.account_banned) {
+      throw authErrorFromResponse(
+        data,
+        'Conta bloqueada permanentemente. Entre em contato com o suporte.',
+      )
+    }
     if (!data.success && data.requires_2fa) {
+      return data
+    }
+
+    if (!data.success && data.requires_2fa_setup) {
       return data
     }
 
     // Guard clause para erro
     if (!data.success) {
-      throw new Error(data.message || 'Erro ao fazer login')
+      throw authErrorFromResponse(data, 'Erro ao fazer login')
     }
 
     // Só armazenar token se login foi bem-sucedido E não requer 2FA
     if (data.success && data.data && !data.requires_2fa) {
-      storeAuthData(data.data)
+      await storeAuthData(data.data)
     }
 
     return data
@@ -215,8 +284,15 @@ export const authAPI = {
   /**
    * Verificação 2FA
    */
-  verify2FA: async (tempToken: string, code: string): Promise<AuthResponse> => {
-    const payload = { temp_token: tempToken, code }
+  verify2FA: async (
+    tempToken: string,
+    code: string,
+    turnstileToken?: string,
+  ): Promise<AuthResponse> => {
+    const payload: Record<string, string> = { temp_token: tempToken, code }
+    if (turnstileToken) {
+      payload.turnstile_token = turnstileToken
+    }
 
     const response = await fetch(`${BASE_URL}/auth/verify-2fa`, {
       method: 'POST',
@@ -226,15 +302,27 @@ export const authAPI = {
 
     const data = await response.json()
 
-    // Guard clause para erro
+    if (response.status === 429) {
+      throw authErrorFromResponse(
+        data,
+        'Muitas tentativas. Faça login novamente.',
+      )
+    }
+
+    if (response.status === 403 && data.account_banned) {
+      throw authErrorFromResponse(
+        data,
+        'Conta bloqueada permanentemente. Entre em contato com o suporte.',
+      )
+    }
+
     if (!data.success) {
-      console.error('❌ Erro na verificação 2FA:', data)
-      throw new Error(data.message || 'Código 2FA inválido')
+      throw authErrorFromResponse(data, 'Código 2FA inválido')
     }
 
     // Armazenar tokens se disponíveis
     if (data.data) {
-      storeAuthData(data.data)
+      await storeAuthData(data.data)
     }
 
     return data
@@ -249,6 +337,7 @@ export const authAPI = {
       documentoFrente?: File
       documentoVerso?: File
       selfieDocumento?: File
+      turnstileToken?: string
     },
   ): Promise<AuthResponse> => {
     const formData = new FormData()
@@ -259,6 +348,10 @@ export const authAPI = {
         formData.append(key, value.toString())
       }
     })
+
+    if (documents?.turnstileToken) {
+      formData.append('turnstile_token', documents.turnstileToken)
+    }
 
     // Adicionar documentos se fornecidos
     if (documents?.documentoFrente) {
@@ -279,13 +372,22 @@ export const authAPI = {
 
     const result = await response.json()
 
-    // Guard clause para erro
+    if (response.status === 429) {
+      throw authErrorFromResponse(result, 'Muitas tentativas. Tente novamente.')
+    }
+
     if (!result.success) {
       const errorMessage = result.errors
         ? Object.values(result.errors).flat().join(', ')
         : result.message || 'Erro ao criar conta'
 
-      throw new Error(errorMessage)
+      throw authErrorFromResponse(
+        {
+          message: errorMessage,
+          requires_captcha: result.requires_captcha,
+        },
+        'Erro ao criar conta',
+      )
     }
 
     return result
@@ -308,7 +410,7 @@ export const authAPI = {
     try {
       return await apiRequest('/auth/verify', { method: 'GET' })
     } catch {
-      clearAuthData()
+      await clearAuthData()
       return { success: false }
     }
   },
@@ -338,12 +440,20 @@ export const authAPI = {
    * Logout
    */
   logout: async (): Promise<void> => {
+    const token =
+      typeof window !== 'undefined' ? localStorage.getItem('token') : null
     try {
-      await apiRequest('/auth/logout', { method: 'POST' })
+      await fetch(`${BASE_URL}/auth/logout`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+      })
     } catch (error) {
       console.error('Erro ao fazer logout:', error)
     } finally {
-      clearAuthData()
+      await clearAuthData()
     }
   },
 
@@ -371,7 +481,7 @@ export const authAPI = {
         current_password: currentPassword,
         new_password: newPassword,
         new_password_confirmation: newPasswordConfirmation,
-        twofa_pin: twoFAPin, // Enviar PIN de 2FA
+        twofa_code: twoFAPin,
       }),
     })
 
@@ -1163,36 +1273,47 @@ export const twoFactorAPI = {
     success: boolean
     enabled: boolean
     configured: boolean
+    method?: 'pin' | 'totp'
+    requires_totp_migration?: boolean
   }> => {
     return apiRequest('/2fa/status')
   },
 
-  // Gerar QR Code para configuração
-  generateQRCode: async (): Promise<{
+  generateQRCode: async (
+    authToken?: string,
+  ): Promise<{
     success: boolean
-    qr_code: string
-    secret: string
-    manual_entry_key: string
+    data?: {
+      qr_svg: string
+    }
     message?: string
   }> => {
+    if (authToken) {
+      return apiRequestWithBearer('/2fa/generate-qr', authToken, {
+        method: 'POST',
+      })
+    }
     return apiRequest('/2fa/generate-qr', { method: 'POST' })
   },
 
-  // Verificar código 2FA
+  enable: async (
+    code: string,
+    authToken?: string,
+  ): Promise<{ success: boolean; message: string }> => {
+    const options = {
+      method: 'POST',
+      body: JSON.stringify({ code }),
+    }
+    if (authToken) {
+      return apiRequestWithBearer('/2fa/enable', authToken, options)
+    }
+    return apiRequest('/2fa/enable', options)
+  },
+
   verifyCode: async (
     code: string,
   ): Promise<{ success: boolean; message: string }> => {
     return apiRequest('/2fa/verify', {
-      method: 'POST',
-      body: JSON.stringify({ code }),
-    })
-  },
-
-  // Ativar 2FA
-  enable: async (
-    code: string,
-  ): Promise<{ success: boolean; message: string }> => {
-    return apiRequest('/2fa/enable', {
       method: 'POST',
       body: JSON.stringify({ code }),
     })

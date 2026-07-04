@@ -6,11 +6,24 @@ import {
   useState,
   useEffect,
   useCallback,
+  useMemo,
   type ReactNode,
 } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { authAPI, accountAPI } from '@/lib/api'
+import { clearAuthSession, syncAuthSession2FAPending } from '@/lib/auth-session-client'
+import {
+  clearTempToken,
+  clear2FASetupPending,
+  hasPending2FA,
+  mark2FASetupPending,
+  persistTempToken,
+  readTempToken,
+  TWO_FA_SETUP_CHECKED_KEY,
+  TWO_FA_VERIFIED_KEY,
+  has2FASetupPending,
+} from '@/lib/config/auth'
 import { queryClient } from '@/lib/queryClient'
 import { useLocalStorage } from '@/hooks/useLocalStorage'
 import type { User as UserProfile, RegisterData } from '@/types/user'
@@ -31,7 +44,7 @@ interface ProfileResponse {
     phone?: string
     cnpj?: string
     permission?: number
-    [key: string]: unknown // Para campos adicionais que possam existir
+    [key: string]: unknown
   }
   message?: string
 }
@@ -58,12 +71,14 @@ interface StoredUserData {
   gender?: 'male' | 'female' | null
   agency?: string
   permission?: number
-  [key: string]: unknown // Para campos adicionais que possam existir
+  [key: string]: unknown
 }
 
 interface AuthContextType {
   user: User | null
   isAuthenticated: boolean
+  pending2FA: boolean
+  pending2FASetup: boolean
   isLoading: boolean
   authReady: boolean
   show2FAModal: boolean
@@ -71,8 +86,9 @@ interface AuthContextType {
   login: (
     username: string,
     password: string,
-  ) => Promise<{ requires2FA?: boolean; tempToken?: string }>
-  verify2FA: (tempToken: string, code: string) => Promise<void>
+    turnstileToken?: string,
+  ) => Promise<{ requires2FA?: boolean; requires2FASetup?: boolean; tempToken?: string }>
+  verify2FA: (tempToken: string, code: string, turnstileToken?: string) => Promise<void>
   logout: () => Promise<void>
   register: (
     data: RegisterData,
@@ -80,6 +96,7 @@ interface AuthContextType {
       documentoFrente?: File
       documentoVerso?: File
       selfieDocumento?: File
+      turnstileToken?: string
     },
   ) => Promise<{
     success: boolean
@@ -102,31 +119,56 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true)
   const [authReady, setAuthReady] = useState(false)
   const [show2FAModal, setShow2FAModal] = useState(false)
-  const [tempToken, setTempToken] = useState<string | null>(null)
+  const [tempToken, setTempToken] = useState<string | null>(() =>
+    typeof window !== 'undefined' ? readTempToken() : null,
+  )
   const router = useRouter()
 
-  useEffect(() => {
-    // Verificar se há um token salvo no localStorage
-    // Aguardar um pouco para garantir que o localStorage está disponível
-    const timer = setTimeout(() => {
-      const isPublicRoute =
-        typeof window !== 'undefined' &&
-        (window.location.pathname === '/' ||
-          window.location.pathname.startsWith('/login') ||
-          window.location.pathname.startsWith('/cadastro') ||
-          window.location.pathname.startsWith('/termos'))
+  const pending2FA = useMemo(
+    () => !!tempToken || hasPending2FA(),
+    [tempToken],
+  )
 
-      if (
-        typeof window !== 'undefined' &&
-        localStorage.getItem('token') &&
-        !isPublicRoute
-      ) {
-        checkAuth()
-      } else {
-        setIsLoading(false)
-        // Sem token: ainda não autenticado (aguardando 2FA ou login)
-        setAuthReady(false)
-      }
+  const pending2FASetup = useMemo(
+    () => pending2FA && has2FASetupPending(),
+    [pending2FA],
+  )
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      void (async () => {
+        const isPublicRoute =
+          typeof window !== 'undefined' &&
+          (window.location.pathname === '/' ||
+            window.location.pathname.startsWith('/login') ||
+            window.location.pathname.startsWith('/cadastro') ||
+            window.location.pathname.startsWith('/termos'))
+
+        const storedTempToken = readTempToken()
+        if (storedTempToken) {
+          setTempToken(storedTempToken)
+        } else if (
+          !localStorage.getItem('token') &&
+          typeof window !== 'undefined' &&
+          window.location.pathname.startsWith('/dashboard')
+        ) {
+          await clearAuthSession()
+          router.replace('/login')
+          setIsLoading(false)
+          return
+        }
+
+        if (
+          typeof window !== 'undefined' &&
+          localStorage.getItem('token') &&
+          !isPublicRoute
+        ) {
+          await checkAuth()
+        } else {
+          setIsLoading(false)
+          setAuthReady(false)
+        }
+      })()
     }, 100)
 
     return () => clearTimeout(timer)
@@ -142,13 +184,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const storedUser =
         typeof window !== 'undefined' ? localStorage.getItem('user') : null
 
-      // Early return se não há token ou dados de usuário no localStorage
       if (!storedToken || !storedUser) {
         setIsLoading(false)
         return
       }
 
-      // Tentar validar o token com a API
       const result = await authAPI.verifyToken()
 
       if (result.success) {
@@ -174,7 +214,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               permission: profileResult.data.permission,
             })
           } else {
-            // Usar dados do localStorage se API falhar
             const userData = JSON.parse(storedUser) as StoredUserData
             setUser({
               id: userData.id,
@@ -199,13 +238,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             permission: userData.permission,
           })
         }
-      } else {
-        // Token inválido, mas mantendo dados do localStorage
-        // O usuário pode fazer logout manual se necessário
       }
-    } catch (error: unknown) {
-      // Erro ao verificar autenticação - não limpar dados automaticamente
-      // Não limpar dados automaticamente - deixar o usuário fazer logout manual
+    } catch {
+      // Mantém dados locais; logout manual se necessário
     } finally {
       setIsLoading(false)
       setAuthReady(true)
@@ -224,19 +259,42 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     permission: userData.permission,
   })
 
-  const login = async (username: string, password: string) => {
-    const response = await authAPI.login(username, password)
+  const login = async (
+    username: string,
+    password: string,
+    turnstileToken?: string,
+  ) => {
+    const response = await authAPI.login(username, password, turnstileToken)
 
-    // Para 2FA, definir usuário temporário e redirecionar para dashboard
-    if (response.requires_2fa && response.temp_token) {
+    if (response.requires_2fa_setup && response.temp_token) {
       setTempToken(response.temp_token)
-      // Definir usuário temporário para permitir acesso ao dashboard
+      persistTempToken(response.temp_token)
+      mark2FASetupPending()
+      await syncAuthSession2FAPending()
+
       if (response.data?.user) {
         setUser(extractUserData(response.data.user))
       }
-      // Redirecionar para dashboard onde o modal de verificação aparecerá
+
       router.push('/dashboard')
-      // Ainda não pronto para carregar dados protegidos
+      setAuthReady(false)
+      return {
+        requires2FASetup: true,
+        tempToken: response.temp_token,
+      }
+    }
+
+    if (response.requires_2fa && response.temp_token) {
+      clear2FASetupPending()
+      setTempToken(response.temp_token)
+      persistTempToken(response.temp_token)
+      await syncAuthSession2FAPending()
+
+      if (response.data?.user) {
+        setUser(extractUserData(response.data.user))
+      }
+
+      router.push('/dashboard')
       setAuthReady(false)
       return {
         requires2FA: true,
@@ -244,42 +302,49 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     }
 
-    // Definir usuário se disponível
     if (response.data?.user) {
       setUser(extractUserData(response.data.user))
-      // Login sem 2FA: pronto para carregar dados
       setAuthReady(true)
+    }
+
+    if (response.data?.token) {
+      setToken(response.data.token)
     }
 
     return {}
   }
 
-  const verify2FA = async (tempToken: string, code: string) => {
-    const response = await authAPI.verify2FA(tempToken, code)
+  const verify2FA = async (
+    tempTokenValue: string,
+    code: string,
+    turnstileToken?: string,
+  ) => {
+    const response = await authAPI.verify2FA(tempTokenValue, code, turnstileToken)
 
-    if (response.success && response.data?.user) {
-      setUser(extractUserData(response.data.user))
-      setShow2FAModal(false)
-      setTempToken(null)
-      // Agora com token definitivo, liberar carregamentos
-      setAuthReady(true)
+    if (!response.data?.user) {
+      throw new Error('Resposta inválida ao verificar 2FA')
+    }
 
-      toast.success('Login realizado com sucesso!', {
-        description: 'Bem-vindo de volta!',
-      })
+    setUser(extractUserData(response.data.user))
+    setShow2FAModal(false)
+    setTempToken(null)
+    clearTempToken()
+    clear2FASetupPending()
+    setAuthReady(true)
 
-      // Só redirecionar se não estivermos já no dashboard
-      if (
-        typeof window !== 'undefined' &&
-        !window.location.pathname.includes('/dashboard')
-      ) {
-        router.push('/dashboard')
-      }
-    } else {
-      toast.error('Código inválido', {
-        description: 'Verifique o código e tente novamente',
-      })
-      throw new Error('Código 2FA inválido')
+    if (response.data?.token) {
+      setToken(response.data.token)
+    }
+
+    toast.success('Login realizado com sucesso!', {
+      description: 'Bem-vindo de volta!',
+    })
+
+    if (
+      typeof window !== 'undefined' &&
+      !window.location.pathname.includes('/dashboard')
+    ) {
+      router.push('/dashboard')
     }
   }
 
@@ -291,9 +356,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         description: 'Até logo!',
         duration: 2000,
       })
-    } catch (error: unknown) {
-      // Erro ao fazer logout
-
+    } catch {
       toast.error('Erro no logout', {
         description: 'Houve um problema ao sair da conta',
         duration: 3000,
@@ -302,8 +365,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       queryClient.clear()
       setUser(null)
       setToken(null)
-      sessionStorage.removeItem('2fa_verified')
-      sessionStorage.removeItem('2fa_setup_checked')
+      setTempToken(null)
+      clearTempToken()
+      clear2FASetupPending()
+      sessionStorage.removeItem(TWO_FA_VERIFIED_KEY)
+      sessionStorage.removeItem(TWO_FA_SETUP_CHECKED_KEY)
       router.push('/login')
     }
   }
@@ -314,6 +380,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       documentoFrente?: File
       documentoVerso?: File
       selfieDocumento?: File
+      turnstileToken?: string
     },
   ) => {
     const response = await authAPI.register(data, documents)
@@ -325,7 +392,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     <AuthContext.Provider
       value={{
         user,
-        isAuthenticated: !!user,
+        isAuthenticated: authReady && !!user && !pending2FA,
+        pending2FA,
+        pending2FASetup,
         isLoading,
         authReady,
         show2FAModal,
