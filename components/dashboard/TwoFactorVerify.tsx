@@ -288,7 +288,6 @@ export function TwoFactorVerify() {
                 value={code}
                 onChange={setCode}
                 onKeyPress={handleKeyPress}
-                autoFocus
               />
             </div>
 
