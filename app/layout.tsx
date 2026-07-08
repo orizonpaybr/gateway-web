@@ -4,15 +4,17 @@ import { Providers } from '@/components/Providers'
 import { ReactQueryProvider } from '@/components/providers/ReactQueryProvider'
 import { ErrorBoundaryWrapper } from '@/components/ErrorBoundary'
 
+import { BRAND_FAVICON_SRC } from '@/lib/constants/brand'
+
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
   title: 'Coratri - Finance',
   description: 'Sistema de pagamentos e gestão financeira',
   icons: {
-    icon: encodeURI('/Favicon - Preto.png'),
-    shortcut: encodeURI('/Favicon - Preto.png'),
-    apple: encodeURI('/Favicon - Preto.png'),
+    icon: BRAND_FAVICON_SRC,
+    shortcut: BRAND_FAVICON_SRC,
+    apple: BRAND_FAVICON_SRC,
   },
 }
 

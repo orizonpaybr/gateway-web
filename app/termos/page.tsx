@@ -4,8 +4,9 @@ import Image from 'next/image'
 import Link from 'next/link'
 
 import { Button } from '@/components/ui/Button'
+import { BRAND_LOGO_SRC } from '@/lib/constants/brand'
 
-const logoSrc = encodeURI('/Logo Coratri Finance.png')
+const logoSrc = BRAND_LOGO_SRC
 
 export default function TermosPage() {
   return (

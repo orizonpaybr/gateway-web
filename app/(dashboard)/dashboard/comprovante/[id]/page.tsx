@@ -18,6 +18,7 @@ import {
   formatDateTimeBR,
   formatDocumentBR,
 } from '@/lib/format'
+import { BRAND_FAVICON_SRC } from '@/lib/constants/brand'
 
 interface TransactionDetails {
   id: number
@@ -151,9 +152,9 @@ const ComprovantePage = memo(() => {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Image
-                src={encodeURI('/Logo Coratri Finance.png')}
+                src={BRAND_FAVICON_SRC}
                 alt="Coratri"
-                width={120}
+                width={40}
                 height={40}
                 className="w-10 h-10 rounded-lg object-contain bg-white"
               />
