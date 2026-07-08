@@ -2,6 +2,7 @@ import React from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
+import { BRAND_LOGO_SRC } from '@/lib/constants/brand'
 interface TermsHeaderProps {
   title: string
   lastUpdated?: string
@@ -31,7 +32,7 @@ export const TermsHeader: React.FC<TermsHeaderProps> = ({
 
           <div className="flex items-center gap-3">
             <Image
-              src={encodeURI('/Coratri - FINANCE v1.98.0.png')}
+              src={BRAND_LOGO_SRC}
               alt="Coratri Finance"
               width={200}
               height={56}

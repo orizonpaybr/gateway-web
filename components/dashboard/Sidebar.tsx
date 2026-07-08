@@ -30,8 +30,9 @@ import { useAuth } from '@/contexts/AuthContext'
 import { useMobileMenu } from '@/contexts/MobileMenuContext'
 import { useSidebarGamification } from '@/hooks/useSidebarGamification'
 import { cn } from '@/lib/utils'
+import { BRAND_LOGO_SRC } from '@/lib/constants/brand'
 
-const sidebarLogoSrc = encodeURI('/Coratri - FINANCE v1.98.0.png')
+const sidebarLogoSrc = BRAND_LOGO_SRC
 
 const SidebarProgress = lazy(
   () => import('@/components/gamification/SidebarProgress'),

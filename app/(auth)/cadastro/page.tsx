@@ -20,6 +20,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { authAPI } from '@/lib/api'
 import { getAuthApiError, showAuthErrorToast } from '@/lib/auth-errors'
 import { TURNSTILE_SITE_KEY } from '@/lib/config/auth'
+import { BRAND_LOGO_SRC } from '@/lib/constants/brand'
 import { GENDER_OPTIONS } from '@/types/user'
 
 const step1Schema = z.object({
@@ -314,7 +315,7 @@ function CadastroContent() {
   }
 
   const progress = step === 1 ? 33 : step === 2 ? 67 : 100
-  const logoSrc = encodeURI('/Logo Coratri Finance.png')
+  const logoSrc = BRAND_LOGO_SRC
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">

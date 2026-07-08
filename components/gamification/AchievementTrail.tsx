@@ -6,6 +6,7 @@ import { CheckCircle, Lock } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { cn } from '@/lib/utils'
+import { BRAND_FAVICON_SRC } from '@/lib/constants/brand'
 interface AchievementLevel {
   id: number
   name: string
@@ -110,7 +111,7 @@ export const AchievementTrail = memo<AchievementTrailProps>(
               <div key={level.id} className="flex justify-center">
                 <div className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center shrink-0">
                   <Image
-                    src={encodeURI('/Logo Coratri Finance.png')}
+                    src={BRAND_FAVICON_SRC}
                     alt={`Logo ${level.name}`}
                     width={48}
                     height={48}
@@ -165,7 +166,7 @@ export const AchievementTrail = memo<AchievementTrailProps>(
             >
               <div className="w-10 h-10 flex items-center justify-center shrink-0">
                 <Image
-                  src={encodeURI('/Logo Coratri Finance.png')}
+                  src={BRAND_FAVICON_SRC}
                   alt={level.name}
                   width={40}
                   height={40}

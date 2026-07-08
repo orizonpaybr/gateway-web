@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { TurnstileWidget } from '@/components/auth/TurnstileWidget'
 import { useAuth } from '@/contexts/AuthContext'
+import { BRAND_LOGO_SRC } from '@/lib/constants/brand'
 import { getAuthApiError, showAuthErrorToast } from '@/lib/auth-errors'
 import { TURNSTILE_SITE_KEY } from '@/lib/config/auth'
 
@@ -81,7 +82,7 @@ export default function LoginPage() {
     }
   }
 
-  const logoSrc = encodeURI('/Logo Coratri Finance.png')
+  const logoSrc = BRAND_LOGO_SRC
   const showTurnstile = Boolean(TURNSTILE_SITE_KEY && requiresCaptcha)
 
   return (
