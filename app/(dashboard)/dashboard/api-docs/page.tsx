@@ -100,9 +100,7 @@ const cashOutResponse = `{
     "status": "PROCESSING",
     "tipo_processamento": "Automático",
     "created_at": "2026-03-10T10:22:34.000000Z",
-    "adquirente": "simpay",
     "taxa_cash_out": 0.5,
-    "taxa_adquirente": 0.02,
     "taxa_aplicacao": 0.48,
     "valor_liquido": 0.5,
     "valor_total_descontado": 1.5
@@ -674,8 +672,7 @@ export default function ApiDocsPage() {
                 <code className="bg-gray-100 px-1 rounded">PROCESSING</code>,{' '}
                 <code className="bg-gray-100 px-1 rounded">COMPLETED</code>,{' '}
                 <code className="bg-gray-100 px-1 rounded">CANCELLED</code>
-                , …). <strong>data.adquirente</strong> — referência do processamento
-                PIX.
+                , …).
               </p>
             </div>
           </div>
