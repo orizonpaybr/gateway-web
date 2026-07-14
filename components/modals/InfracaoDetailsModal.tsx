@@ -45,6 +45,7 @@ interface InfracaoDetails {
   detalhes_adicionais?: DetalheAdicional[]
   pode_apresentar_defesa?: boolean
   defesa_enviada_para?: string
+  provider?: string
   transacao_relacionada?: {
     id: number
     transaction_id: string
@@ -122,6 +123,19 @@ export function InfracaoDetailsModal({
     return ['pendente', 'em análise', 'em analise'].includes(s)
   }, [infracao])
 
+  const acquirerLabel = useMemo(() => {
+    if (infracao?.defesa_enviada_para) {
+      const match = infracao.defesa_enviada_para.match(/^([^(]+)/)
+      if (match?.[1]) {
+        return match[1].trim()
+      }
+    }
+    if (infracao?.provider === 'fluxpayments') {
+      return 'FluxPayments'
+    }
+    return 'Treeal'
+  }, [infracao?.defesa_enviada_para, infracao?.provider])
+
   const handleSubmitDefense = useCallback(async () => {
     if (!infracaoId) {
       return
@@ -135,7 +149,7 @@ export function InfracaoDetailsModal({
     try {
       await pixAPI.defenderInfracao(infracaoId, defenseText.trim(), defenseFiles)
       toast.success(
-        'Defesa enviada à Treeal. Você será notificado quando houver atualização.',
+        `Defesa enviada à ${acquirerLabel}. Você será notificado quando houver atualização.`,
       )
       setDefenseText('')
       setDefenseFiles([])
@@ -148,7 +162,14 @@ export function InfracaoDetailsModal({
     } finally {
       setIsSubmitting(false)
     }
-  }, [infracaoId, defenseText, defenseFiles, invalidatePixInfracoes, fetchInfracaoDetails])
+  }, [
+    infracaoId,
+    defenseText,
+    defenseFiles,
+    invalidatePixInfracoes,
+    fetchInfracaoDetails,
+    acquirerLabel,
+  ])
 
   const formatCurrency = formatCurrencyBRL
   const formatDate = formatDateTimeBR
@@ -406,14 +427,14 @@ export function InfracaoDetailsModal({
               </div>
               <p className="text-xs text-gray-600 mb-3 leading-relaxed">
                 Sua defesa é enviada diretamente à{' '}
-                <strong>Treeal</strong> (adquirente Pix), responsável pela
-                análise no âmbito do{' '}
+                <strong>{acquirerLabel}</strong> (adquirente Pix), responsável
+                pela análise no âmbito do{' '}
                 <strong>MED — Mecanismo Especial de Devolução</strong> do Pix.
                 Anexe comprovantes se necessário (até 10 arquivos, 10 MB cada).
-                Após o envio, o status passa para &quot;Em Análise&quot; e a
-                Treeal comunicará o resultado — se favorável, o valor retorna ao
-                seu saldo disponível; se desfavorável, haverá devolução ao
-                pagador.
+                Após o envio, o status passa para &quot;Em Análise&quot; e a{' '}
+                {acquirerLabel} comunicará o resultado — se favorável, o valor
+                retorna ao seu saldo disponível; se desfavorável, haverá
+                devolução ao pagador.
               </p>
               <textarea
                 value={defenseText}
@@ -442,7 +463,9 @@ export function InfracaoDetailsModal({
                   onClick={handleSubmitDefense}
                   disabled={isSubmitting || defenseText.trim().length < 3}
                 >
-                  {isSubmitting ? 'Enviando à Treeal...' : 'Enviar defesa'}
+                  {isSubmitting
+                    ? `Enviando à ${acquirerLabel}...`
+                    : 'Enviar defesa'}
                 </Button>
               </div>
             </div>
