@@ -930,6 +930,7 @@ export const pixAPI = {
       detalhes_adicionais?: Array<{ label: string; value: string }>
       pode_apresentar_defesa?: boolean
       defesa_enviada_para?: string
+      provider?: string
       transacao_relacionada?: {
         id: number
         transaction_id: string
