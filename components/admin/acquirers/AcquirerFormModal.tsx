@@ -179,6 +179,7 @@ export const AcquirerFormModal = memo(
             icon={<LinkIcon size={18} />}
             placeholder="https://api.fluxpaymentss.com"
             disabled={isSaving}
+            autoComplete="off"
           />
 
           <div className="border-t border-gray-100 pt-4 space-y-4">
@@ -198,6 +199,7 @@ export const AcquirerFormModal = memo(
                 placeholder={isEdit ? '••••••••' : 'live_...'}
                 disabled={isSaving}
                 showPasswordToggle
+                autoComplete="new-password"
               />
 
               <Input
@@ -211,6 +213,7 @@ export const AcquirerFormModal = memo(
                 placeholder={isEdit ? '••••••••' : 'pub_...'}
                 disabled={isSaving}
                 showPasswordToggle
+                autoComplete="new-password"
               />
             </div>
 
@@ -224,6 +227,7 @@ export const AcquirerFormModal = memo(
                 placeholder={isEdit ? '••••••••' : ''}
                 disabled={isSaving}
                 showPasswordToggle
+                autoComplete="new-password"
               />
 
               <Input
@@ -234,6 +238,7 @@ export const AcquirerFormModal = memo(
                 }
                 placeholder="https://sua-app.com/fluxpayments/webhook"
                 disabled={isSaving}
+                autoComplete="off"
               />
             </div>
           </div>
