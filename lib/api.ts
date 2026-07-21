@@ -2724,6 +2724,41 @@ export const adminUsersAPI = {
       method: 'POST',
     })
   },
+
+  /**
+   * Criar uma nova nominal (conta com credenciais próprias) de um adquirente
+   */
+  async createAcquirer(data: CreateAcquirerData): Promise<{
+    success: boolean
+    data: {
+      message: string
+      acquirer: Acquirer
+    }
+  }> {
+    return apiRequest('/admin/acquirers', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })
+  },
+
+  /**
+   * Atualizar nome, URL, status ou credenciais de uma nominal existente
+   */
+  async updateAcquirer(
+    acquirerId: number,
+    data: UpdateAcquirerData,
+  ): Promise<{
+    success: boolean
+    data: {
+      message: string
+      acquirer: Acquirer
+    }
+  }> {
+    return apiRequest(`/admin/acquirers/${acquirerId}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    })
+  },
 }
 
 // Alias de compatibilidade para código legado
@@ -2797,10 +2832,37 @@ export interface Acquirer {
   status: boolean | number
   url: string
   referencia: string
+  provider: string
+  has_credentials: boolean
   is_default: boolean | number
   is_default_card_billet: boolean | number
   created_at?: string
   updated_at?: string
+}
+
+export interface AcquirerCredentials {
+  api_key: string
+  public_key: string
+  webhook_secret?: string
+  webhook_url?: string
+}
+
+/** Providers que hoje suportam múltiplas nominais (contas com credenciais próprias). */
+export const MULTI_ACCOUNT_ACQUIRER_PROVIDERS = ['fluxpayments'] as const
+
+export interface CreateAcquirerData {
+  adquirente: string
+  provider: string
+  url?: string
+  status?: boolean
+  credentials: AcquirerCredentials
+}
+
+export interface UpdateAcquirerData {
+  adquirente?: string
+  url?: string
+  status?: boolean
+  credentials?: Partial<AcquirerCredentials>
 }
 
 // ============================================
