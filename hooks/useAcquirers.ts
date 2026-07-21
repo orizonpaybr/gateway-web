@@ -1,7 +1,11 @@
 'use client'
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { adminUsersAPI } from '@/lib/api'
+import {
+  adminUsersAPI,
+  type CreateAcquirerData,
+  type UpdateAcquirerData,
+} from '@/lib/api'
 import { toast } from 'sonner'
 
 const QUERY_KEY = 'acquirers'
@@ -49,6 +53,62 @@ export function useSetDefaultAcquirer() {
           : 'Erro ao atualizar adquirente Global. Tente novamente.'
       toast.error(message)
       console.error('Erro ao definir adquirente Global:', error)
+    },
+  })
+}
+
+/**
+ * Hook para criar uma nova nominal (conta com credenciais próprias)
+ */
+export function useCreateAcquirer() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (data: CreateAcquirerData) => {
+      return await adminUsersAPI.createAcquirer(data)
+    },
+    onSuccess: (response) => {
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEY] })
+      toast.success(response.data.message || 'Nominal criada com sucesso!')
+    },
+    onError: (error: unknown) => {
+      const message =
+        error instanceof Error
+          ? error.message
+          : 'Erro ao criar nominal. Tente novamente.'
+      toast.error(message)
+      console.error('Erro ao criar nominal:', error)
+    },
+  })
+}
+
+/**
+ * Hook para atualizar uma nominal existente (nome, URL, status ou credenciais)
+ */
+export function useUpdateAcquirer() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({
+      acquirerId,
+      data,
+    }: {
+      acquirerId: number
+      data: UpdateAcquirerData
+    }) => {
+      return await adminUsersAPI.updateAcquirer(acquirerId, data)
+    },
+    onSuccess: (response) => {
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEY] })
+      toast.success(response.data.message || 'Nominal atualizada com sucesso!')
+    },
+    onError: (error: unknown) => {
+      const message =
+        error instanceof Error
+          ? error.message
+          : 'Erro ao atualizar nominal. Tente novamente.'
+      toast.error(message)
+      console.error('Erro ao atualizar nominal:', error)
     },
   })
 }

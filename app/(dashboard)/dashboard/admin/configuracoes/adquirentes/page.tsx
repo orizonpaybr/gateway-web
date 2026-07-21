@@ -1,16 +1,30 @@
 'use client'
 
-import React, { useMemo, useCallback, memo } from 'react'
-import { Building2, Star } from 'lucide-react'
+import React, { useMemo, useCallback, memo, useState } from 'react'
+import { Building2, Star, Plus } from 'lucide-react'
 import { AcquirerDetailCard } from '@/components/admin/acquirers/AcquirerDetailCard'
+import { AcquirerFormModal } from '@/components/admin/acquirers/AcquirerFormModal'
+import { Button } from '@/components/ui/Button'
 import { Select } from '@/components/ui/Select'
 import { useAuth } from '@/contexts/AuthContext'
-import { useAcquirersList, useSetDefaultAcquirer } from '@/hooks/useAcquirers'
-import type { Acquirer } from '@/lib/api'
+import {
+  useAcquirersList,
+  useSetDefaultAcquirer,
+  useCreateAcquirer,
+  useUpdateAcquirer,
+} from '@/hooks/useAcquirers'
+import type {
+  Acquirer,
+  CreateAcquirerData,
+  UpdateAcquirerData,
+} from '@/lib/api'
 import { USER_PERMISSION } from '@/lib/constants'
 
 const AcquirersPage = memo(() => {
   const { user, isLoading: authLoading } = useAuth()
+
+  const [formOpen, setFormOpen] = useState(false)
+  const [editingAcquirer, setEditingAcquirer] = useState<Acquirer | null>(null)
 
   const isAdmin = useMemo(
     () =>
@@ -23,8 +37,34 @@ const AcquirersPage = memo(() => {
   const { data, isLoading } = useAcquirersList({ per_page: 100 }, isAdmin)
 
   const setDefaultMutation = useSetDefaultAcquirer()
+  const createMutation = useCreateAcquirer()
+  const updateMutation = useUpdateAcquirer()
 
   const acquirers = useMemo(() => data?.acquirers || [], [data?.acquirers])
+
+  const handleOpenCreate = useCallback(() => {
+    setEditingAcquirer(null)
+    setFormOpen(true)
+  }, [])
+
+  const handleOpenEdit = useCallback((acquirer: Acquirer) => {
+    setEditingAcquirer(acquirer)
+    setFormOpen(true)
+  }, [])
+
+  const handleFormSubmit = useCallback(
+    async (formData: CreateAcquirerData | UpdateAcquirerData) => {
+      if (editingAcquirer) {
+        await updateMutation.mutateAsync({
+          acquirerId: editingAcquirer.id,
+          data: formData as UpdateAcquirerData,
+        })
+      } else {
+        await createMutation.mutateAsync(formData as CreateAcquirerData)
+      }
+    },
+    [editingAcquirer, createMutation, updateMutation],
+  )
 
   const isAcquirerActive = useCallback(
     (a: Acquirer) => a.status === 1 || a.status === true,
@@ -108,13 +148,19 @@ const AcquirersPage = memo(() => {
   if (!acquirers || acquirers.length === 0) {
     return (
       <div className="p-4 md:p-6 space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">
-            Gerenciamento de Adquirentes
-          </h1>
-          <p className="text-gray-600 mt-1">
-            Visualize os adquirentes de pagamento do sistema
-          </p>
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">
+              Gerenciamento de Adquirentes
+            </h1>
+            <p className="text-gray-600 mt-1">
+              Visualize os adquirentes de pagamento do sistema
+            </p>
+          </div>
+          <Button variant="inkSolid" onClick={handleOpenCreate}>
+            <Plus size={16} className="mr-1.5" />
+            Nova Nominal
+          </Button>
         </div>
         <div className="flex items-center justify-center h-64 bg-white rounded-lg shadow">
           <div className="text-center">
@@ -124,19 +170,32 @@ const AcquirersPage = memo(() => {
             </p>
           </div>
         </div>
+        <AcquirerFormModal
+          open={formOpen}
+          onClose={() => setFormOpen(false)}
+          acquirer={editingAcquirer}
+          onSubmit={handleFormSubmit}
+          isSaving={createMutation.isPending || updateMutation.isPending}
+        />
       </div>
     )
   }
 
   return (
     <div className="p-4 md:p-6 space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">
-          Gerenciamento de Adquirentes
-        </h1>
-        <p className="text-gray-600 mt-1">
-          Visualize e defina qual adquirente é a Global (padrão PIX) do sistema
-        </p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">
+            Gerenciamento de Adquirentes
+          </h1>
+          <p className="text-gray-600 mt-1">
+            Visualize e defina qual adquirente é a Global (padrão PIX) do sistema
+          </p>
+        </div>
+        <Button variant="inkSolid" onClick={handleOpenCreate}>
+          <Plus size={16} className="mr-1.5" />
+          Nova Nominal
+        </Button>
       </div>
 
       <div className="bg-white rounded-lg shadow border border-gray-200 p-5">
@@ -173,7 +232,11 @@ const AcquirersPage = memo(() => {
 
       <div className="space-y-4">
         {acquirers.map((acquirer) => (
-          <AcquirerDetailCard key={acquirer.id} acquirer={acquirer} />
+          <AcquirerDetailCard
+            key={acquirer.id}
+            acquirer={acquirer}
+            onEdit={handleOpenEdit}
+          />
         ))}
       </div>
 
@@ -185,6 +248,14 @@ const AcquirersPage = memo(() => {
           </p>
         </div>
       )}
+
+      <AcquirerFormModal
+        open={formOpen}
+        onClose={() => setFormOpen(false)}
+        acquirer={editingAcquirer}
+        onSubmit={handleFormSubmit}
+        isSaving={createMutation.isPending || updateMutation.isPending}
+      />
     </div>
   )
 })

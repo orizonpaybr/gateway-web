@@ -2724,6 +2724,41 @@ export const adminUsersAPI = {
       method: 'POST',
     })
   },
+
+  /**
+   * Criar uma nova nominal (conta com credenciais próprias) de um adquirente
+   */
+  async createAcquirer(data: CreateAcquirerData): Promise<{
+    success: boolean
+    data: {
+      message: string
+      acquirer: Acquirer
+    }
+  }> {
+    return apiRequest('/admin/acquirers', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })
+  },
+
+  /**
+   * Atualizar nome, URL, status ou credenciais de uma nominal existente
+   */
+  async updateAcquirer(
+    acquirerId: number,
+    data: UpdateAcquirerData,
+  ): Promise<{
+    success: boolean
+    data: {
+      message: string
+      acquirer: Acquirer
+    }
+  }> {
+    return apiRequest(`/admin/acquirers/${acquirerId}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    })
+  },
 }
 
 // Alias de compatibilidade para código legado
@@ -2797,8 +2832,149 @@ export interface Acquirer {
   status: boolean | number
   url: string
   referencia: string
+  provider: string
+  has_credentials: boolean
   is_default: boolean | number
   is_default_card_billet: boolean | number
   created_at?: string
   updated_at?: string
+}
+
+export interface AcquirerCredentials {
+  api_key: string
+  public_key: string
+  webhook_secret?: string
+  webhook_url?: string
+}
+
+/** Providers que hoje suportam múltiplas nominais (contas com credenciais próprias). */
+export const MULTI_ACCOUNT_ACQUIRER_PROVIDERS = ['fluxpayments'] as const
+
+export interface CreateAcquirerData {
+  adquirente: string
+  provider: string
+  url?: string
+  status?: boolean
+  credentials: AcquirerCredentials
+}
+
+export interface UpdateAcquirerData {
+  adquirente?: string
+  url?: string
+  status?: boolean
+  credentials?: Partial<AcquirerCredentials>
+}
+
+// ============================================
+// API de Relatório de Conciliação (Admin)
+// ============================================
+
+export interface ReconciliationRow {
+  data: string
+  user_id: string
+  nome: string
+  saldo_inicial: number
+  depositos_qtd: number
+  depositos_bruto: number
+  depositos_liquido: number
+  saques_qtd: number
+  saques_debitado: number
+  saques_pago: number
+  taxa_depositos: number
+  taxa_saques: number
+  lucro: number
+  saldo_final: number
+}
+
+export interface ReconciliationReport {
+  periodo: {
+    inicio: string
+    fim: string
+  }
+  resumo: {
+    lucro_depositos: number
+    lucro_saques: number
+    lucro_total: number
+    depositos: {
+      quantidade: number
+      valor_bruto: number
+      valor_liquido: number
+    }
+    saques: {
+      quantidade: number
+      valor_debitado: number
+      valor_pago: number
+    }
+    usuarios_ativos: number
+  }
+  linhas: ReconciliationRow[]
+  observacao: string
+}
+
+export const adminReconciliationAPI = {
+  /**
+   * Obter relatório de conciliação diária por usuário
+   *
+   * @param periodo - 'hoje' | 'ontem' | '7dias' | '30dias' ou 'YYYY-MM-DD:YYYY-MM-DD'
+   * @param userId - Filtrar por usuário específico (opcional)
+   */
+  async getReport(
+    periodo: string = 'hoje',
+    userId?: string,
+  ): Promise<{ success: boolean; data: ReconciliationReport }> {
+    const params = new URLSearchParams({ periodo })
+    if (userId) {
+      params.append('user_id', userId)
+    }
+    return apiRequest(`/admin/reports/reconciliation?${params.toString()}`)
+  },
+
+  /**
+   * Baixar o relatório em CSV (compatível com Excel) e disparar o download.
+   */
+  async downloadCsv(periodo: string = 'hoje', userId?: string): Promise<void> {
+    const token =
+      typeof window !== 'undefined' ? localStorage.getItem('token') : null
+
+    const params = new URLSearchParams({ periodo })
+    if (userId) {
+      params.append('user_id', userId)
+    }
+
+    const response = await fetch(
+      `${BASE_URL}/admin/reports/reconciliation/export?${params.toString()}`,
+      {
+        headers: {
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
+      },
+    )
+
+    if (!response.ok) {
+      const errorPayload = await response.json().catch(() => ({}))
+      throw new Error(errorPayload?.message || 'Erro ao exportar relatório')
+    }
+
+    const blob = await response.blob()
+    const disposition = response.headers.get('Content-Disposition') || ''
+    const match = disposition.match(/filename\*?=(?:UTF-8''|")?([^";]+)"?/i)
+    const today = new Date()
+    const todayStamp = [
+      today.getFullYear(),
+      String(today.getMonth() + 1).padStart(2, '0'),
+      String(today.getDate()).padStart(2, '0'),
+    ].join('_')
+    const filename =
+      match?.[1]?.replace(/^\s*UTF-8''/i, '').trim() ||
+      `coratri_${todayStamp}.csv`
+
+    const url = window.URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = filename
+    document.body.appendChild(link)
+    link.click()
+    link.remove()
+    window.URL.revokeObjectURL(url)
+  },
 }

@@ -8,15 +8,20 @@ import {
   XCircle,
   Globe,
   Star,
+  Pencil,
 } from 'lucide-react'
 
-import type { Acquirer } from '@/lib/api'
+import { MULTI_ACCOUNT_ACQUIRER_PROVIDERS, type Acquirer } from '@/lib/api'
 
 interface AcquirerDetailCardProps {
   acquirer: Acquirer
+  onEdit?: (acquirer: Acquirer) => void
 }
 
-export function AcquirerDetailCard({ acquirer }: AcquirerDetailCardProps) {
+export function AcquirerDetailCard({
+  acquirer,
+  onEdit,
+}: AcquirerDetailCardProps) {
   const isActive = acquirer.status === 1 || acquirer.status === true
   const isDefaultPix = acquirer.is_default === 1 || acquirer.is_default === true
   const isDefaultCardBillet =
@@ -58,11 +63,18 @@ export function AcquirerDetailCard({ acquirer }: AcquirerDetailCardProps) {
             <h3 className="text-lg font-semibold text-gray-900">
               {acquirer.adquirente}
             </h3>
-            <p className="text-sm text-gray-600">
-              Referência:{' '}
-              <code className="text-xs bg-gray-100 px-1.5 py-0.5 rounded">
-                {acquirer.referencia}
-              </code>
+            <p className="text-sm text-gray-600 flex flex-wrap items-center gap-x-2">
+              <span>
+                Referência:{' '}
+                <code className="text-xs bg-gray-100 px-1.5 py-0.5 rounded">
+                  {acquirer.referencia}
+                </code>
+              </span>
+              {acquirer.provider && (
+                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700">
+                  {acquirer.provider}
+                </span>
+              )}
             </p>
           </div>
         </div>
@@ -83,6 +95,20 @@ export function AcquirerDetailCard({ acquirer }: AcquirerDetailCardProps) {
           >
             {isActive ? 'Habilitada' : 'Desabilitada'}
           </span>
+          {onEdit &&
+            (
+              MULTI_ACCOUNT_ACQUIRER_PROVIDERS as readonly string[]
+            ).includes(acquirer.provider) && (
+              <button
+                type="button"
+                onClick={() => onEdit(acquirer)}
+                className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+                aria-label={`Editar ${acquirer.adquirente}`}
+                title="Editar nominal"
+              >
+                <Pencil size={16} />
+              </button>
+            )}
         </div>
       </div>
 

@@ -11,11 +11,13 @@ import {
   ArrowUpCircle,
   Wallet,
   Clock,
+  CalendarRange,
 } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { PeriodSelector } from '@/components/admin/PeriodSelector'
 import { RecentTransactionsTable } from '@/components/admin/RecentTransactionsTable'
+import { ReconciliationExportCard } from '@/components/admin/ReconciliationExportCard'
 import { StatCard } from '@/components/admin/StatCard'
 import { UsersStatsCard } from '@/components/admin/UsersStatsCard'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
@@ -25,12 +27,18 @@ import {
   useAdminTransactions,
 } from '@/hooks/useAdminDashboard'
 
+/** Conciliação/Excel: "tudo" vira 30 dias (limite do relatório). */
+function reconciliationPeriod(periodo: string): string {
+  return periodo === 'tudo' ? '30dias' : periodo
+}
+
 export default function AdminDashboardPage() {
   const router = useRouter()
   const { user, isLoading: authLoading, authReady } = useAuth()
   const [periodo, setPeriodo] = useState('hoje')
 
-  // Verificar se usuário é admin
+  const isAdmin = authReady && !!user && Number(user.permission) === 3
+
   useEffect(() => {
     if (authReady && (!user || user.permission !== 3)) {
       toast.error('Acesso negado', {
@@ -40,27 +48,21 @@ export default function AdminDashboardPage() {
     }
   }, [user, authReady, router])
 
-  // Buscar dados do dashboard
   const {
     data: stats,
     isLoading: statsLoading,
     error: statsError,
-  } = useAdminDashboardStats(
-    periodo,
-    authReady && !!user && Number(user.permission) === 3,
-  )
+  } = useAdminDashboardStats(periodo, isAdmin)
 
-  // Buscar transações recentes
+  // Complemento fixo: lucro dos últimos 30 dias (independente do filtro)
+  const { data: stats30 } = useAdminDashboardStats('30dias', isAdmin)
+
   const {
     data: transactions,
     isLoading: transactionsLoading,
     error: transactionsError,
-  } = useAdminTransactions(
-    { limit: 10 },
-    authReady && !!user && Number(user.permission) === 3,
-  )
+  } = useAdminTransactions({ limit: 10 }, isAdmin)
 
-  // Exibir erros
   useEffect(() => {
     if (statsError) {
       toast.error('Erro ao carregar dados', {
@@ -77,7 +79,6 @@ export default function AdminDashboardPage() {
     }
   }, [transactionsError])
 
-  // Loading state
   if (authLoading || !user || user.permission !== 3) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -85,6 +86,10 @@ export default function AdminDashboardPage() {
       </div>
     )
   }
+
+  const lucroBrutoTaxas =
+    (stats?.financeiro.lucro_depositos ?? 0) +
+    (stats?.financeiro.lucro_saques ?? 0)
 
   return (
     <div className="space-y-6 px-4 md:px-6 pb-6">
@@ -114,16 +119,36 @@ export default function AdminDashboardPage() {
           title="Lucro Líquido"
           value={stats?.financeiro.lucro_liquido ?? 0}
           icon={TrendingUp}
-          description="Taxas - custos de adquirentes"
+          description="Taxas cobradas − custos de adquirentes"
           colorScheme="green"
           formatAsCurrency
         />
 
         <StatCard
+          title="Lucro Últimos 30 Dias"
+          value={stats30?.financeiro.lucro_liquido ?? 0}
+          icon={CalendarRange}
+          description="Referência fixa (não muda com o filtro)"
+          colorScheme="blue"
+          formatAsCurrency
+        />
+
+        <StatCard
+          title="Receita Bruta (taxas)"
+          value={lucroBrutoTaxas}
+          icon={DollarSign}
+          description="Soma taxas de depósitos + saques do período"
+          colorScheme="purple"
+          formatAsCurrency
+        />
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-2 2xl:grid-cols-2 gap-6">
+        <StatCard
           title="Taxas de Depósitos"
           value={stats?.financeiro.lucro_depositos ?? 0}
           icon={ArrowDownCircle}
-          description="Receita de depósitos"
+          description="Receita Coratri em cash-in (taxa_cash_in)"
           colorScheme="purple"
           formatAsCurrency
         />
@@ -132,11 +157,17 @@ export default function AdminDashboardPage() {
           title="Taxas de Saques"
           value={stats?.financeiro.lucro_saques ?? 0}
           icon={ArrowUpCircle}
-          description="Receita de saques"
+          description="Receita Coratri em cash-out (taxa_cash_out)"
           colorScheme="orange"
           formatAsCurrency
         />
       </div>
+
+      <ReconciliationExportCard
+        periodo={reconciliationPeriod(periodo)}
+        dashboardPeriodo={periodo}
+        enabled={isAdmin}
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <StatCard
@@ -208,28 +239,28 @@ export default function AdminDashboardPage() {
       {stats?.financeiro.taxas_adquirentes && (
         <div className="grid grid-cols-1 xl:grid-cols-1 2xl:grid-cols-3 gap-6">
           <StatCard
-            title="Taxas de Entradas"
+            title="Custo Adquirente (entradas)"
             value={stats.financeiro.taxas_adquirentes.entradas}
             icon={ArrowDownCircle}
-            description="Pagas aos adquirentes"
+            description="Custo fixo pago à adquirente por depósito — não é lucro Coratri"
             colorScheme="red"
             formatAsCurrency
           />
 
           <StatCard
-            title="Taxas de Saídas"
+            title="Custo Adquirente (saídas)"
             value={stats.financeiro.taxas_adquirentes.saidas}
             icon={ArrowUpCircle}
-            description="Pagas aos adquirentes"
+            description="Custo fixo pago à adquirente por saque — não é lucro Coratri"
             colorScheme="red"
             formatAsCurrency
           />
 
           <StatCard
-            title="Total de Taxas"
+            title="Total Custo Adquirentes"
             value={stats.financeiro.taxas_adquirentes.total}
+            description="Descontado do lucro líquido"
             icon={DollarSign}
-            description="Custos totais com adquirentes"
             colorScheme="red"
             formatAsCurrency
           />
