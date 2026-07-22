@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/Button'
 import { Dialog } from '@/components/ui/Dialog'
 import { Input } from '@/components/ui/Input'
 import { Switch } from '@/components/ui/Switch'
+import { useAcquirerCredentials } from '@/hooks/useAcquirers'
 import type { Acquirer, CreateAcquirerData, UpdateAcquirerData } from '@/lib/api'
 
 interface AcquirerFormModalProps {
@@ -34,6 +35,9 @@ export const AcquirerFormModal = memo(
 
     const [errors, setErrors] = useState<Record<string, string>>({})
 
+    const { data: credentialsData, isFetching: isLoadingCredentials } =
+      useAcquirerCredentials(acquirer?.id ?? null, open && isEdit)
+
     useEffect(() => {
       if (acquirer) {
         setFormData({
@@ -58,6 +62,22 @@ export const AcquirerFormModal = memo(
       }
       setErrors({})
     }, [acquirer, open])
+
+    // Pré-preenche os campos de credencial assim que o fetch (só disparado
+    // ao abrir em modo edição) retorna — antes disso ficam em branco.
+    useEffect(() => {
+      if (!credentialsData) {
+        return
+      }
+      const creds = credentialsData.credentials
+      setFormData((prev) => ({
+        ...prev,
+        apiKey: creds?.api_key || '',
+        publicKey: creds?.public_key || '',
+        webhookSecret: creds?.webhook_secret || '',
+        webhookUrl: creds?.webhook_url || '',
+      }))
+    }, [credentialsData])
 
     const validateForm = useCallback((): boolean => {
       const newErrors: Record<string, string> = {}
@@ -146,7 +166,7 @@ export const AcquirerFormModal = memo(
               variant="inkSolid"
               type="button"
               onClick={handleSubmit}
-              disabled={isSaving}
+              disabled={isSaving || isLoadingCredentials}
             >
               {isSaving ? 'Salvando...' : 'Salvar'}
             </Button>
@@ -184,7 +204,11 @@ export const AcquirerFormModal = memo(
 
           <div className="border-t border-gray-100 pt-4 space-y-4">
             <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
-              Credenciais {isEdit && '(deixe em branco para manter as atuais)'}
+              Credenciais{' '}
+              {isEdit &&
+                (isLoadingCredentials
+                  ? '(carregando...)'
+                  : '(clique no 👁 pra revelar, edite só o que precisar trocar)')}
             </p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -196,8 +220,10 @@ export const AcquirerFormModal = memo(
                 }
                 error={errors.apiKey}
                 icon={<KeyRound size={18} />}
-                placeholder={isEdit ? '••••••••' : 'live_...'}
-                disabled={isSaving}
+                placeholder={
+                  isEdit && isLoadingCredentials ? 'carregando...' : 'live_...'
+                }
+                disabled={isSaving || isLoadingCredentials}
                 showPasswordToggle
                 autoComplete="new-password"
               />
@@ -210,8 +236,10 @@ export const AcquirerFormModal = memo(
                 }
                 error={errors.publicKey}
                 icon={<KeyRound size={18} />}
-                placeholder={isEdit ? '••••••••' : 'pub_...'}
-                disabled={isSaving}
+                placeholder={
+                  isEdit && isLoadingCredentials ? 'carregando...' : 'pub_...'
+                }
+                disabled={isSaving || isLoadingCredentials}
                 showPasswordToggle
                 autoComplete="new-password"
               />
@@ -224,8 +252,10 @@ export const AcquirerFormModal = memo(
                 onChange={(e) =>
                   setFormData({ ...formData, webhookSecret: e.target.value })
                 }
-                placeholder={isEdit ? '••••••••' : ''}
-                disabled={isSaving}
+                placeholder={
+                  isEdit && isLoadingCredentials ? 'carregando...' : ''
+                }
+                disabled={isSaving || isLoadingCredentials}
                 showPasswordToggle
                 autoComplete="new-password"
               />
@@ -237,7 +267,7 @@ export const AcquirerFormModal = memo(
                   setFormData({ ...formData, webhookUrl: e.target.value })
                 }
                 placeholder="https://sua-app.com/fluxpayments/webhook"
-                disabled={isSaving}
+                disabled={isSaving || isLoadingCredentials}
                 autoComplete="off"
               />
             </div>
