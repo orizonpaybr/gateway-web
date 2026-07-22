@@ -2711,6 +2711,19 @@ export const adminUsersAPI = {
   },
 
   /**
+   * Detalhe de uma nominal, incluindo as credenciais decriptadas — usado só
+   * pelo modal de edição, nunca pela listagem
+   */
+  async getAcquirer(acquirerId: number): Promise<{
+    success: boolean
+    data: {
+      acquirer: Acquirer & { credentials: AcquirerCredentials | null }
+    }
+  }> {
+    return apiRequest(`/admin/acquirers/${acquirerId}`)
+  },
+
+  /**
    * Definir adquirente como a Global (is_default PIX) do sistema
    */
   async setDefaultAcquirer(acquirerId: number): Promise<{

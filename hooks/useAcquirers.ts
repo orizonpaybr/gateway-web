@@ -32,6 +32,27 @@ export function useAcquirersList(
 }
 
 /**
+ * Hook para buscar uma nominal com as credenciais decriptadas — usado só
+ * quando o modal de edição abre, pra pré-preencher os campos em vez de
+ * sempre voltar em branco
+ */
+export function useAcquirerCredentials(
+  acquirerId: number | null,
+  enabled: boolean,
+) {
+  return useQuery({
+    queryKey: [QUERY_KEY, acquirerId, 'credentials'],
+    queryFn: async () => {
+      const response = await adminUsersAPI.getAcquirer(acquirerId as number)
+      return response.data.acquirer
+    },
+    enabled: enabled && acquirerId !== null,
+    staleTime: 0,
+    gcTime: 0,
+  })
+}
+
+/**
  * Hook para definir uma adquirente como a Global (is_default PIX)
  */
 export function useSetDefaultAcquirer() {
