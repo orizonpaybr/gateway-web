@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, useMemo } from 'react'
+import { useState, useCallback, useMemo, useRef } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { pixAPI, accountAPI, type PixKeyType, type PixKey } from '@/lib/api'
 import { validatePixKey } from '@/components/ui/PixKeyInput'
@@ -36,6 +36,9 @@ export function usePixKeyForm(options: UsePixKeyFormOptions = {}) {
   const [selectedKeyType, setSelectedKeyType] = useState<PixKeyType>('cpf')
   const [keyValue, setKeyValue] = useState('')
   const [amount, setAmount] = useState('')
+
+  /** Trava de submit sincronizada (o `disabled` do botão só reage após re-render). */
+  const isSubmittingRef = useRef(false)
 
   // ===== QUERIES (com cache automático via React Query) =====
   const { data: balanceData, isLoading: isLoadingBalance } = useQuery({
@@ -137,6 +140,14 @@ export function usePixKeyForm(options: UsePixKeyFormOptions = {}) {
   }, [])
 
   const handleConfirmWithdraw = useCallback(() => {
+    // Trava síncrona: `disabled` no botão só vale após o re-render, então dois
+    // cliques no mesmo tick (duplo-clique rápido, Enter segurado) disparariam
+    // dois saques. Cada request gera um correlationID novo, logo a idempotência
+    // da adquirente não os deduplica.
+    if (isSubmittingRef.current) {
+      return false
+    }
+
     // Validar chave PIX
     if (!isKeyValid) {
       toast.error('Chave PIX inválida')
@@ -161,11 +172,15 @@ export function usePixKeyForm(options: UsePixKeyFormOptions = {}) {
       return false
     }
 
-    withdrawMutation.mutate({
-      key_type: selectedKeyType,
-      key_value: sanitizePixKeyValueForApi(selectedKeyType, keyValue),
-      amount: numericAmount,
-    })
+    isSubmittingRef.current = true
+    withdrawMutation.mutate(
+      {
+        key_type: selectedKeyType,
+        key_value: sanitizePixKeyValueForApi(selectedKeyType, keyValue),
+        amount: numericAmount,
+      },
+      { onSettled: () => { isSubmittingRef.current = false } },
+    )
     return true
   }, [
     isKeyValid,
