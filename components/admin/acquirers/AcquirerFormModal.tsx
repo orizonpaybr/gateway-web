@@ -5,13 +5,16 @@ import { Building2, KeyRound, Link as LinkIcon } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Dialog } from '@/components/ui/Dialog'
 import { Input } from '@/components/ui/Input'
+import { Select } from '@/components/ui/Select'
 import { Switch } from '@/components/ui/Switch'
 import { useAcquirerCredentials } from '@/hooks/useAcquirers'
 import {
   ACQUIRER_PROVIDER_LABELS,
   MULTI_ACCOUNT_ACQUIRER_PROVIDERS,
+  type Acquirer,
+  type CreateAcquirerData,
+  type UpdateAcquirerData,
 } from '@/lib/api'
-import type { Acquirer, CreateAcquirerData, UpdateAcquirerData } from '@/lib/api'
 
 interface AcquirerFormModalProps {
   open: boolean
@@ -28,6 +31,11 @@ const PROVIDER_BASE_URL: Record<string, string> = {
   fluxpayments: 'https://api.fluxpaymentss.com',
   paya55: 'https://api.paya55.com',
 }
+
+const PROVIDER_OPTIONS = MULTI_ACCOUNT_ACQUIRER_PROVIDERS.map((p) => ({
+  value: p,
+  label: ACQUIRER_PROVIDER_LABELS[p] ?? p,
+}))
 
 export const AcquirerFormModal = memo(
   ({ open, onClose, acquirer, onSubmit, isSaving }: AcquirerFormModalProps) => {
@@ -198,23 +206,14 @@ export const AcquirerFormModal = memo(
           </p>
 
           {!isEdit && (
-            <label className="block">
-              <span className="mb-1 block text-sm font-medium text-gray-700">
-                Adquirente *
-              </span>
-              <select
-                value={provider}
-                onChange={(e) => setProvider(e.target.value)}
-                disabled={isSaving}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
-              >
-                {MULTI_ACCOUNT_ACQUIRER_PROVIDERS.map((p) => (
-                  <option key={p} value={p}>
-                    {ACQUIRER_PROVIDER_LABELS[p] ?? p}
-                  </option>
-                ))}
-              </select>
-            </label>
+            <Select
+              id="acquirer-provider"
+              label="Adquirente *"
+              value={provider}
+              onChange={setProvider}
+              disabled={isSaving}
+              options={PROVIDER_OPTIONS}
+            />
           )}
 
           <Input
