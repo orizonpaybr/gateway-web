@@ -2861,7 +2861,12 @@ export interface AcquirerCredentials {
 }
 
 /** Providers que hoje suportam múltiplas nominais (contas com credenciais próprias). */
-export const MULTI_ACCOUNT_ACQUIRER_PROVIDERS = ['fluxpayments'] as const
+export const MULTI_ACCOUNT_ACQUIRER_PROVIDERS = ['fluxpayments', 'paya55'] as const
+
+export const ACQUIRER_PROVIDER_LABELS: Record<string, string> = {
+  fluxpayments: 'FluxPayments',
+  paya55: 'Paya55',
+}
 
 export interface CreateAcquirerData {
   adquirente: string
