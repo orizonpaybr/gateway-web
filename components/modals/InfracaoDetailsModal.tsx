@@ -133,6 +133,9 @@ export function InfracaoDetailsModal({
     if (infracao?.provider === 'fluxpayments') {
       return 'FluxPayments'
     }
+    if (infracao?.provider === 'paya55') {
+      return 'Paya55'
+    }
     return 'Treeal'
   }, [infracao?.defesa_enviada_para, infracao?.provider])
 

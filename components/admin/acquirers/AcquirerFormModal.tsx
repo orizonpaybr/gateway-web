@@ -5,9 +5,16 @@ import { Building2, KeyRound, Link as LinkIcon } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Dialog } from '@/components/ui/Dialog'
 import { Input } from '@/components/ui/Input'
+import { Select } from '@/components/ui/Select'
 import { Switch } from '@/components/ui/Switch'
 import { useAcquirerCredentials } from '@/hooks/useAcquirers'
-import type { Acquirer, CreateAcquirerData, UpdateAcquirerData } from '@/lib/api'
+import {
+  ACQUIRER_PROVIDER_LABELS,
+  MULTI_ACCOUNT_ACQUIRER_PROVIDERS,
+  type Acquirer,
+  type CreateAcquirerData,
+  type UpdateAcquirerData,
+} from '@/lib/api'
 
 interface AcquirerFormModalProps {
   open: boolean
@@ -18,6 +25,17 @@ interface AcquirerFormModalProps {
 }
 
 const DEFAULT_PROVIDER = 'fluxpayments'
+
+/** URL padrão da API por provider, usada como placeholder do campo URL. */
+const PROVIDER_BASE_URL: Record<string, string> = {
+  fluxpayments: 'https://api.fluxpaymentss.com',
+  paya55: 'https://api.paya55.com',
+}
+
+const PROVIDER_OPTIONS = MULTI_ACCOUNT_ACQUIRER_PROVIDERS.map((p) => ({
+  value: p,
+  label: ACQUIRER_PROVIDER_LABELS[p] ?? p,
+}))
 
 export const AcquirerFormModal = memo(
   ({ open, onClose, acquirer, onSubmit, isSaving }: AcquirerFormModalProps) => {
@@ -32,6 +50,8 @@ export const AcquirerFormModal = memo(
       webhookSecret: '',
       webhookUrl: '',
     })
+
+    const [provider, setProvider] = useState<string>(DEFAULT_PROVIDER)
 
     const [errors, setErrors] = useState<Record<string, string>>({})
 
@@ -60,6 +80,7 @@ export const AcquirerFormModal = memo(
           webhookUrl: '',
         })
       }
+      setProvider(acquirer?.provider || DEFAULT_PROVIDER)
       setErrors({})
     }, [acquirer, open])
 
@@ -134,7 +155,7 @@ export const AcquirerFormModal = memo(
         } else {
           await onSubmit({
             adquirente: formData.adquirente.trim(),
-            provider: DEFAULT_PROVIDER,
+            provider,
             url: formData.url.trim() || undefined,
             status: formData.status,
             credentials: {
@@ -148,14 +169,18 @@ export const AcquirerFormModal = memo(
 
         onClose()
       },
-      [formData, isEdit, validateForm, onSubmit, onClose],
+      [formData, provider, isEdit, validateForm, onSubmit, onClose],
     )
 
     return (
       <Dialog
         open={open}
         onClose={onClose}
-        title={isEdit ? 'Editar Nominal' : 'Nova Nominal — FluxPayments'}
+        title={
+          isEdit
+            ? 'Editar Nominal'
+            : `Nova Nominal — ${ACQUIRER_PROVIDER_LABELS[provider] ?? provider}`
+        }
         size="lg"
         footer={
           <div className="flex justify-end gap-2">
@@ -175,10 +200,21 @@ export const AcquirerFormModal = memo(
       >
         <form onSubmit={handleSubmit} className="space-y-4">
           <p className="text-sm text-gray-600">
-            Cada nominal é uma conta FluxPayments própria (credenciais
+            Cada nominal é uma conta própria da adquirente (credenciais
             próprias), exibida com o nome que aparece no QR Code PIX gerado
             (campo Merchant Name).
           </p>
+
+          {!isEdit && (
+            <Select
+              id="acquirer-provider"
+              label="Adquirente *"
+              value={provider}
+              onChange={setProvider}
+              disabled={isSaving}
+              options={PROVIDER_OPTIONS}
+            />
+          )}
 
           <Input
             label="Nome da nominal *"
@@ -188,7 +224,7 @@ export const AcquirerFormModal = memo(
             }
             error={errors.adquirente}
             icon={<Building2 size={18} />}
-            placeholder="Ex: FluxPayments (Vendas Digitais)"
+            placeholder={`Ex: ${ACQUIRER_PROVIDER_LABELS[provider] ?? provider} (Vendas Digitais)`}
             disabled={isSaving}
           />
 
@@ -197,7 +233,7 @@ export const AcquirerFormModal = memo(
             value={formData.url}
             onChange={(e) => setFormData({ ...formData, url: e.target.value })}
             icon={<LinkIcon size={18} />}
-            placeholder="https://api.fluxpaymentss.com"
+            placeholder={PROVIDER_BASE_URL[provider] ?? ''}
             disabled={isSaving}
             autoComplete="off"
           />
@@ -266,7 +302,7 @@ export const AcquirerFormModal = memo(
                 onChange={(e) =>
                   setFormData({ ...formData, webhookUrl: e.target.value })
                 }
-                placeholder="https://sua-app.com/fluxpayments/webhook"
+                placeholder={`https://sua-app.com/${provider}/webhook`}
                 disabled={isSaving || isLoadingCredentials}
                 autoComplete="off"
               />
