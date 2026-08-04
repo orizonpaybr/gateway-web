@@ -1814,7 +1814,7 @@ export const financialAPI = {
   },
 
   /**
-   * Estorno de depósito PIX (Simpay) — admin
+   * Estorno de depósito PIX — admin
    */
   refundDeposit: async (
     depositoId: number,
