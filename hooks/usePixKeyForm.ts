@@ -61,9 +61,19 @@ export function usePixKeyForm(options: UsePixKeyFormOptions = {}) {
   const withdrawMutation = useMutation({
     mutationFn: pixAPI.withdrawWithKey,
     onSuccess: (data) => {
-      const isManual = data.data?.status === 'PENDING_APPROVAL'
+      const status = data.data?.status
+      const isManual = status === 'PENDING_APPROVAL'
+      // Adquirente pode cancelar/falhar o saque na hora (ex.: saldo insuficiente da
+      // conta master). HTTP volta 200, mas o saque NÃO saiu e o valor foi devolvido —
+      // o cliente precisa saber que deu ruim, não ver "sucesso".
+      const isFailed =
+        status === 'CANCELLED' || status === 'FAILED' || status === 'REFUNDED'
 
-      if (isManual) {
+      if (isFailed) {
+        toast.error(
+          data.message || 'Saque não realizado. O valor foi devolvido ao seu saldo.',
+        )
+      } else if (isManual) {
         toast.info(data.message || 'Saque criado com sucesso!', {
           description:
             data.data?.motivo_manual ||
