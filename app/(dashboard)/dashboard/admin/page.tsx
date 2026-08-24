@@ -116,19 +116,19 @@ export default function AdminDashboardPage() {
         />
 
         <StatCard
-          title="Lucro Líquido"
+          title="Fluxo do Caixa (Entrou − Saiu)"
           value={stats?.financeiro.lucro_liquido ?? 0}
           icon={TrendingUp}
-          description="Taxas cobradas − custos de adquirentes"
+          description="Depósitos − saques no período. Não é lucro — o lucro é a Receita Bruta."
           colorScheme="green"
           formatAsCurrency
         />
 
         <StatCard
-          title="Lucro Últimos 30 Dias"
+          title="Fluxo 30 Dias (Entrou − Saiu)"
           value={stats30?.financeiro.lucro_liquido ?? 0}
           icon={CalendarRange}
-          description="Referência fixa (não muda com o filtro)"
+          description="Entrou − saiu nos últimos 30 dias. Referência fixa."
           colorScheme="blue"
           formatAsCurrency
         />
