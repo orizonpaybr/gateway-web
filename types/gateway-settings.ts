@@ -6,6 +6,10 @@ export interface GatewaySettings {
   // Taxa global de comissão de afiliado por transação (em reais)
   taxa_comissao_afiliado_padrao: number
 
+  // Piso mínimo da PLATAFORMA (regra própria, independente de adquirente)
+  taxa_minima_fixa: number // componente fixo em R$
+  taxa_minima_percentual: number // componente percentual (ex.: 0.5 = 0,5%)
+
   // Personalização de Relatórios - Entradas
   relatorio_entradas_mostrar_meio: boolean
   relatorio_entradas_mostrar_transacao_id: boolean
@@ -35,6 +39,8 @@ export type NumericSettingsField =
   | 'taxa_fixa_deposito'
   | 'taxa_fixa_pix'
   | 'taxa_comissao_afiliado_padrao'
+  | 'taxa_minima_fixa'
+  | 'taxa_minima_percentual'
 
 export type BooleanSettingsField = keyof Pick<
   GatewaySettings,

@@ -17,16 +17,10 @@ interface TaxasSectionProps {
 }
 
 export function TaxasSection({
-  settings,
   getDisplayValue,
   handleChange,
   handleBlur,
 }: TaxasSectionProps) {
-  const taxa =
-    Number(settings.taxa_fixa_deposito) || Number(settings.taxa_fixa_pix) || 1
-  const comissaoAfiliado = Number(settings.taxa_comissao_afiliado_padrao) || 0.5
-  const custoAdquirente = 1.0 // Treeal: 1% sobre o valor (ex.: R$ 100 → R$ 1,00)
-
   return (
     <div className="mb-6">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -93,15 +87,58 @@ export function TaxasSection({
         </div>
       </div>
 
+      <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <Label
+            htmlFor="taxa_minima_fixa"
+            className="min-h-[40px] leading-tight flex items-end pb-1"
+          >
+            Piso Mínimo — Fixo (R$)
+          </Label>
+          <Input
+            id="taxa_minima_fixa"
+            type="text"
+            inputMode="decimal"
+            value={getDisplayValue('taxa_minima_fixa')}
+            onChange={handleChange('taxa_minima_fixa')}
+            onBlur={handleBlur('taxa_minima_fixa')}
+          />
+          <p className="text-sm text-gray-500 mt-1">
+            Mínimo que a Coratri sempre cobra por transação. Regra própria,
+            independente de adquirente.
+          </p>
+        </div>
+        <div>
+          <Label
+            htmlFor="taxa_minima_percentual"
+            className="min-h-[40px] leading-tight flex items-end pb-1"
+          >
+            Piso Mínimo — Percentual (%)
+          </Label>
+          <Input
+            id="taxa_minima_percentual"
+            type="text"
+            inputMode="decimal"
+            value={getDisplayValue('taxa_minima_percentual')}
+            onChange={handleChange('taxa_minima_percentual')}
+            onBlur={handleBlur('taxa_minima_percentual')}
+          />
+          <p className="text-sm text-gray-500 mt-1">
+            Piso percentual sobre o valor (ex.: 0,5 = 0,5%). 0 = sem piso
+            percentual.
+          </p>
+        </div>
+      </div>
+
       <div className="mt-4 p-4 bg-cyan-50 rounded-lg border border-cyan-200">
         <p className="text-sm text-cyan-800 font-medium mb-2">
-          Como funcionam cash-in e cash-out
+          Piso da taxa (proteção)
         </p>
         <p className="text-sm text-cyan-700">
-          Exemplo: saque de R$ 100,00, taxa R$ {taxa.toFixed(3)} — R$ {custoAdquirente.toFixed(3)} para
-          o adquirente (Treeal, 1% do valor), R$ {comissaoAfiliado.toFixed(3)} para o afiliado (se houver)
-          e R$ {Math.max(0, taxa - custoAdquirente - comissaoAfiliado).toFixed(3)} para a
-          Coratri.
+          A taxa efetiva cobrada do cliente nunca fica abaixo de dois pisos: o
+          piso mínimo da plataforma (acima, nossa regra) e o custo real da
+          adquirente ativa naquela transação. Assim nunca cobramos menos do que
+          pagamos — seja qual for a adquirente.
         </p>
       </div>
     </div>
