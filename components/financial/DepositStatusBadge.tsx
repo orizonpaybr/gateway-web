@@ -17,6 +17,7 @@ const STATUS_MAP: Record<string, StatusConfig> = {
   CREATED: { label: 'Pendente', variant: 'warning' },
   REJECTED: { label: 'Rejeitado', variant: 'error' },
   CANCELLED: { label: 'Cancelado', variant: 'error' },
+  REFUND_PROCESSING: { label: 'Estorno em processamento', variant: 'warning' },
   REFUNDED: { label: 'Estornado', variant: 'default' },
   PARTIALLY_REFUNDED: { label: 'Estorno parcial', variant: 'default' },
 }
